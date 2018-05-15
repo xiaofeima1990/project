@@ -1,0 +1,51 @@
+##how to configure multiple remote repositories
+
+### add a new remote repository
+git remote add repo_name  http://repo_path
+
+### To fetch from all the configured remotes and update tracking branches, but not merge into HEAD
+git remote update
+
+### To fetch the master branch from example_name and pull it into your current head, do:
+
+git pull example_name master
+
+###get all remote repositories info https, do
+
+git remote -v
+
+###delete the remote repository link 
+git remote remove name
+
+### rename the remote repository name 
+git remote rename 
+
+
+## initize the git 
+git init
+
+## basic operation 
+
+
+### add files
+git add -u (only files)
+
+git add . (all files and folders)
+
+
+### commit the local repository
+git commit -m "log info"
+
+### push to the remote cloud repository
+git push 
+
+### pull from remote repository to local repository
+git pull
+
+
+
+## avoid input password everytime 
+
+git config --global credential.helper "cache --timeout=3600"
+
+tells Git to keep your password cached in memory for 1 hour

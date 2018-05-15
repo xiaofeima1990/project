@@ -1,0 +1,16 @@
+很多人发现Ipython notebook 打开的默认路径在user里面却不知道如何修改, 这里提供一个非常简单的方法
+
+1. 打开命令行, 键入
+ipython profile create
+
+2. 键入 , 根据这个地址, 打开profile所在的文件夹
+ipython locate
+
+3. 打开这个文件: ipython_notebook_config.py
+
+4.1. 在其中修改这一项(Python2), 注意去掉前面的#
+c.NotebookApp.notebook_dir = u'/path/to/your/notebooks'
+4.2 Python3
+c.FileNotebookManager.notebook_dir = u'/path/to/your/notebooks'<pre name="code" class="python">c.NotebookManager.notebook_dir = u'/path/to/your/notebooks'
+
+5 大功告成啦!

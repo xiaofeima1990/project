@@ -1,0 +1,28 @@
+环境： python 3
+需要的package : pandas, geopy 
+推荐安装anaconda 集成环境
+
+主运行文件：gis_run_land_final.py
+需要把geobaidu.py 放置到同一目录下
+
+资源文件：admin_code_2002-2014.csv
+
+开始运行之前需要再 gis_run_land_final 中设置一下文件目录
+eg:
+
+path="E:\\guoxuanma\\gis\\first-land-market\\"
+path2="E:\\guoxuanma\\gis\\first-land-market-gis\\"
+
+path_dist="E:\\guoxuanma\\gis\\district-info\\"
+
+path 是提取土地信息数据文件存放目录。 txt格式
+path2 gis信息结果存放目录
+
+path_dist 是地址区域码转换所需资源文件存放的目录
+可以将admin_code_2002-2014.csv中每一年度的城镇名称和代码分年度保存在 path_dist 所指向的目录下面，命名方式举例 "2004.csv"
+
+
+
+
+
+
