@@ -77,7 +77,7 @@ def get_abs_info(driver,start_page,file_path,file_name,write_flag,Year):
 
 
         try: # to avoid StaleElementReferenceException:
-            time.sleep(2)
+            time.sleep(1)
             content_list=driver.find_elements_by_xpath(list_link_path)
 
 
@@ -135,34 +135,69 @@ def get_abs_info(driver,start_page,file_path,file_name,write_flag,Year):
             if page_count==summary_link:
                 page_count=page_count+1;
             else:
-                try:
-        #            driver.find_element_by_css_selector(next_page_css).click()
-                    check=driver.find_element_by_css_selector(next_page_css)
-                    check.click()
-                    time.sleep(2)
+                
+                driver=next_page(driver,page_count)
+                page_count=page_count+1
+#                try:
+#        #            driver.find_element_by_css_selector(next_page_css).click()
+#                    check=driver.find_element_by_css_selector(next_page_css)
+#                    check.click()
+#                    time.sleep(2)
+##                    driver.implicitly_wait(3)
 #                    driver.execute_script("window.stop();")
-                except :
-                    check=driver.find_element_by_class_name(page_sum_class_name)
-                    if not check :
-                        print("problem with the page, restart it")
-                        return
-            driver.execute_script("window.stop();")        
-            page_count=page_count+1;
-        except StaleElementReferenceException as e:
+#                except TimeoutException as ex:
+#                    print(ex)
+#                    print(page_count)
+#                    driver.execute_script("window.stop();") 
+#                    if driver.find_element_by_class_name("current").text :
+#                        cu_page=int(driver.find_element_by_class_name("current").text)
+#                        if cu_page!=page_count+1:
+#                            driver.find_element_by_css_selector(next_page_css).click()
+##                            driver.implicitly_wait(3)
+#                            time.sleep(2)
+#                            driver.execute_script("window.stop();") 
+#                    else:
+#                        print("sucks just check the problem again")
+#                        
+#                except Exception as e :
+#                    print(e)
+#                    print(page_count)
+#                    
+##                    time.sleep(2)
+##                    if driver.find_element_by_class_name("current").text :
+##                        
+##                        check=driver.find_element_by_css_selector(next_page_css)
+##                        check.click()
+##                        driver.implicitly_wait(3)
+##                        driver.execute_script("window.stop();") 
+##                    else:
+##                        print("problem with the page, restart it"+str(page_count))
+                   
             
+            
+        except StaleElementReferenceException as e:
+            print("---------")
+            print(page_count)
             print(e)
-            print(df_link) 
-            print(id_total)
-            print(df_link)
             continue
+            
             # refresh current pages 
             
             
                 
+def next_page(driver,page_count):
+    try:
+        check=driver.find_element_by_css_selector(next_page_css)
+        check.click()
+        driver.implicitly_wait(3)
+        driver.execute_script("window.stop();")
 
-
-
-
+    except TimeoutException as e:
+        print("current page = "+ str(page_count))
+        print("next    page = "+ driver.find_element_by_class_name("current").text)
+        driver.execute_script("window.stop();")
+    return driver
+                    
 
 if __name__ == '__main__':
 
@@ -193,7 +228,8 @@ if __name__ == '__main__':
     for ele in city_name:
         elee=ele.encode("gbk")
         elee=urllib.parse.quote(elee)
-        base_url="https://sf.taobao.com/item_list.htm?spm=a213w.7398504.miniNav.14.m3SaXN&category=50025969&city="+elee+"&sorder=2&st_param=2&auction_start_seg=0"
+        # 按竞价次数，第一次第二次拍卖，
+        base_url="https://sf.taobao.com/item_list.htm?spm=a213w.7398504.miniNav.14.m3SaXN&circ=1%2C2&category=50025969&city="+elee+"&sorder=2&st_param=2&auction_start_seg=0"
 
         for y in year_list:
             start_time =datetime.strptime(y+'-01-01', '%Y-%m-%d')
