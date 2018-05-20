@@ -68,15 +68,15 @@ def open_page(driver,url):
     return driver
 
 
-col_name_abs=['ID','url','num_bids','status','win_bid','eval_price','n_watch','n_resigter','title','date','time','year']
+col_name_abs=['ID','url','num_bids','status','win_bid','eval_price','n_watch','n_resigter','title','date','time','year','flag_time']
 
-def get_abs_info(driver,start_page,file_path,file_name,write_flag,Year):
+def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
     # get whole link page number 
     summary_link=int(driver.find_element_by_class_name(page_sum_class_name).text)
     df_link=pd.DataFrame(columns=col_name_abs)
-    if write_flag==1:
-        df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',index=False)
-        
+#    if write_flag==1:
+#        df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',mode='a',index=False)
+#        
     page_count=start_page
     date_flag=0
     
@@ -125,7 +125,7 @@ def get_abs_info(driver,start_page,file_path,file_name,write_flag,Year):
                     (date1,time1)=date_all.split(" ")
             
 
-                df_temp.loc[i]=[id_info,href,bid_tips,status,win_bid,eval_price,n_watch,n_resigter,title,date1,time1,Year]
+                df_temp.loc[i]=[id_info,href,bid_tips,status,win_bid,eval_price,n_watch,n_resigter,title,date1,time1,Year,flag_time]
             
             df_link=df_link.append(df_temp,ignore_index=True)
             
@@ -198,7 +198,10 @@ if __name__ == '__main__':
             auction_time="&circ=1%2C2"
     
     base_url="https://sf.taobao.com/item_list.htm?spm=a213w.7398504.miniNav.14.m3SaXN"+auction_time+"&category=50025969&city="+elee+"&sorder=2&st_param=2&auction_start_seg=0"
-
+    
+    file_name=ele+"-"+flag_auction_time+"-sf" 
+    df_link=pd.DataFrame(columns=col_name_abs)
+    df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',mode='a',index=False)
     for y in year_list:
         start_time =datetime.strptime(y+'-01-01', '%Y-%m-%d')
         end_time   =start_time+relativedelta(years=1)-timedelta(days=1)
@@ -208,8 +211,8 @@ if __name__ == '__main__':
     
         start_page=1
         
-        write_flag=1
-        file_name=ele+"-"+flag_auction_time+"-sf" 
-        get_abs_info(driver,start_page,file_path,file_name,write_flag,y)
+
+        
+        get_abs_info(driver,start_page,file_path,file_name,y,flag_auction_time)
 
     driver.quit()

@@ -25,7 +25,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException,TimeoutException
 import selenium.common.exceptions as S_exceptions
 import pandas as pd
-
+import sqlite3
 
 
 
@@ -41,8 +41,8 @@ AUCTION_INFO1={
 
 }
 finish_time='#page > div:nth-child(7) > div > div > div.pm-main-l.auction-interaction > ul > li:nth-child(2) > span.countdown.J_TimeLeft'
-#incharge_court='p.c-department'
-incharge_court='#page > div:nth-child(7) > div > div > div.pm-main-l.auction-interaction > div.pai-info > p:nth-child(2) > a'
+incharge_court='c-department'
+#incharge_court='#page > div:nth-child(7) > div > div > div.pm-main-l.auction-interaction > div.pai-info > p:nth-child(2) > a'
 
 announce='#NoticeDetail'
 location='J_Coordinate'
@@ -82,13 +82,13 @@ def open_page(driver,url):
         if not check :
             print("problem with the page, restart it")
             driver.quit()
+        driver.execute_script("window.stop();")
     
     return driver
 
 
 
-
-def get_info(driver,link_url,store_path,id_info):
+def get_info(driver,link_url):
     '''
     df_info1 : auction info ingeneral
     df_info2 : bidding table
@@ -110,18 +110,22 @@ def get_info(driver,link_url,store_path,id_info):
         df_info1.loc[0,'priority_people']=0
     else:
         df_info1.loc[0,'priority_people']=1
+    
     # column 2
     
     driver.find_element_by_css_selector(location_nav1).click()
+    time.sleep(1)
     notice_detail=driver.find_element_by_css_selector(announce).text
     df_info1.loc[0,'announce']=notice_detail
     
     # detail info
     driver.find_element_by_css_selector(location_nav2).click()
+    time.sleep(1)
     df_info1.loc[0,['lat','lgt']]=driver.find_element_by_id(location).get_attribute("value").split(",")
     
     driver.find_element_by_css_selector(location_nav4).click()
-    df_info1.loc[0,'incharge_court']=driver.find_element_by_css_selector(incharge_court).text.split("：")[1]
+    time.sleep(1)
+    df_info1.loc[0,'incharge_court']=driver.find_element_by_class_name(incharge_court).text.split("：")[1]
     res=driver.find_element_by_css_selector(result).text
     df_info1.loc[0,'win_bidder']=re.findall(r'用户姓名(?P<name>.*)通过',res)[0]
     df_info1.loc[0,'win_bidder_id']=re.findall(r'通过竞买号(?P<name>.*)于2',res)[0]
@@ -151,13 +155,33 @@ def get_info(driver,link_url,store_path,id_info):
             flag=0
             
         
+    ## get id infomation
+    id_info=re.findall(r'\d+',link_url)[0]
     
-    return (df_info1,df_info2)
+    return (df_info1,df_info2,id_info)
     
 firefoxdriver_path="E:\\github\\Project\\web_spider\\land auction taobao\\"
 
 driver=webdriver.Firefox(firefoxdriver_path)
 
-base_url="https://sf.taobao.com/sf_item/568521950400.htm?spm=a213w.7398504.paiList.6.WuNcWq"
+city="your city "
+base_url="https://sf.taobao.com/sf_item/548131372870.htm"
 
-driver=open_page(driver,base_url)
+#driver=open_page(driver,base_url)
+
+
+(df_info1,df_info2,id_info)=get_info(driver,base_url)
+
+## how to save for the data especially for the auction data 
+# http://www.datacarpentry.org/python-ecology-lesson/08-working-with-sql/
+
+store_path="E:/auction/"
+con = sqlite3.connect(store_path+"auction_info.sqlite")
+con2 = sqlite3.connect(store_path+"auction_bidding.sqlite")
+df_info2.to_sql(id_info, con2, if_exists="replace")
+
+df_info1.to_sql(city, con, if_exists="append")
+
+# Be sure to close the connection
+con.close()
+con2.close()
