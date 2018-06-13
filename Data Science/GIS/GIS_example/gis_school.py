@@ -6,7 +6,7 @@ Created on Mon Oct 23 22:10:33 2017
 """
 
 #import geopy
-path="D:\\temp\\"
+path=".\\"
 file_name='school_name.txt'
 
 from geopy.geocoders import Nominatim

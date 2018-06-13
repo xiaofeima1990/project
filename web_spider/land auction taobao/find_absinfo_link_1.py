@@ -11,6 +11,7 @@ Created on Tue Apr 17 23:14:48 2018
 
 @author: xiaofeima
 for link and abstract info spider clean version
+put the geckodriver together with the script 
 """
 
 import os
@@ -46,7 +47,7 @@ page_sum_class_name="page-total"
 #file_path="E:\\"
 # need chromedriver no exe!
 
-firefoxdriver_path="E:\\github\\Project\\web_spider\\land auction taobao\\"
+#firefoxdriver_path="E:\\github\\Project\\web_spider\\land auction taobao\\"
 
 
 
@@ -142,7 +143,7 @@ def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
             if page_count==summary_link:
                 page_count=page_count+1;
             else:
-                
+                driver.execute_script('window.localStorage.clear();')
                 driver=next_page(driver,page_count)
                 page_count=page_count+1
 
@@ -163,12 +164,13 @@ def next_page(driver,page_count):
         check.click()
         driver.implicitly_wait(3)
         driver.execute_script("window.stop();")
-
+        
     except TimeoutException as e:
         time.sleep(2)
         driver.execute_script("window.stop();")
         print("current page = "+ str(page_count) +"\t||\t"+"next    page = "+ driver.find_element_by_class_name("current").text)
         
+    
     return driver
                     
 
@@ -179,40 +181,46 @@ if __name__ == '__main__':
 #    con = sqlite3.connect("E:\\justice_auction.sqlite")
     
 #     this even requires gbk decoding encoding!!! to convert str to url
-#    city_name=["苏州","无锡","淮安","常州","连云港","南京","宿迁","盐城","泰州","扬州","镇江","南通"]
-    ele=input("input city name: ")
+    city_name=["广州","郑州","厦门","福州","常州","南京","盐城","泰州","扬州","镇江","南通"]
+#    city_name=['成都']
+#    ele=input("input city name: ")
     flag_auction_time=input("input auction time choice: 1- first time, 2- second time, 3- 1+2, : ")
-    driver=webdriver.Firefox(firefoxdriver_path)
-    year_list=['2014','2015','2016','2017']
-#    for ele in city_name:
-    elee=ele.encode("gbk")
-    elee=urllib.parse.quote(elee)
-    # 按竞价次数，第一次第二次拍卖，
-    if flag_auction_time=="1":
-        auction_time="&circ=%2C1"
-    else: 
-        if flag_auction_time=="2":
-            auction_time="&circ=%2C2"
-        
-        else:
-            auction_time="&circ=1%2C2"
     
-    base_url="https://sf.taobao.com/item_list.htm?spm=a213w.7398504.miniNav.14.m3SaXN"+auction_time+"&category=50025969&city="+elee+"&sorder=2&st_param=2&auction_start_seg=0"
+    driver=webdriver.Firefox()
+    for ele in city_name:
     
-    file_name=ele+"-"+flag_auction_time+"-sf" 
-    df_link=pd.DataFrame(columns=col_name_abs)
-    df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',mode='a',index=False)
-    for y in year_list:
-        start_time =datetime.strptime(y+'-01-01', '%Y-%m-%d')
-        end_time   =start_time+relativedelta(years=1)-timedelta(days=1)
-        time_url="&auction_start_from="+start_time.strftime("%Y-%m-%d")+"&auction_start_to="+end_time.strftime("%Y-%m-%d")
-        start_url=base_url+time_url
-        driver=open_page(driver,start_url)
     
-        start_page=1
+    
+        year_list=['2014','2015','2016','2017']
+        #    for ele in city_name:
+        elee=ele.encode("gbk")
+        elee=urllib.parse.quote(elee)
+        # 按竞价次数，第一次第二次拍卖，
+        if flag_auction_time=="1":
+            auction_time="&circ=%2C1"
+        else: 
+            if flag_auction_time=="2":
+                auction_time="&circ=%2C2"
+            
+            else:
+                auction_time="&circ=1%2C2"
         
-
+        base_url="https://sf.taobao.com/item_list.htm?spm=a213w.7398504.miniNav.14.m3SaXN"+auction_time+"&category=50025969&city="+elee+"&sorder=2&st_param=2&auction_start_seg=0"
         
-        get_abs_info(driver,start_page,file_path,file_name,y,flag_auction_time)
+        file_name=ele+"-"+flag_auction_time+"-sf" 
+        df_link=pd.DataFrame(columns=col_name_abs)
+        df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',mode='a',index=False)
+        for y in year_list:
+            start_time =datetime.strptime(y+'-01-01', '%Y-%m-%d')
+            end_time   =start_time+relativedelta(years=1)-timedelta(days=1)
+            time_url="&auction_start_from="+start_time.strftime("%Y-%m-%d")+"&auction_start_to="+end_time.strftime("%Y-%m-%d")
+            start_url=base_url+time_url
+            driver=open_page(driver,start_url)
+        
+            start_page=1
+            
+        
+            
+            get_abs_info(driver,start_page,file_path,file_name,y,flag_auction_time)
 
     driver.quit()
