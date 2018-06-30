@@ -1,12 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu May 17 20:19:20 2018
+Created on Thu Jun 14 08:31:22 2018
 
 @author: xiaofeima
-
-for link and abstract info spider clean version
-put the geckodriver together with the script 
 """
+
 
 import os
 
@@ -180,7 +179,8 @@ if __name__ == '__main__':
 #    ele=input("input city name: ")
     flag_auction_time=input("input auction time choice: 1- first time, 2- second time, 3- 1+2, : ")
     
-    driver=webdriver.Firefox()
+#    driver=webdriver.Firefox()
+    driver = webdriver.PhantomJS()
     for ele in city_name:
     
     
