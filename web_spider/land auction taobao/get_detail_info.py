@@ -258,14 +258,14 @@ if __name__ == '__main__':
     link_path="E:/auction/link/"
 
     store_path="E:/auction/"
-    con = sqlite3.connect(store_path+"auction_info.sqlite")
-    con2 = sqlite3.connect(store_path+"auction_bidding_2.sqlite")
+    con = sqlite3.connect(store_path+"auction_info_car.sqlite")
+    con2 = sqlite3.connect(store_path+"auction_bidding_2_car.sqlite")
     df_INFO1=pd.DataFrame(columns=col_name)
     
 #driver=open_page(driver,base_url)
     auction_time_flag=input("input auction time choice: 1- first time, 2- second time ")
     
-    df_link=pd.read_csv(link_path+city+"-"+auction_time_flag+"-sf.csv",sep="\t", encoding='utf-8')
+    df_link=pd.read_csv(link_path+city+"-"+auction_time_flag+"-sf-car.csv",sep="\t", encoding='utf-8')
     driver=webdriver.Firefox(firefoxdriver_path)
     total_len=len(df_link)
     for index, row in df_link.iterrows():

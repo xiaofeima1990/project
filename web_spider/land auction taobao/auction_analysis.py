@@ -29,6 +29,9 @@ con2 = sqlite3.connect(store_path+"auction_bidding_2.sqlite")
 df_1 = pd.read_sql_query("SELECT * from xuzhou_1", con)
 df_2 = pd.read_sql_query("SELECT * from xuzhou_2", con)
 
+# Be sure to close the connection
+con.close()
+con2.close()
 
 df_1['status2']=0
 df_1.loc[df_1['status']=="done",'status2']=1
@@ -43,6 +46,3 @@ df_2['p_ratio']=df_2['win_bid']/df_2['eval_price']
 
 
 
-# Be sure to close the connection
-con.close()
-con2.close()

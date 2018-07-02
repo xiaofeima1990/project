@@ -181,11 +181,11 @@ if __name__ == '__main__':
 #    con = sqlite3.connect("E:\\justice_auction.sqlite")
     
 #     this even requires gbk decoding encoding!!! to convert str to url
-    city_name=["广州","郑州","厦门","福州","常州","南京","盐城","泰州","扬州","镇江","南通"]
-#    city_name=['成都']
+#    city_name=["广州","郑州","厦门","福州","常州","南京","盐城","泰州","扬州","镇江","南通"]
+    city_name=['徐州']
 #    ele=input("input city name: ")
     flag_auction_time=input("input auction time choice: 1- first time, 2- second time, 3- 1+2, : ")
-    
+    flag_cat=input("input category you want to search: 1 house, 2 land, 3 car")
     driver=webdriver.Firefox()
     for ele in city_name:
     
@@ -204,10 +204,16 @@ if __name__ == '__main__':
             
             else:
                 auction_time="&circ=1%2C2"
+        if flag_cat=="1":
+            category="50025969"
+        elif flag_cat=="2":
+            category="50025972"
+        else:
+            category="50025972"
+
+        base_url="https://sf.taobao.com/item_list.htm?spm=a213w.7398504.miniNav.14.m3SaXN"+auction_time+"&category="+category+"&city="+elee+"&sorder=2&st_param=2&auction_start_seg=0"
         
-        base_url="https://sf.taobao.com/item_list.htm?spm=a213w.7398504.miniNav.14.m3SaXN"+auction_time+"&category=50025969&city="+elee+"&sorder=2&st_param=2&auction_start_seg=0"
-        
-        file_name=ele+"-"+flag_auction_time+"-sf" 
+        file_name=ele+"-"+flag_auction_time+"-sf"+"-car" 
         df_link=pd.DataFrame(columns=col_name_abs)
         df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',mode='a',index=False)
         for y in year_list:
