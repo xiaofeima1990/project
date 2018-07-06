@@ -1,0 +1,81 @@
+1530678885971	geckodriver	INFO	geckodriver 0.19.1
+1530678885983	geckodriver	INFO	Listening on 127.0.0.1:10952
+1530678889086	mozrunner::runner	INFO	Running command: "D:\\system\\Firefox\\firefox.exe" "-marionette" "-profile" "C:\\Users\\XIAOFE~1\\AppData\\Local\\Temp\\rust_mozprofile.vJpsJxXy8H5G"
+1530678892533	Marionette	INFO	Listening on port 10964
+1530678892743	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+1530679180214	Marionette	INFO	Ceased listening
+1530679631946	geckodriver	INFO	geckodriver 0.19.1
+1530679631958	geckodriver	INFO	Listening on 127.0.0.1:12755
+1530679635043	mozrunner::runner	INFO	Running command: "D:\\system\\Firefox\\firefox.exe" "-marionette" "-profile" "C:\\Users\\XIAOFE~1\\AppData\\Local\\Temp\\rust_mozprofile.kZUVE4CsGMqX"
+1530679638030	Marionette	INFO	Listening on port 12767
+1530679638260	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+1530679705356	Marionette	INFO	Ceased listening
+1530679705988	geckodriver	INFO	geckodriver 0.19.1
+1530679706002	geckodriver	INFO	Listening on 127.0.0.1:12988
+1530679709084	mozrunner::runner	INFO	Running command: "D:\\system\\Firefox\\firefox.exe" "-marionette" "-profile" "C:\\Users\\XIAOFE~1\\AppData\\Local\\Temp\\rust_mozprofile.9t1yvFrMbu8Z"
+1530679712159	Marionette	INFO	Listening on port 13001
+1530679712395	Marionette	WARN	TLS certificate errors will be ignored for this session
+1530679765363	Marionette	INFO	New connections will no longer be accepted
+r	INFO	Listening on 127.0.0.1:13179
+1530679746690	mozrunner::runner	INFO	Running command: "D:\\system\\Firefox\\firefox.exe" "-marionette" "-profile" "C:\\Users\\XIAOFE~1\\AppData\\Local\\Temp\\rust_mozprofile.h5fNrk5mlwNq"
+1530679750282	Marionette	INFO	Listening on port 13191
+1530679750523	Marionette	WARN	TLS certificate errors will be ignored for this session
+1530679765973	Marionette	INFO	New connections will no longer be accepted
+1530679863928	geckodriver	INFO	geckodriver 0.19.1
+1530679863942	geckodriver	INFO	Listening on 127.0.0.1:13418
+1530679867002	mozrunner::runner	INFO	Running command: "D:\\system\\Firefox\\firefox.exe" "-marionette" "-profile" "C:\\Users\\XIAOFE~1\\AppData\\Local\\Temp\\rust_mozprofile.ainxbIXlM0fv"
+1530679870095	Marionette	INFO	Listening on port 13430
+1530679870320	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+1530679899444	Marionette	INFO	Ceased listening
+1530680108213	geckodriver	INFO	geckodriver 0.19.1
+1530680108229	geckodriver	INFO	Listening on 127.0.0.1:13986
+1530680111313	mozrunner::runner	INFO	Running command: "D:\\system\\Firefox\\firefox.exe" "-marionette" "-profile" "C:\\Users\\XIAOFE~1\\AppData\\Local\\Temp\\rust_mozprofile.BwH8QJIOikDE"
+1530680114431	Marionette	INFO	Listening on port 13998
+1530680114618	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+1530680137181	Marionette	INFO	Ceased listening
+1530680156855	geckodriver	INFO	geckodriver 0.19.1
+1530680156867	geckodriver	INFO	Listening on 127.0.0.1:14110
+1530680159980	mozrunner::runner	INFO	Running command: "D:\\system\\Firefox\\firefox.exe" "-marionette" "-profile" "C:\\Users\\XIAOFE~1\\AppData\\Local\\Temp\\rust_mozprofile.ynfp5RPwxKma"
+1530680162980	Marionette	INFO	Listening on port 14124
+1530680163205	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, li1530680207194	Marionette	INFO	Listening on port 14235
+1530680207618	Marionette	WARN	TLS certificate errors will be ignored for this session
+*************************
+A coding exception was thrown and uncaught in a Task.
+
+Full message: TypeError: NetworkError when attempting to fetch resource.
+Full stack: 
+*************************
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+1530682963943	Marionette	INFO	Ceased listening
+et1/application2.js?v=1530551513346, line 29: TypeError: olark._.document.location is null
+JavaScript error: https://static.olark.com/jsclient-bucket1/application2.js?v=1530551513346, line 16: TypeError: r.getOlark(...) is undefined
+JavaScript error: https://static.olark.com/jsclient-bucket1/application2.js?v=1530551513346, line 16: TypeError: r.getOlark(...) is undefined
+JavaScript error: https://static.olark.com/jsclient-bucket1/application2.js?v=1530551513346, line 16: TypeError: r.getOlark(...) is undefined
+JavaScript error: https://static.olark.com/jsclient-bucket1/application2.js?v=1530551513346, line 16: TypeError: r.getOlark(...) is undefined
+JavaScript error: https://static.olark.com/jsclient-bucket1/application2.js?v=1530551513346, line 16: TypeError: r.getOlark(...) is undefined
+JavaScript error: https://static.olark.com/jsclient-bucket1/application2.js?v=1530551513346, line 16: TypeError: r.getOlark(...) is undefined
+*************************
+A coding exception was thrown and uncaught in a Task.
+
+Full message: TypeError: NetworkError when attempting to fetch resource.
+Full stack: 
+*************************
+JavaScript error: https://static.olark.com/jsclient-bucket1/application2.js?v=1530551513346, line 16: TypeError: r.getOlark(...) is undefined
+JavaScript error: https://static.olark.com/jsclient-bucket1/application2.js?v=1530551513346, line 29: TypeError: olark._.document.location is null
+JavaScript error: https://static.olark.com/jsclient-bucket1/application2.js?v=1530551513346, line 29: TypeError: olark._.document.location is null
+JavaScript error: https://static.olark.com/jsclient-bucket1/application2.js?v=1530551513346, line 16: TypeError: r.getOlark(...) is undefined
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+JavaScript error: resource://gre/components/nsUrlClassifierListManager.js, line 287: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIUrlClassifierDBService.getTables]
+1530682963093	Marionette	INFO	Ceased listening

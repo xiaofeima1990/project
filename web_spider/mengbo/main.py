@@ -31,6 +31,14 @@ from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 import unittest, time, re
+import pandas as pd 
+import numpy as np
+import sqlite3
+
+
+store_path="E:/mengbo/"
+con = sqlite3.connect(store_path+"funding_rounds.sqlite")
+con2 = sqlite3.connect(store_path+"investors_related.sqlite")
 
 
 
@@ -131,15 +139,70 @@ driver.find_element_by_class_name("flex-none.mat-raised-button.mat-accent.ng-sta
 table=driver.find_element_by_class_name("grid-container")
 # column name 
 col_name=table.find_element_by_class_name("component--grid-header").text
+col_name=col_name.split("\n")
+col_name.append("ID")
+col_name.append("href")
+
+col_name2=["Organization/Person Name",'Number of Investments','Number of Exits','Location']
+df_funding   = pd.DataFrame(columns=col_name)
+df_investors = pd.DataFrame(columns=col_name2)
 
 # row data 
 rows = table.find_elements_by_class_name("component--grid-row")
-
+start = time.clock()
+count=0
+raw_data_temp=[]
 for i in range(0,len(rows)):
-    rows[i].text
+    raw_data=rows[i].text
+    raw_data=raw_data.split("\n")
+    raw_data.pop(0)
+    raw_data.append(count*50+i)
+    # when save the data , the next key step is to search for investors 
+    num_invetor=rows[i].find_elements_by_class_name("cb-link.component--field-formatter.field-type-integer.ng-star-inserted")[1]
+    raw_data.append(num_invetor.get_attribute("href"))
+    raw_data_temp=raw_data_temp+raw_data
+end = time.clock()
+print(end-start)    
+df_temp_fund=pd.DataFrame(np.array(raw_data_temp).reshape(50,13),columns=col_name)    
+df_funding=df_funding.append(df_temp_fund,ignore_index=True)
+
+# doing the next page
+next1=driver.find_element_by_class_name("page-button-next.mat-button.mat-primary.ng-star-inserted")
+next_url=next1.get_attribute("href")
+driver.get(next_url)
+
+   
+#start = time.clock()
+#rows_data=driver.find_element_by_class_name("component--grid-body").text
+#end = time.clock()
+
+# save the data into sqlite3
+df_funding.to_sql("funding_round", con, if_exists="append")
 
 
-# when save the data , the next key step is to search for investors 
-# 当然也可以批量抓
-num_invetor=rows[0].find_elements_by_class_name("cb-link.component--field-formatter.field-type-integer.ng-star-inserted")[1]
-num_invetor.get_attribute("href")    
+'''
+get investors info 
+
+'''
+from functools import reduce
+# get the url link 
+investor_link=df_funding['href'].tolist()
+fund_ID=df_funding['ID'].tolist()
+invest_url=tuple(zip(investor_link,fund_ID))
+
+for ele in invest_url:
+    driver.get(ele[0])
+    raw_data=driver.find_element_by_class_name("body-wrapper").text
+    rows_data=re.split("\d+\.",raw_data)
+    rows_data.pop(0)
+    rows_data=reduce(lambda x,y:x+y, rows_data)
+    rows_data=rows_data.split("\n")
+    rows_data=[item for item in rows_data if item != '']
+    
+    df_temp_invest=pd.DataFrame(np.array(rows_data).reshape(int(len(rows_data)/4),4),columns=col_name2)    
+    df_temp_invest["ID"]=ele[1]
+    df_investors=df_investors.append(df_temp_invest,ignore_index=True)
+    
+    
+
+    
