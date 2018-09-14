@@ -241,6 +241,8 @@ def get_info(driver,link_url,status):
     id_info=re.findall(r'\d+',link_url)[0]
     df_info1.loc[0,'ID']=id_info
     df_info1.loc[0,'status']=status
+    # add id info on auction detail
+    df_info2["ID_info"]=id_info
     
     return (df_info1,df_info2,id_info)
 
@@ -266,7 +268,8 @@ if __name__ == '__main__':
     auction_time_flag=input("input auction time choice: 1- first time, 2- second time ")
     
     df_link=pd.read_csv(link_path+city+"-"+auction_time_flag+"-sf-car.csv",sep="\t", encoding='utf-8')
-    driver=webdriver.Firefox(firefoxdriver_path)
+#    driver=webdriver.Firefox(firefoxdriver_path)
+    driver = webdriver.PhantomJS()
     total_len=len(df_link)
     for index, row in df_link.iterrows():
         base_url = row["url"]

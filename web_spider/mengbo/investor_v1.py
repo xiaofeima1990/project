@@ -43,25 +43,37 @@ col_name_fund_inv2=['num','Organization/Person Name',
  "ID"]
 
 
-def parall_work(work_queue,lock,error_queue,ID,con):
+store_path="E:/mengbo/"
+
+def parall_work(work_queue,lock,error_queue,ID):
     
 #    driver=webdriver.Ie("IEDriverServer.exe")
+    print("start webspider")
+    print("queue size is "+str(work_queue.qsize()))
     driver = webdriver.Firefox()
+    time.sleep(1)
     while True:
+        print("enter while")
         try: 
             if not work_queue.empty():
+                print("work queue works")
                 link_group=[]
-                for i in range(0,300):
+                lock.acquire()
+                i=0
+                while i<100:
                     try:
                         link = work_queue.get()
+                        print(link)
+                        link_group.append(link)
                     except:
                         print("end of link :" + str(i) )
-                        break    
-                    link_group=link_group.append(link)
+                        break
+                    i+=1
                     
+                lock.release()  
     #            lock.acquire()
                 print("------"+str(ID)+"sub process is running"+"------")
-                info_get(driver,link_group,lock,ID,con,error_queue)
+                info_get(driver,link_group,lock,ID,error_queue)
 
     #            work_queue.task_done()           
     #            lock.release()
@@ -78,11 +90,11 @@ def parall_work(work_queue,lock,error_queue,ID,con):
         
     
     print('----done----')
-    
+    return ID
 
 
 
-def info_get(driver,df_link_data,lock,process_ID,con2,error_queue):
+def info_get(driver,df_link_data,lock,process_ID,error_queue):
     df_investors = pd.DataFrame(columns=col_name_fund_inv2)
     # this part can be converted into parallel programming 
     for ele in df_link_data:
@@ -125,16 +137,23 @@ def info_get(driver,df_link_data,lock,process_ID,con2,error_queue):
             
             
         
-    flag=save_data(df_investors,con,lock,process_ID)
+    flag=save_data(df_investors,lock,process_ID)
+
+
+def info_get(driver,df_link_data,lock,process_ID,error_queue):
+    
 
 
 
-
-def save_data(df_investors,con,lock,process_ID):
+def save_data(df_investors,lock,process_ID):
     try :
         lock.acquire()                    
+        
+        con2 = sqlite3.connect(store_path+"fund_related_inv.sqlite")
         filename="inv_related_"+str(process_ID)
         df_investors.to_sql(filename, con2, if_exists="append")
+        con2.close()
+        
         lock.release()
         result=1
         print("successful save "+len(df_investors) +" data")
@@ -209,6 +228,11 @@ def recover_info():
     return (error_info, unfinished_info)
 
 
+result_list = []
+def log_result(result):
+    # This is called whenever foo_pool(i) returns a result.
+    # result_list is modified only by the main process, not the pool workers.
+    result_list.append(result)
 
     
 '''
@@ -219,7 +243,7 @@ def recover_info():
 
 if __name__ == '__main__':
     
-    path=".\\url\\"
+    
 
     wait_file_date=[]
     savefile=[]
@@ -229,9 +253,9 @@ if __name__ == '__main__':
      
     manager = mp.Manager()
     lock  = manager.Lock()
-    store_path="E:/mengbo/"
-    con = sqlite3.connect(store_path+"funding_rounds.sqlite")
-    con2 = sqlite3.connect(store_path+"fund_related_inv.sqlite")
+    
+    
+    
 #    date_start=input("Please enter query start date (YYYY-M-D,no zeros needed)?")
 #    date_end=input("Please enter query end date (YYYY-M-D,no zeros needed)?")
 #    date_start=datetime.strptime( date_start, '%Y-%m-%d')
@@ -245,9 +269,10 @@ if __name__ == '__main__':
             exit(1)
             
     else:
+        con = sqlite3.connect(store_path+"funding_rounds.sqlite")
         df_link = pd.read_sql_query("SELECT * from link_data", con)
-        print("total number of link data is : " +len(df_link))
-
+        print("total number of link data is : " +str(len(df_link)))
+        con.close()
 #        date_start=datetime.strptime( date_start, '%Y-%m-%d')
 #        date_end=datetime.strptime( date_end, '%Y-%m-%d')
         
@@ -280,13 +305,13 @@ if __name__ == '__main__':
         try:
             
             print("start pool")
-
+            
             for i in range(num_process):
                 print(str(i)+" process" )
-                pool.apply_async(parall_work, (tasks,lock,error,i,con2))
-            
+                pool.apply_async(parall_work, args=(tasks,lock,error,i),callback = log_result)
+                
             pool.close()
-                    
+            
     #        parall_work(driver,tasks,lock,error)
             
             pool.join()
@@ -308,24 +333,18 @@ if __name__ == '__main__':
         num_process=int(num_process)
         
         df_link_data=list(zip(*[df_link[c].values.tolist() for c in ['href','ID']])) 
-        for link in df_link:
+        for link in df_link_data:
             tasks.put(link)
         
-
-            
-        pool = mp.Pool(processes=num_process)
-        
-        
         try:
-            
+            pool = mp.Pool(processes=num_process)
             print("start pool")
-
-
-                
+            result_v=[]
             for i in range(num_process):
                 print(str(i)+" process" )
-                pool.apply_async(parall_work, (tasks,lock,error,i,con2))
-            
+                pool.apply_async(parall_work, args=(tasks,lock,error,i),callback = log_result)
+                
+                
             pool.close()
                     
     #        parall_work(driver,tasks,lock,error)
@@ -337,10 +356,8 @@ if __name__ == '__main__':
             print("interrupt the keyboard")
         finally:
             print('save the link and info')
-            unfinished_save(tasks)
-            error_link(error)
             
-#                for i in range(num_process):
-#                    print('close the driver')
-#                    drivers[i].close()
+#            unfinished_save(tasks)
+#            error_link(error)
+            
 

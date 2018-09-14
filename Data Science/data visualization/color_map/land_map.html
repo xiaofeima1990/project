@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+   <link rel="stylesheet" href="https://rawgit.com/andrewgiessel/leafletstuff/master/leaflet.css" />
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+   <link rel="stylesheet" href="https://rawgit.com/lvoogdt/Leaflet.awesome-markers/2.0/develop/dist/leaflet.awesome-markers.css">
+   <script src="https://rawgithub.com/lvoogdt/Leaflet.awesome-markers/2.0/develop/dist/leaflet.awesome-markers.js"></script>
+
+
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/MarkerCluster.Default.css">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/MarkerCluster.css">
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/leaflet.markercluster-src.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/leaflet.markercluster.js"></script>
+
+   <link rel="stylesheet" href="https://birdage.github.io/Leaflet.awesome-markers/dist/leaflet.awesome.rotate.css">
+
+   
+   
+   
+   
+
+   <style>
+
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      #map {
+        position:absolute;
+        top:0;
+        bottom:0;
+        right:0;
+        left:0;
+      }
+
+   </style>
+</head>
+
+<body>
+
+   <div class="folium-map" id="folium_6c00fbe0a43245e298a92705be458500" style="width: 100%; height: 100%"></div>
+
+   <script>
+
+      
+
+      var base_tile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+          minZoom: 1,
+          attribution: 'Map data (c) <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+      });
+
+      var baseLayer = {
+        "Base Layer": base_tile
+      };
+
+      /*
+      addition of the wms layers
+      */
+
+      
+
+      /*
+      addition of the tile layers
+      */
+      
+
+      /*
+      list of layers to be added
+      */
+      var layer_list = {
+      
+      };
+
+      /*
+      Bounding box.
+      */
+      var southWest = L.latLng(-90, -180),
+          northEast = L.latLng(90, 180),
+          bounds = L.latLngBounds(southWest, northEast);
+
+      /*
+      Creates the map and adds the selected layers
+      */
+      var map = L.map('folium_6c00fbe0a43245e298a92705be458500', {
+                                       center:[40, 120],
+                                       zoom: 4,
+                                       maxBounds: bounds,
+                                       layers: [base_tile]
+                                     });
+
+      L.control.layers(baseLayer, layer_list).addTo(map);
+
+      /*
+      addition of the image layers
+      */
+      
+      
+      //cluster group
+      var clusteredmarkers = L.markerClusterGroup();
+      //section for adding clustered markers
+      
+      //add the clustered markers to the group anyway
+      map.addLayer(clusteredmarkers);
+
+      
+
+      
+      var circle_1 = L.circle([28.6793267532, 115.84940233], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_1.bindPopup("2015120");
+      circle_1._popup.options.maxWidth = 300;
+      map.addLayer(circle_1)
+      
+      var circle_2 = L.circle([25.0530547716, 118.827627206], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_2.bindPopup("2015121");
+      circle_2._popup.options.maxWidth = 300;
+      map.addLayer(circle_2)
+      
+      var circle_3 = L.circle([30.5913827812, 114.284795225], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_3.bindPopup("2015122");
+      circle_3._popup.options.maxWidth = 300;
+      map.addLayer(circle_3)
+      
+      var circle_4 = L.circle([43.3815974679, 123.557314244], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_4.bindPopup("2015123");
+      circle_4._popup.options.maxWidth = 300;
+      map.addLayer(circle_4)
+      
+      var circle_5 = L.circle([43.3815974679, 123.557314244], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_5.bindPopup("2015124");
+      circle_5._popup.options.maxWidth = 300;
+      map.addLayer(circle_5)
+      
+      var circle_6 = L.circle([43.3815974679, 123.557314244], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_6.bindPopup("2015125");
+      circle_6._popup.options.maxWidth = 300;
+      map.addLayer(circle_6)
+      
+      var circle_7 = L.circle([23.1073094746, 113.2421756], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_7.bindPopup("2015126");
+      circle_7._popup.options.maxWidth = 300;
+      map.addLayer(circle_7)
+      
+      var circle_8 = L.circle([23.1073094746, 113.2421756], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_8.bindPopup("2015127");
+      circle_8._popup.options.maxWidth = 300;
+      map.addLayer(circle_8)
+      
+      var circle_9 = L.circle([23.1073094746, 113.2421756], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_9.bindPopup("2015128");
+      circle_9._popup.options.maxWidth = 300;
+      map.addLayer(circle_9)
+      
+      var circle_10 = L.circle([28.5392557456, 121.449256113], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_10.bindPopup("2015129");
+      circle_10._popup.options.maxWidth = 300;
+      map.addLayer(circle_10)
+      
+      var circle_11 = L.circle([30.6032740238, 120.543088157], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_11.bindPopup("20151210");
+      circle_11._popup.options.maxWidth = 300;
+      map.addLayer(circle_11)
+      
+      var circle_12 = L.circle([23.1073094746, 113.2421756], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_12.bindPopup("20151211");
+      circle_12._popup.options.maxWidth = 300;
+      map.addLayer(circle_12)
+      
+      var circle_13 = L.circle([27.4344385856, 120.621834938], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_13.bindPopup("20151212");
+      circle_13._popup.options.maxWidth = 300;
+      map.addLayer(circle_13)
+      
+      var circle_14 = L.circle([44.1034076017, 87.0829774858], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_14.bindPopup("20151213");
+      circle_14._popup.options.maxWidth = 300;
+      map.addLayer(circle_14)
+      
+      var circle_15 = L.circle([30.8536395845, 113.298161624], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_15.bindPopup("20151214");
+      circle_15._popup.options.maxWidth = 300;
+      map.addLayer(circle_15)
+      
+      var circle_16 = L.circle([28.954990003, 106.932687454], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_16.bindPopup("20151215");
+      circle_16._popup.options.maxWidth = 300;
+      map.addLayer(circle_16)
+      
+      var circle_17 = L.circle([44.1034076017, 87.0829774858], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_17.bindPopup("20151216");
+      circle_17._popup.options.maxWidth = 300;
+      map.addLayer(circle_17)
+      
+      var circle_18 = L.circle([37.0536922817, 111.930058019], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_18.bindPopup("20151217");
+      circle_18._popup.options.maxWidth = 300;
+      map.addLayer(circle_18)
+      
+      var circle_19 = L.circle([44.1750834479, 87.0736180532], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_19.bindPopup("20151218");
+      circle_19._popup.options.maxWidth = 300;
+      map.addLayer(circle_19)
+      
+      var circle_20 = L.circle([27.0916846568, 112.955958834], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_20.bindPopup("20151219");
+      circle_20._popup.options.maxWidth = 300;
+      map.addLayer(circle_20)
+      
+      var circle_21 = L.circle([50.7972086594, 124.307934782], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_21.bindPopup("20151220");
+      circle_21._popup.options.maxWidth = 300;
+      map.addLayer(circle_21)
+      
+      var circle_22 = L.circle([44.1034076017, 87.0829774858], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_22.bindPopup("20151221");
+      circle_22._popup.options.maxWidth = 300;
+      map.addLayer(circle_22)
+      
+      var circle_23 = L.circle([23.2506211185, 116.610672086], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_23.bindPopup("20151222");
+      circle_23._popup.options.maxWidth = 300;
+      map.addLayer(circle_23)
+      
+      var circle_24 = L.circle([26.9089953128, 109.747028937], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_24.bindPopup("20151223");
+      circle_24._popup.options.maxWidth = 300;
+      map.addLayer(circle_24)
+      
+      var circle_25 = L.circle([38.4334096655, 102.034316276], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_25.bindPopup("20151224");
+      circle_25._popup.options.maxWidth = 300;
+      map.addLayer(circle_25)
+      
+      var circle_26 = L.circle([26.9007812527, 113.196624065], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_26.bindPopup("20151225");
+      circle_26._popup.options.maxWidth = 300;
+      map.addLayer(circle_26)
+      
+      var circle_27 = L.circle([40.8469019617, 122.087200531], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_27.bindPopup("20151226");
+      circle_27._popup.options.maxWidth = 300;
+      map.addLayer(circle_27)
+      
+      var circle_28 = L.circle([40.8253693102, 111.719600685], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_28.bindPopup("20151227");
+      circle_28._popup.options.maxWidth = 300;
+      map.addLayer(circle_28)
+      
+      var circle_29 = L.circle([31.6379954843, 120.787962983], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_29.bindPopup("20151228");
+      circle_29._popup.options.maxWidth = 300;
+      map.addLayer(circle_29)
+      
+      var circle_30 = L.circle([32.8689169406, 117.572744309], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_30.bindPopup("20151229");
+      circle_30._popup.options.maxWidth = 300;
+      map.addLayer(circle_30)
+      
+      var circle_31 = L.circle([31.4030921801, 116.264118202], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_31.bindPopup("20151230");
+      circle_31._popup.options.maxWidth = 300;
+      map.addLayer(circle_31)
+      
+      var circle_32 = L.circle([44.1034076017, 87.0829774858], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_32.bindPopup("20151231");
+      circle_32._popup.options.maxWidth = 300;
+      map.addLayer(circle_32)
+      
+      var circle_33 = L.circle([37.0453508417, 112.01958746], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_33.bindPopup("20151232");
+      circle_33._popup.options.maxWidth = 300;
+      map.addLayer(circle_33)
+      
+      var circle_34 = L.circle([44.1034076017, 87.0829774858], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_34.bindPopup("20151233");
+      circle_34._popup.options.maxWidth = 300;
+      map.addLayer(circle_34)
+      
+      var circle_35 = L.circle([23.0372271614, 113.651054894], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_35.bindPopup("20151234");
+      circle_35._popup.options.maxWidth = 300;
+      map.addLayer(circle_35)
+      
+      var circle_36 = L.circle([44.1034076017, 87.0829774858], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_36.bindPopup("20151235");
+      circle_36._popup.options.maxWidth = 300;
+      map.addLayer(circle_36)
+      
+      var circle_37 = L.circle([37.0098387718, 111.851417218], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_37.bindPopup("20151236");
+      circle_37._popup.options.maxWidth = 300;
+      map.addLayer(circle_37)
+      
+      var circle_38 = L.circle([37.0453508417, 112.01958746], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_38.bindPopup("20151237");
+      circle_38._popup.options.maxWidth = 300;
+      map.addLayer(circle_38)
+      
+      var circle_39 = L.circle([26.9007812527, 113.196624065], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_39.bindPopup("20151238");
+      circle_39._popup.options.maxWidth = 300;
+      map.addLayer(circle_39)
+      
+      var circle_40 = L.circle([38.4334096655, 102.034316276], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_40.bindPopup("20151239");
+      circle_40._popup.options.maxWidth = 300;
+      map.addLayer(circle_40)
+      
+      var circle_41 = L.circle([27.0916846568, 112.955958834], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_41.bindPopup("20151240");
+      circle_41._popup.options.maxWidth = 300;
+      map.addLayer(circle_41)
+      
+      var circle_42 = L.circle([31.6379954843, 120.787962983], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_42.bindPopup("20151241");
+      circle_42._popup.options.maxWidth = 300;
+      map.addLayer(circle_42)
+      
+      var circle_43 = L.circle([36.1253143944, 120.453634628], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_43.bindPopup("20151242");
+      circle_43._popup.options.maxWidth = 300;
+      map.addLayer(circle_43)
+      
+      var circle_44 = L.circle([23.0372271614, 113.651054894], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_44.bindPopup("20151243");
+      circle_44._popup.options.maxWidth = 300;
+      map.addLayer(circle_44)
+      
+      var circle_45 = L.circle([44.1034076017, 87.0829774858], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_45.bindPopup("20151244");
+      circle_45._popup.options.maxWidth = 300;
+      map.addLayer(circle_45)
+      
+      var circle_46 = L.circle([31.4030921801, 116.264118202], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_46.bindPopup("20151245");
+      circle_46._popup.options.maxWidth = 300;
+      map.addLayer(circle_46)
+      
+      var circle_47 = L.circle([40.9610671929, 121.986476471], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_47.bindPopup("20151246");
+      circle_47._popup.options.maxWidth = 300;
+      map.addLayer(circle_47)
+      
+      var circle_48 = L.circle([44.1034076017, 87.0829774858], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_48.bindPopup("20151247");
+      circle_48._popup.options.maxWidth = 300;
+      map.addLayer(circle_48)
+      
+      var circle_49 = L.circle([40.8253693102, 111.719600685], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_49.bindPopup("20151248");
+      circle_49._popup.options.maxWidth = 300;
+      map.addLayer(circle_49)
+      
+      var circle_50 = L.circle([44.1034076017, 87.0829774858], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_50.bindPopup("20151249");
+      circle_50._popup.options.maxWidth = 300;
+      map.addLayer(circle_50)
+      
+      var circle_51 = L.circle([44.1034076017, 87.0829774858], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_51.bindPopup("20151250");
+      circle_51._popup.options.maxWidth = 300;
+      map.addLayer(circle_51)
+      
+      var circle_52 = L.circle([32.8689169406, 117.572744309], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_52.bindPopup("20151251");
+      circle_52._popup.options.maxWidth = 300;
+      map.addLayer(circle_52)
+      
+      var circle_53 = L.circle([38.4334096655, 102.034316276], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_53.bindPopup("20151252");
+      circle_53._popup.options.maxWidth = 300;
+      map.addLayer(circle_53)
+      
+      var circle_54 = L.circle([28.954990003, 106.932687454], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_54.bindPopup("20151253");
+      circle_54._popup.options.maxWidth = 300;
+      map.addLayer(circle_54)
+      
+      var circle_55 = L.circle([50.7972086594, 124.307934782], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_55.bindPopup("20151254");
+      circle_55._popup.options.maxWidth = 300;
+      map.addLayer(circle_55)
+      
+      var circle_56 = L.circle([27.76687445, 120.650366303], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_56.bindPopup("20151255");
+      circle_56._popup.options.maxWidth = 300;
+      map.addLayer(circle_56)
+      
+      var circle_57 = L.circle([25.3738154141, 118.695601322], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_57.bindPopup("20151256");
+      circle_57._popup.options.maxWidth = 300;
+      map.addLayer(circle_57)
+      
+      var circle_58 = L.circle([27.8766440648, 120.664832714], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_58.bindPopup("20151257");
+      circle_58._popup.options.maxWidth = 300;
+      map.addLayer(circle_58)
+      
+      var circle_59 = L.circle([36.9386354593, 114.283092502], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_59.bindPopup("20151258");
+      circle_59._popup.options.maxWidth = 300;
+      map.addLayer(circle_59)
+      
+      var circle_60 = L.circle([31.1969176742, 108.405011524], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_60.bindPopup("20151259");
+      circle_60._popup.options.maxWidth = 300;
+      map.addLayer(circle_60)
+      
+      var circle_61 = L.circle([34.3746198482, 108.739159879], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_61.bindPopup("20151260");
+      circle_61._popup.options.maxWidth = 300;
+      map.addLayer(circle_61)
+      
+      var circle_62 = L.circle([36.9160518215, 114.482112751], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_62.bindPopup("20151261");
+      circle_62._popup.options.maxWidth = 300;
+      map.addLayer(circle_62)
+      
+      var circle_63 = L.circle([34.3750268881, 108.786393192], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_63.bindPopup("20151262");
+      circle_63._popup.options.maxWidth = 300;
+      map.addLayer(circle_63)
+      
+      var circle_64 = L.circle([46.8694812612, 126.59302313], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_64.bindPopup("20151263");
+      circle_64._popup.options.maxWidth = 300;
+      map.addLayer(circle_64)
+      
+      var circle_65 = L.circle([34.4027864444, 108.885572257], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_65.bindPopup("20151264");
+      circle_65._popup.options.maxWidth = 300;
+      map.addLayer(circle_65)
+      
+      var circle_66 = L.circle([31.1650323878, 108.378397358], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_66.bindPopup("20151265");
+      circle_66._popup.options.maxWidth = 300;
+      map.addLayer(circle_66)
+      
+      var circle_67 = L.circle([30.0340699069, 117.006827399], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_67.bindPopup("20151266");
+      circle_67._popup.options.maxWidth = 300;
+      map.addLayer(circle_67)
+      
+      var circle_68 = L.circle([36.7317851101, 118.862103149], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_68.bindPopup("20151267");
+      circle_68._popup.options.maxWidth = 300;
+      map.addLayer(circle_68)
+      
+      var circle_69 = L.circle([38.1255619779, 114.030941306], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_69.bindPopup("20151268");
+      circle_69._popup.options.maxWidth = 300;
+      map.addLayer(circle_69)
+      
+      var circle_70 = L.circle([31.1969176742, 108.405011524], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_70.bindPopup("20151269");
+      circle_70._popup.options.maxWidth = 300;
+      map.addLayer(circle_70)
+      
+      var circle_71 = L.circle([40.5887346175, 110.539372518], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_71.bindPopup("20151270");
+      circle_71._popup.options.maxWidth = 300;
+      map.addLayer(circle_71)
+      
+      var circle_72 = L.circle([46.8694812612, 126.59302313], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_72.bindPopup("20151271");
+      circle_72._popup.options.maxWidth = 300;
+      map.addLayer(circle_72)
+      
+      var circle_73 = L.circle([30.0340699069, 117.006827399], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_73.bindPopup("20151272");
+      circle_73._popup.options.maxWidth = 300;
+      map.addLayer(circle_73)
+      
+      var circle_74 = L.circle([46.8694812612, 126.59302313], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_74.bindPopup("20151273");
+      circle_74._popup.options.maxWidth = 300;
+      map.addLayer(circle_74)
+      
+      var circle_75 = L.circle([34.3750268881, 108.786393192], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_75.bindPopup("20151274");
+      circle_75._popup.options.maxWidth = 300;
+      map.addLayer(circle_75)
+      
+      var circle_76 = L.circle([22.5750472031, 114.257652293], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_76.bindPopup("20151275");
+      circle_76._popup.options.maxWidth = 300;
+      map.addLayer(circle_76)
+      
+      var circle_77 = L.circle([22.1027574355, 106.754838774], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_77.bindPopup("20151276");
+      circle_77._popup.options.maxWidth = 300;
+      map.addLayer(circle_77)
+      
+      var circle_78 = L.circle([38.1255619779, 114.030941306], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_78.bindPopup("20151277");
+      circle_78._popup.options.maxWidth = 300;
+      map.addLayer(circle_78)
+      
+      var circle_79 = L.circle([36.5436685377, 110.138203958], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_79.bindPopup("20151278");
+      circle_79._popup.options.maxWidth = 300;
+      map.addLayer(circle_79)
+      
+      var circle_80 = L.circle([36.9117165988, 114.590301038], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_80.bindPopup("20151279");
+      circle_80._popup.options.maxWidth = 300;
+      map.addLayer(circle_80)
+      
+      var circle_81 = L.circle([34.3869446845, 108.822716008], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_81.bindPopup("20151280");
+      circle_81._popup.options.maxWidth = 300;
+      map.addLayer(circle_81)
+      
+      var circle_82 = L.circle([34.4027864444, 108.885572257], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_82.bindPopup("20151281");
+      circle_82._popup.options.maxWidth = 300;
+      map.addLayer(circle_82)
+      
+      var circle_83 = L.circle([19.2338274527, 109.45650964], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_83.bindPopup("20151282");
+      circle_83._popup.options.maxWidth = 300;
+      map.addLayer(circle_83)
+      
+      var circle_84 = L.circle([22.6011794151, 113.069845799], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_84.bindPopup("20151283");
+      circle_84._popup.options.maxWidth = 300;
+      map.addLayer(circle_84)
+      
+      var circle_85 = L.circle([33.966059874, 99.90180904], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_85.bindPopup("20151284");
+      circle_85._popup.options.maxWidth = 300;
+      map.addLayer(circle_85)
+      
+      var circle_86 = L.circle([45.7333761851, 126.650005908], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_86.bindPopup("20151285");
+      circle_86._popup.options.maxWidth = 300;
+      map.addLayer(circle_86)
+      
+      var circle_87 = L.circle([24.9832579576, 105.885649749], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_87.bindPopup("20151286");
+      circle_87._popup.options.maxWidth = 300;
+      map.addLayer(circle_87)
+      
+      var circle_88 = L.circle([36.5436685377, 110.138203958], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_88.bindPopup("20151287");
+      circle_88._popup.options.maxWidth = 300;
+      map.addLayer(circle_88)
+      
+      var circle_89 = L.circle([36.9386354593, 114.283092502], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_89.bindPopup("20151288");
+      circle_89._popup.options.maxWidth = 300;
+      map.addLayer(circle_89)
+      
+      var circle_90 = L.circle([28.3809950383, 111.27743915], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_90.bindPopup("20151289");
+      circle_90._popup.options.maxWidth = 300;
+      map.addLayer(circle_90)
+      
+      var circle_91 = L.circle([30.0340699069, 117.006827399], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_91.bindPopup("20151290");
+      circle_91._popup.options.maxWidth = 300;
+      map.addLayer(circle_91)
+      
+      var circle_92 = L.circle([36.5436685377, 110.138203958], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_92.bindPopup("20151291");
+      circle_92._popup.options.maxWidth = 300;
+      map.addLayer(circle_92)
+      
+      var circle_93 = L.circle([36.5436685377, 110.138203958], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_93.bindPopup("20151292");
+      circle_93._popup.options.maxWidth = 300;
+      map.addLayer(circle_93)
+      
+      var circle_94 = L.circle([36.5436685377, 110.138203958], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_94.bindPopup("20151293");
+      circle_94._popup.options.maxWidth = 300;
+      map.addLayer(circle_94)
+      
+      var circle_95 = L.circle([25.0433589231, 98.5010857609], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_95.bindPopup("20151294");
+      circle_95._popup.options.maxWidth = 300;
+      map.addLayer(circle_95)
+      
+      var circle_96 = L.circle([36.5436685377, 110.138203958], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_96.bindPopup("20151295");
+      circle_96._popup.options.maxWidth = 300;
+      map.addLayer(circle_96)
+      
+      var circle_97 = L.circle([27.8470989559, 112.956008965], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_97.bindPopup("20151296");
+      circle_97._popup.options.maxWidth = 300;
+      map.addLayer(circle_97)
+      
+      var circle_98 = L.circle([25.3195026161, 112.196392788], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_98.bindPopup("20151297");
+      circle_98._popup.options.maxWidth = 300;
+      map.addLayer(circle_98)
+      
+      var circle_99 = L.circle([34.3869446845, 108.822716008], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_99.bindPopup("20151298");
+      circle_99._popup.options.maxWidth = 300;
+      map.addLayer(circle_99)
+      
+      var circle_100 = L.circle([46.8694812612, 126.59302313], 500, {
+                            color: 'black',
+                            fillColor: 'black',
+                            fillOpacity: 0.6
+                            });
+      circle_100.bindPopup("20151299");
+      circle_100._popup.options.maxWidth = 300;
+      map.addLayer(circle_100)
+      
+
+      
+
+      
+
+      
+
+      
+
+
+
+   </script>
+
+</body>

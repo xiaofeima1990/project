@@ -76,7 +76,7 @@ def open_page(driver,url):
         element_present = EC.presence_of_element_located((By.NAME, 'password'))
         WebDriverWait(driver, 15).until(element_present)
         
-        time.sleep(2)
+        
         if driver.find_element_by_name("password"):
             password=driver.find_element_by_name("password")
             email   =driver.find_element_by_name("email")
@@ -84,7 +84,7 @@ def open_page(driver,url):
             password.send_keys("crunchbase_ucla#%&%")
             driver.find_element_by_xpath('//*[@id="mat-tab-content-0-0"]/div/form/div/button[2]').click()
                         
-                               
+        time.sleep(2)
     except : 
         driver.execute_script("window.stop();")
         print("please check ")
@@ -131,7 +131,7 @@ def filter_setup(driver,date1,date2,flag):
     ad_button = driver.find_element_by_class_name('cb-overflow-ellipsis.flex-nogrow.label').find_element_by_xpath('//span[contains(text(),"Number of Investors")]')
     ad_button.click()
     
-    
+    time.sleep(1)
     ## add filter condition greater or equal to 1 for investors 
     driver.find_element_by_class_name("mat-select-value").click()
     range_sel_button1 = driver.find_element_by_xpath('//span[@class="mat-option-text" and contains(text(),"greater than or equal to")]')
@@ -140,34 +140,36 @@ def filter_setup(driver,date1,date2,flag):
     
     xx=driver.find_element_by_xpath('//input[@placeholder="Enter number e.g. 3"]')
     xx.send_keys("1")    
-    
+    time.sleep(1)
     ## add more filters 
     driver.find_element_by_class_name("add-icon.flex-none").click()
     
     # add announcement date 
     di_button = driver.find_element_by_xpath('//span[contains(text(),"Deal Info")]')
     di_button.click()
+    time.sleep(1)
     ad_button = driver.find_element_by_class_name('cb-overflow-ellipsis.flex-nogrow.label').find_element_by_xpath('//span[contains(text(),"Announced Date")]')
     ad_button.click()
     time.sleep(1)
     
         
     driver.find_elements_by_class_name("mat-select-value")[1].click()
-    
+    time.sleep(1)
     range_sel_button1 = driver.find_element_by_xpath('//span[@class="mat-option-text" and contains(text(),'+flag_choice[flag]+')]')
-      
+    time.sleep(1)  
         
     range_sel_button1.click()
     date_input=driver.find_elements_by_xpath("//input[@placeholder='7/18/07, a year ago']")
     time.sleep(1)
     if flag == 1:
         date_input[0].send_keys(date1)
+        time.sleep(1)
         date_input[1].send_keys(date2)
     else:
         date_input[0].send_keys(date1)
         
         
-    
+    time.sleep(1)
     # search button
     driver.find_element_by_class_name("flex-none.mat-raised-button.mat-accent.ng-star-inserted").click()
     
@@ -211,6 +213,7 @@ def get_funding_data(driver,count):
 
 def get_investor_data(driver,df_link_data):
     df_investors = pd.DataFrame(columns=col_name_fund_inv2)
+#    df_link_data['ID']=df_link_data.index
     df_link_data=list(zip(*[df_link_data[c].values.tolist() for c in ['href','ID']])) 
     # this part can be converted into parallel programming 
     for ele in df_link_data:
@@ -244,6 +247,7 @@ def get_investor_data(driver,df_link_data):
 
 def get_investor_data2(driver,df_link_data):
     df_investors = pd.DataFrame(columns=col_name_fund_inv2)
+#    df_link_data['ID']=df_link_data.index
     df_link_data=list(zip(*[df_link_data[c].values.tolist() for c in ['href','ID']])) 
     # this part can be converted into parallel programming 
     for ele in df_link_data:
@@ -274,7 +278,9 @@ def get_investor_data2(driver,df_link_data):
         df_investors=df_investors.append(df_temp_invest,ignore_index=True)
         time.sleep(1)
         
-        return df_investors
+    
+    
+    return df_investors
     
 
 
@@ -290,7 +296,8 @@ if __name__ == '__main__':
     flag=input("plese input date filter flag: 0-> before, 1-> between, 2 -> after ")
     date1=input("please input date1 for date filter (before,after this is main date) 'mm/dd/yy' ")
     date2=input("please input date1 for date filter 'mm/dd/yy'")
-
+    flag=int(flag)
+    
     driver=webdriver.Firefox()
     driver = open_page(driver,url)
     time.sleep(1)
@@ -312,13 +319,14 @@ if __name__ == '__main__':
     
     driver = filter_setup(driver,date1,date2,flag)
     time.sleep(1)
-    count_num=1
+    
     
     
     
     df_investors = pd.DataFrame(columns=col_name_fund_inv2)
     df_funding   = pd.DataFrame(columns=col_name_funding)
     df_link_data_t = pd.DataFrame(columns=["href","ID"])
+    count_num=1
     while 1:
         start = time.clock()
         df_temp_fund, df_link_data=get_funding_data(driver,count_num)
@@ -333,8 +341,8 @@ if __name__ == '__main__':
         print("related investors time consuming is :" + str(end-start))
         
         df_investors=df_investors.append(df_temp_invest,ignore_index=True)
-        df_link_data_t=df_link_data_t.append(df_link_data,ignore_index=True)
 
+        df_link_data_t=df_link_data_t.append(df_link_data,ignore_index=True)
         df_funding=df_funding.append(df_temp_fund,ignore_index=True)
     
         if count_num %5 ==0: 
