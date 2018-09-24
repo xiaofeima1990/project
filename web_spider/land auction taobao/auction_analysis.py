@@ -114,6 +114,17 @@ df_1_c_done_h = df_1_c_done.loc[df_1_c_done['p_ratio1']>1,]
 
 df_1_c_done_h['p_ratio1'].hist(color="#1f77b4",bins=25)
 
+      
+# test priorty people effect no statsitical difference 
+group_df_1_c=df_1_c.groupby(["priority_people"])
+
+group_df_1_c.median()
+
+
+# group by time and number of bidder 
+group_df_1_c=df_1_c.groupby(["num_bidder"])
+
+
              
              
 '''
@@ -125,15 +136,7 @@ second do the test
 
 
 
-      
-# test priorty people effect no statsitical difference 
-group_df_1_c=df_1_c.groupby(["priority_people"])
 
-group_df_1_c.median()
-
-
-# group by time and number of bidder 
-group_df_1_c=df_1_c.groupby(["num_bidder"])
 
 
              
