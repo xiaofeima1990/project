@@ -4,7 +4,7 @@ Created on Sat Aug 11 22:02:24 2018
 
 @author: xiaofeima
 merge function for stage 1 and stage 2 auction
-
+get those sold unsuccessful in first stage but sucessful in second stage 
 """
 import pandas as pd
 import re

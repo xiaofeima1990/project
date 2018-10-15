@@ -7,17 +7,18 @@ Created on Sat Sep 22 13:42:59 2018
 Data Statistics Summary
 
 
-Number of bidders
+1. Number of bidders
 
-Number of successful auction
+2. Number of successful auction
 
-Average bidding round (period) 
+3. The winning bid and evaluation price 
 
-The winning bid and evaluation price 
+4. The distribution of winning bid 
 
-The distribution of winning bid 
+5. prioroity bidder statistics mean use more data 
 
-if possible, the prioroity bidder 
+the prioroity bidder 
+Average bidding round (period) not yet  
 
 """
 
@@ -79,9 +80,6 @@ h2.set_xlabel("number of bidder")
 h2.get_figure()
 
 
-
-
-      
       
       
 '''
@@ -92,10 +90,18 @@ num of successful auction
 df_1_c=df_1[df_1['status']=='done']
 df_2_c=df_2[df_2['status']=="done"]
 
+print("total auctions in xuzhou first time auction: ",len(df_1))
+print("total auctions in xuzhou second time auction: ",len(df_2))
 
+print("total auctions in xuzhou first time auction: ",len(df_1_c))
+print("total auctions in xuzhou second time auction: ",len(df_2_c))
 
 
 '''
+------------------------
+Winning Bid Related 
+------------------------
+
 test for the high concentration first
 filter those wrong data : eg. reserve > eval not those reserv/ eval < 80% in first stage 
 
@@ -256,4 +262,106 @@ axScatter.set_ylabel("winning bid over evaluation price")
 plt.show()
 
 
+
+
+# see the concentration around reserve price 
+
+df_1_done_1=df_1_done.loc[df_1_done['p_res_eva']<=1,]
+df_1_pic1=df_1_done_1.loc[df_1_done_1['resev_proxy']<0.01,]
+
+df_1_pic1['resev_proxy'].hist()
+df_1_pic1.plot.scatter(x="num_bidder",y='resev_proxy',s=df_1_pic1['index']*10)
+
+df_2_done_1=df_2_done.loc[df_2_done['p_res_eva']<=1,]
+df_2_pic1=df_2_done_1.loc[df_2_done_1['resev_proxy']<0.01,]
+
+df_2_pic1['resev_proxy'].hist()
+df_2_pic1.plot.scatter(x="num_bidder",y='resev_proxy',s=df_1_pic1['index']*10)
+
+
+
+
+
+
+'''
+priority people
+
+try to find out something abnormal
+Actually not, there are too few priority_people
+
+'''
+
+df_1_s=df_1.loc[df_1['status']=='done',]
+df_2_s=df_2.loc[df_2['status']=='done',]
+
+
+col_name= ['index', 'ID','n_register','reserve_price','p_res_eva', 'resev_proxy','num_bidder','priority_people','status', 'win_bid',]
+
+
+
+df_1_s=df_1_s.loc[df_1_s['p_res_eva']<=1,col_name]
+df_1_s=df_1_s.loc[df_1_s['p_res_eva']>=0.7,]
+df_1_s=df_1_s.loc[df_1_s['num_bidder']>1,]
+df_1_s=df_1_s.loc[df_1_s['resev_proxy']>0.01,]
+
+
+df_2_s=df_2_s.loc[df_2_s['p_res_eva']<=1,col_name]
+df_2_s=df_2_s.loc[df_2_s['p_res_eva']>=0.6,]
+df_2_s=df_2_s.loc[df_2_s['num_bidder']>1,]
+df_2_s=df_2_s.loc[df_2_s['resev_proxy']>0.01,]
+
+
+
+
+# priority for succesful bid 
+group_df_1_s=df_1_s.groupby(["priority_people"])
+
+group_df_1_s.median()
+group_df_1_s.mean()
+
+
+pri_df_s = group_df_1_s.get_group(1)
+nopri_df_s = group_df_1_s.get_group(0)
+
+group_df_2_s=df_2_s.groupby(["priority_people"])
+
+pri_df_s1 = group_df_2_s.get_group(1)
+nopri_df_s1 = group_df_2_s.get_group(0)
+
+
+
+# priority for all bid 
+
+group_df_1=df_1.groupby(["priority_people"])
+
+pri_df= group_df_1.get_group(1)
+nopri_df= group_df_1.get_group(0)
+
+group_df_2=df_2.groupby(["priority_people"])
+
+pri_df2= group_df_2.get_group(1)
+nopri_df2= group_df_2.get_group(0)
+
+
+
+
+
+
+
+
+'''
+conditional on years and number of bidders and reserve / evalutaion price ratios 
+compre the winning bid ratio
+
+'''
+
+
+
+
+'''
+check how many winning bids in stage 2 auction exceed the stage 1 reserve price / eva price
+first thing is to build the connection between stage 1 and stage 2 
+second do the test
+
+'''      
 
