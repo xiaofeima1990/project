@@ -35,8 +35,10 @@ key parameters
 
 list_link_path="/html/body/div[3]/div[3]/div[3]/ul/li"
 next_page_css="body > div.sf-wrap > div.pagination.J_Pagination > a.next"
-page_load_flag="#sf-foot-2014 > div > div > div.bottom-list-row.row2 > h3"
+page_load_flag="body > div.sf-wrap > div.pagination.J_Pagination > span.page-skip > em"
 page_sum_class_name="page-total"
+select_page_css = "body > div.sf-wrap > div.pagination.J_Pagination > span.page-skip > label > input"
+select_page_sure = "body > div.sf-wrap > div.pagination.J_Pagination > span.page-skip > button"
 #file_path="E:\\"
 # need chromedriver no exe!
 
@@ -73,72 +75,84 @@ def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
 #        
     page_count=start_page
     date_flag=0
+    if start_page >1 :
+        flag_select = 1
+    else:
+        flag_select = 0
     
     while page_count<=summary_link:
 
 
+
         try: # to avoid StaleElementReferenceException:
-            time.sleep(1)
-            content_list=driver.find_elements_by_xpath(list_link_path)
-
-
-            n=len(content_list)
-            df_temp=pd.DataFrame(columns=col_name_abs)
-            for i in range(0,n):
-                status=content_list[i].get_attribute('class').split("-")[-1]
-                id_info=content_list[i].get_attribute('id').split("-")[-1]
-                id_total=content_list[i].get_attribute('id')
-                if 'done' in status:
-                    bid_tips=content_list[i].find_elements_by_class_name('pai-xmpp-bid-count')[1].text
-                else:
-                    bid_tips=0;
-                    
-        #            id_link=content_list[i].get_attribute('id')
-        
-                try:
-                    eval_price=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[4]/span[2]/em[2]").text
-                    eval_price=re.findall(r'\d*',eval_price)[0]
-                except :
-                    date_flag=1
-                    eval_price="NaN"
-        
-        
-                href=content_list[i].find_element_by_tag_name('a').get_attribute('href')
-                title=content_list[i].find_element_by_css_selector("p.title").text
-                win_bid=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[3]/span[2]/em[2]").text
-                win_bid=re.findall(r'\d*',win_bid)[0]
-                n_watch=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[3]/p/em").text
-                n_resigter=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[3]/p[2]/em").text
-                
-                if date_flag==1:
-                    date_all=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[6]/span[2]").text
-                    (date1,time1)=date_all.split(" ")
-                    date_flag=0
-                else:
-                    date_all=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[7]/span[2]").text
-                    (date1,time1)=date_all.split(" ")
-            
-
-                df_temp.loc[i]=[id_info,href,bid_tips,status,win_bid,eval_price,n_watch,n_resigter,title,date1,time1,Year,flag_time]
-            
-            df_link=df_link.append(df_temp,ignore_index=True)
-            
-            
-            if (page_count)% 5 ==0:
-                # output 
-                
-                df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',index=False,mode='a', header=False)
-                df_link=pd.DataFrame(columns=col_name_abs)
-            if (page_count==summary_link) and summary_link % 5 !=0:
-                df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',index=False,mode='a', header=False)
-            
-            # open next page
-            if page_count==summary_link:
-                page_count=page_count+1;
+            if flag_select == 1:
+#                driver.execute_script('window.localStorage.clear();')
+                driver=next_page(driver,page_count,flag_select)
+                page_count=page_count
+                flag_select = 0
             else:
-                driver.execute_script('window.localStorage.clear();')
-                driver=next_page(driver,page_count)
-                page_count=page_count+1
+                time.sleep(1)
+                content_list=driver.find_elements_by_xpath(list_link_path)
+    
+    
+                n=len(content_list)
+                df_temp=pd.DataFrame(columns=col_name_abs)
+                for i in range(0,n):
+                    status=content_list[i].get_attribute('class').split("-")[-1]
+                    id_info=content_list[i].get_attribute('id').split("-")[-1]
+                    id_total=content_list[i].get_attribute('id')
+                    if 'done' in status:
+                        bid_tips=content_list[i].find_elements_by_class_name('pai-xmpp-bid-count')[1].text
+                    else:
+                        bid_tips=0;
+                        
+            #            id_link=content_list[i].get_attribute('id')
+            
+                    try:
+                        eval_price=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[4]/span[2]/em[2]").text
+                        eval_price=re.findall(r'\d*',eval_price)[0]
+                    except :
+                        date_flag=1
+                        eval_price="NaN"
+            
+            
+                    href=content_list[i].find_element_by_tag_name('a').get_attribute('href')
+                    title=content_list[i].find_element_by_css_selector("p.title").text
+                    win_bid=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[3]/span[2]/em[2]").text
+                    win_bid=re.findall(r'\d*',win_bid)[0]
+                    n_watch=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[3]/p/em").text
+                    n_resigter=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[3]/p[2]/em").text
+                    
+                    if date_flag==1:
+                        date_all=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[6]/span[2]").text
+                        (date1,time1)=date_all.split(" ")
+                        date_flag=0
+                    else:
+                        date_all=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[7]/span[2]").text
+                        (date1,time1)=date_all.split(" ")
+                
+    
+                    df_temp.loc[i]=[id_info,href,bid_tips,status,win_bid,eval_price,n_watch,n_resigter,title,date1,time1,Year,flag_time]
+                
+                df_link=df_link.append(df_temp,ignore_index=True)
+                
+                
+                if (page_count)% 5 ==0:
+                    # output 
+                    
+                    df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',index=False,mode='a', header=False)
+                    df_link=pd.DataFrame(columns=col_name_abs)
+                if (page_count==summary_link) and summary_link % 5 !=0:
+                    df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',index=False,mode='a', header=False)
+                
+                # open next page
+                if page_count==summary_link:
+                    page_count=page_count+1;
+                else:
+                    
+                    driver=next_page(driver,page_count,flag_select)
+                    page_count=page_count+1
+                    driver.execute_script('window.localStorage.clear();')
 
             
         except StaleElementReferenceException as e:
@@ -151,12 +165,26 @@ def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
             
             
                 
-def next_page(driver,page_count):
+def next_page(driver,page_count,flag):
     try:
-        check=driver.find_element_by_css_selector(next_page_css)
-        check.click()
+        if flag == 0:
+        
+            check=driver.find_element_by_css_selector(next_page_css)
+            check.click()
+        
+        else:
+            check=driver.find_element_by_css_selector(select_page_css)
+            check.send_keys(str(page_count))
+            check=driver.find_element_by_css_selector(select_page_sure)
+            check.click()
+        
+        
+        
         driver.implicitly_wait(3)
         driver.execute_script("window.stop();")
+        
+        
+        
         
     except TimeoutException as e:
         time.sleep(2)
@@ -174,10 +202,14 @@ if __name__ == '__main__':
 #    con = sqlite3.connect("E:\\justice_auction.sqlite")
     
 #     this even requires gbk decoding encoding!!! to convert str to url
-    city_name=["广州","郑州","厦门","福州","常州","南京","盐城","泰州","扬州","镇江","南通"]
-#    city_name=['成都']
+#    city_name=["广州","郑州","厦门","福州","常州","南京","盐城","泰州","扬州","镇江","南通"]
+
+    city_name=['常州','泰州','盐城','宁波','温州','绍兴', "湖州", "嘉兴", "金华", "衢州", "台州", "丽水", "舟山"]
 #    ele=input("input city name: ")
     flag_auction_time=input("input auction time choice: 1- first time, 2- second time, 3- 1+2, : ")
+    error_page=input('start page')
+    error_year=input('error occur year ')
+    error_page=int(error_page)
     
     driver=webdriver.Firefox()
 #    driver = webdriver.PhantomJS()
@@ -210,11 +242,15 @@ if __name__ == '__main__':
             time_url="&auction_start_from="+start_time.strftime("%Y-%m-%d")+"&auction_start_to="+end_time.strftime("%Y-%m-%d")
             start_url=base_url+time_url
             driver=open_page(driver,start_url)
-        
-            start_page=1
+            
+            if y == error_year :
+                        
+                start_page=error_page
+            else:
+                start_page=1
             
         
-            
+            print("now the year is : "+y)
             get_abs_info(driver,start_page,file_path,file_name,y,flag_auction_time)
 
     driver.quit()

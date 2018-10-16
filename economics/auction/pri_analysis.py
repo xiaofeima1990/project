@@ -17,75 +17,84 @@ import time, re,copy
 import matplotlib.pyplot as plt
 
 
-
+#load the data
 store_path="E:/auction/"
 
+graph_path = "E:/Dropbox/academic/ideas/IO field/justice auction/draft/pic/"
+
+con = sqlite3.connect(store_path+"auction_info_house.sqlite")
+
+PATH_output="E:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code2\\analysis\\"
+
+df_1_s = pd.read_csv(PATH_output+"sample1_df.csv", sep='\t', encoding='utf-8')
+df_2_s = pd.read_csv(PATH_output+"sample2_df.csv", sep='\t', encoding='utf-8')
+
+# get the distribution between priority people and non-priority people
+pri_group1 = df_1_s.groupby("priority_people")
+pri_group2 = df_2_s.groupby("priority_people")
+
+# graph for number of bidder
+graph_1=pri_group1.num_bidder.plot.density(ind=[1,2,3,4,5,6,7,8],legend=True)
+fig=graph_1[0].get_figure()
+fig.savefig(graph_path+"priori_numbidder_1.png")
+
+graph_2=pri_group2.num_bidder.plot.density(ind=[1,2,3,4,5,6,7,8],legend=True)
+fig=graph_2[0].get_figure()
+fig.savefig(graph_path+"priori_numbidder_2.png")
+
+# graph for reserve proxy
+graph_1=pri_group1.resev_proxy.plot.density(xlim=[-0.5,2],legend=True)
+fig=graph_1[0].get_figure()
+fig.savefig(graph_path+"priori_rese_proxy_1.png")
+
+
+graph_2=pri_group2.resev_proxy.plot.density(xlim=[-0.5,2],legend=True)
+fig=graph_2[0].get_figure()
+fig.savefig(graph_path+"priori_rese_proxy_2.png")
+
+
+# graph for bidding spread
+graph_1=pri_group1.dist_high.plot.density(xlim=[-10,200],legend=True)
+fig=graph_1[0].get_figure()
+fig.savefig(graph_path+"priori_bid_spread.png")
+
+
+# bid_freq 
+graph_1=pri_group1.bid_freq.plot.density(xlim=[-10,500],legend=True)
+fig=graph_1[0].get_figure()
+fig.savefig(graph_path+"priori_bid_freq.png")
 
 
 
-# get the table name 
-con_bid = sqlite3.connect(store_path+"auction_bidding.sqlite")
-cursor = con_bid.cursor()
+
+# bidding activity test
+# transh
+
+con = sqlite3.connect(store_path+"auction_info_house.sqlite")
+con_bid_info = sqlite3.connect(store_path+"bid_house_info.sqlite")
+
+# load the data
+cursor = con.cursor()
 tab_name=cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
 tab_name_list=[]
 for name in tab_name:
     tab_name_list.append(name[0])
     
 
-# ~ 
-    
-'''
-clean the bidding data for each auction
-get the each bidder's highest bidding price
-get the bidding distance among the bidders
+df_1 = pd.read_sql_query("SELECT * from shenzhen_1", con)
 
-'''
-col_name_bid=['ID','bidder_id','date','time','price','dist_high','position','status']
-df_bid_info=pd.DataFrame(columns = col_name_bid )
+df_1_bid = pd.read_sql_query("SELECT * from shenzhen_1", con_bid_info)
 
 
-flag=0
-for name in   tab_name_list:
-    df_Tab_temp = pd.read_sql_query("SELECT * from " + "'"+name+"'", con_bid)
-    df_Tab_temp.drop(['index'],axis=1,inplace=True)
-    df_Tab_temp['position']=df_Tab_temp.index
-    temp_index=df_Tab_temp['position'].transform(lambda x: x[::-1])
-    temp_index=temp_index.reset_index(drop=True)
-    df_Tab_temp['position']=temp_index
-    df_Tab_temp['ID']=name
-    temp_group=df_Tab_temp.groupby('bidder_id')
-    temp_max= temp_group.max()
-    temp_max=temp_max.reset_index()
-    length=df_Tab_temp.shape[0]
-    temp_max['dist_high'] = (length-1) - temp_max['position']
-    temp_max['ID'] = name
-    temp_max=temp_max.loc[ :, col_name_bid]
-    
-    df_bid_info=df_bid_info.append(temp_max,ignore_index=True)
-    
-    
-    
-    if flag==0:
-        DF_bid_table = df_Tab_temp
-        
-        flag=1
-    else:
-        
-        
-        DF_bid_table=DF_bid_table.append(df_Tab_temp)
+# get priority people ID 
+df_1_group=df_1.groupby("priority_people")
+pri_id=df_1_group.get_group(1).ID.tolist()
 
+df_1_bid_group=df_1_bid.groupby("ID")
 
+bid_df_stat=pd.DataFrame(columns=["ID","dis_var",'bid_freq'])
 
-con_bid_clean = sqlite3.connect(store_path+"bid_house_data.sqlite")
-DF_bid_table.to_sql("xuzhou_1",con_bid_clean,if_exists="append")   
-
-con_bid_clean2 = sqlite3.connect(store_path+"bid_house_info.sqlite")
-df_bid_info.to_sql("xuzhou_1",con_bid_clean2,if_exists="append")   
-
-con_bid.close()
-con_bid_clean.close()
-con_bid_clean2.close()
-
-
-
-    
+temp_df=df_1_bid_group.dist_high.std()
+temp_df=pd.DataFrame(temp_df)
+temp_df['bid_freq'] =df_1_bid_group.position.max()+1
+temp_df=temp_df.reset_index()    
