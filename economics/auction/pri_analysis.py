@@ -28,29 +28,65 @@ PATH_output="E:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code2\\ana
 
 df_1_s = pd.read_csv(PATH_output+"sample1_df.csv", sep='\t', encoding='utf-8')
 df_2_s = pd.read_csv(PATH_output+"sample2_df.csv", sep='\t', encoding='utf-8')
+df_1_s['p_ratio']=df_1_s['win_bid']/df_1_s['reserve_price']
+df_2_s['p_ratio']=df_2_s['win_bid']/df_2_s['reserve_price']
+
+
 
 # get the distribution between priority people and non-priority people
 pri_group1 = df_1_s.groupby("priority_people")
 pri_group2 = df_2_s.groupby("priority_people")
 
 # graph for number of bidder
-graph_1=pri_group1.num_bidder.plot.density(ind=[1,2,3,4,5,6,7,8],legend=True)
-fig=graph_1[0].get_figure()
-fig.savefig(graph_path+"priori_numbidder_1.png")
+plt.subplot(121) 
+graph_1=pri_group1.num_bidder.plot.density(ind=[1,2,3,4,5,6,7,8,9,10],legend=True)
+plt.margins(0.02)
+plt.xlabel("number of bidder")
+plt.title("First Time Auction")
+plt.grid(True)
+# save the graph independent
+#fig=graph_1[0].get_figure()
+#fig.savefig(graph_path+"priori_numbidder_1.png")
 
-graph_2=pri_group2.num_bidder.plot.density(ind=[1,2,3,4,5,6,7,8],legend=True)
-fig=graph_2[0].get_figure()
-fig.savefig(graph_path+"priori_numbidder_2.png")
+
+plt.subplot(122) 
+graph_2=pri_group2.num_bidder.plot.density(ind=[1,2,3,4,5,6,7,8,9,10],legend=True)
+plt.xlabel("number of bidder")
+plt.title("Second  Time Auction")
+plt.margins(0.02)
+plt.grid(True)
+plt.subplots_adjust(bottom=0.25, top=0.75,hspace=0.2,wspace=0.5,left=0.05, right=1.2)
+plt.show()
+
+
+# save the graph independent
+#fig=graph_2[0].get_figure()
+#fig.savefig(graph_path+"priori_numbidder_2.png")
+
+
 
 # graph for reserve proxy
-graph_1=pri_group1.resev_proxy.plot.density(xlim=[-0.5,2],legend=True)
-fig=graph_1[0].get_figure()
-fig.savefig(graph_path+"priori_rese_proxy_1.png")
+plt.subplot(121) 
+graph_1=pri_group1.p_ratio.plot.density(xlim=[0,2],legend=True)
+plt.margins(0.02)
+plt.xlabel("winning price / reserve price")
+plt.title("First Time Auction")
+plt.grid(True)
+# save the graph independent
+#fig=graph_1[0].get_figure()
+#fig.savefig(graph_path+"priori_rese_proxy_1.png")
 
-
-graph_2=pri_group2.resev_proxy.plot.density(xlim=[-0.5,2],legend=True)
-fig=graph_2[0].get_figure()
-fig.savefig(graph_path+"priori_rese_proxy_2.png")
+plt.subplot(122)
+graph_2=pri_group2.p_ratio.plot.density(xlim=[0,2],legend=True)
+plt.xlabel("winning price / reserve price")
+plt.title("Second  Time Auction")
+plt.margins(0.02)
+plt.grid(True)
+plt.subplots_adjust(bottom=0.25, top=0.75,hspace=0.2,wspace=0.5,left=0.05, right=1.2)
+plt.show()
+# save the graph independent
+#fig=graph_2[0].get_figure()
+#fig.savefig(graph_path+"priori_rese_proxy_2.png")
 
 
 # graph for bidding spread
@@ -63,6 +99,14 @@ fig.savefig(graph_path+"priori_bid_spread.png")
 graph_1=pri_group1.bid_freq.plot.density(xlim=[-10,500],legend=True)
 fig=graph_1[0].get_figure()
 fig.savefig(graph_path+"priori_bid_freq.png")
+
+
+
+
+
+
+
+
 
 
 

@@ -137,7 +137,7 @@ def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
                 df_link=df_link.append(df_temp,ignore_index=True)
                 
                 
-                if (page_count)% 5 ==0:
+                if (page_count)% 10 ==0:
                     # output 
                     
                     df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',index=False,mode='a', header=False)
@@ -203,8 +203,10 @@ if __name__ == '__main__':
     
 #     this even requires gbk decoding encoding!!! to convert str to url
 #    city_name=["广州","郑州","厦门","福州","常州","南京","盐城","泰州","扬州","镇江","南通"]
-
-    city_name=['常州','泰州','盐城','宁波','温州','绍兴', "湖州", "嘉兴", "金华", "衢州", "台州", "丽水", "舟山"]
+    # '温州','绍兴', "湖州", 
+    city_name=["嘉兴", "金华", "衢州", "台州", "丽水", "舟山"]
+#    city_name=["佛山","东莞","中山","珠海","江门","肇庆","惠州","汕头","潮州","揭阳","汕尾","湛江","茂名","阳江","韶关","清远","云浮","梅州","河源"]
+    
 #    ele=input("input city name: ")
     flag_auction_time=input("input auction time choice: 1- first time, 2- second time, 3- 1+2, : ")
     error_page=input('start page')
@@ -214,9 +216,10 @@ if __name__ == '__main__':
     driver=webdriver.Firefox()
 #    driver = webdriver.PhantomJS()
     for ele in city_name:
-    
-    
-    
+        print("-----------------------------------")
+        print("city "+ele+ " begins")
+        print("-----------------------------------")
+        error_flag = 0
         year_list=['2014','2015','2016','2017']
         #    for ele in city_name:
         elee=ele.encode("gbk")
@@ -236,21 +239,41 @@ if __name__ == '__main__':
         file_name=ele+"-"+flag_auction_time+"-sf" 
         df_link=pd.DataFrame(columns=col_name_abs)
         df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',mode='a',index=False)
+        
+        if error_page >1 or error_year >= "2014" :
+            error_flag= 1
+        
         for y in year_list:
             start_time =datetime.strptime(y+'-01-01', '%Y-%m-%d')
             end_time   =start_time+relativedelta(years=1)-timedelta(days=1)
             time_url="&auction_start_from="+start_time.strftime("%Y-%m-%d")+"&auction_start_to="+end_time.strftime("%Y-%m-%d")
             start_url=base_url+time_url
             driver=open_page(driver,start_url)
-            
-            if y == error_year :
-                        
-                start_page=error_page
+            if error_flag == 1:
+                if y != error_year:
+                    continue
+                else:                            
+                    start_page=error_page
+                    error_page=1
+                    error_year="0"
+                    error_flag=0
             else:
-                start_page=1
-            
+                    start_page=1
+                
         
             print("now the year is : "+y)
             get_abs_info(driver,start_page,file_path,file_name,y,flag_auction_time)
-
+        
+        
+        
+        
+        #pause for sometime when we finish one city
+        print("-----------------------------------")
+        print("city "+ele + " is done ")
+        print("-----------------------------------")
+        driver.quit()
+        time.sleep(10)
+        driver=webdriver.Firefox()
+    
     driver.quit()
+        
