@@ -50,10 +50,14 @@ class ENV:
         self.uninfo['N']         =  self.N
         self.uninfo['xi_rival_mu'] = (self.comm_mu+self.priv_mu + self.noise_mu) * np.ones((self.N-1,1))
         self.uninfo['xi_rival_sigma2'] = (self.comm_var+self.priv_var + self.noise_var) * np.ones((self.N-1,1))
+        self.uninfo['vi_rival_mu'] = (self.comm_mu+self.priv_mu) * np.ones((self.N-1,1))
+        self.uninfo['vi_rival_sigma2'] = (self.comm_var+self.priv_var ) * np.ones((self.N-1,1))
         temp_matrix= np.ones((self.N,self.N))*self.comm_var - np.eye(self.N)*self.comm_var              
         self.uninfo['COV_i']       = np.concatenate((np.diag(self.uninfo['vi_sigma2']*np.ones(self.N)) + temp_matrix ), axis=1)
         self.uninfo['SiGMA2']      = self.uninfo['xi_sigma2']*np.ones((self.N,self.N)) + temp_matrix
         self.uninfo['MU']          = (self.comm_mu+self.priv_mu + self.noise_mu)*np.ones((self.N,1))
+        self.uninfo['comm_var']    = self.comm_var
+        self.info_Id['comm_mu']    = self.comm_mu
         return Info_result(self.uninfo)
         
     def Info_ID(self):
@@ -72,6 +76,8 @@ class ENV:
         self.info_Id['COV_i']       = np.concatenate((np.diag(self.info_Id['vi_sigma2']*np.ones(self.N)) + temp_matrix ), axis=1)
         self.info_Id['SiGMA2']      = self.info_Id['xi_sigma2']*np.ones((self.N,self.N)) + temp_matrix
         self.info_Id['MU']          = (self.comm_mu+self.priv_mu + self.noise_mu)*np.ones((self.N,1))
+        self.info_Id['comm_var']    = self.comm_var
+        self.info_Id['comm_mu']    = self.comm_mu
         return Info_result(self.info_Id)
     
     
@@ -108,14 +114,13 @@ class Info_result(object):
         '''
         return x i sigma square
         '''
-        return self.info_dict['xi_sigma2']
-        
+        return self.info_dict['xi_sigma2']     
     @property 
-    def xi_mu(self):
+    def vi_mu(self):
         '''
         return x i mu
         '''
-        return self.info_dict['xi_mu']
+        return self.info_dict['vi_mu']
     @property 
     def vi_sigma2(self):
         '''
@@ -129,8 +134,9 @@ class Info_result(object):
         return x i mu
         '''
         return self.info_dict['x_info_mu']
+    
     @property 
-    def x_info_mu(self):
+    def x_info_sigma2(self):
         '''
         return v i simga squre
         '''
@@ -177,7 +183,23 @@ class Info_result(object):
         return mu for 
         '''
         return self.info_dict['MU']
+    
+    @property 
+    def comm_var(self):
+        '''
+        return mu for 
+        '''
+        return self.info_dict['comm_var']
 
+    @property 
+    def comm_mu(self):
+        '''
+        return mu for 
+        '''
+        return self.info_dict['comm_mu']
+    
+    
+    
 
 
 
