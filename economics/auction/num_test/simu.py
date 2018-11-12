@@ -16,6 +16,10 @@ sub space for update rule which hopefully could acceralate the calculation speed
 import numpy as np
 from Update_rule import Update_bid
 from scipy.interpolate import interpn
+from ENV import ENV 
+from itertools import combinations 
+
+
 para_dict={
         "comm_mu":10,
         "priv_mu":1,
@@ -28,26 +32,29 @@ para_dict={
 
 
 class Simu:
-    def __init__(self,para,T=200,rng_seed=123,dict_para=para_dict):
+    def __init__(self,N=3,para,T=200,rng_seed=123,dict_para=para_dict):
         self.xi_mu=para.xi_mu
         self.xi_sigma2 = para.xi_sigma2 
         self.vi_mu     = para.vi_mu
         self.vi_sigma2 = para.vi_sigma2
         self.MU        = para.MU
         self.SIGMA2    = para.SIGMA2
-        self.xi_rival_mu = para.xi_rival_mu
+        self.xi_rival_mu     = para.xi_rival_mu
         self.xi_rival_sigma2 = para.xi_rival_sigma2
-        self.N         =  self.N
+        self.N         = N
 
-        self.rng      =np.random.RandomState(rng_seed)
+        self.rng       =np.random.RandomState(rng_seed)
+                
+        self.comm_mu   =dict_para['comm_mu']
+        self.priv_mu   =dict_para['priv_mu']
+        self.noise_mu  =dict_para['noise_mu']
+        self.comm_var  =dict_para['comm_var']
+        self.priv_var  =dict_para['priv_var']
+        self.noise_var =dict_para['noise_var']
         
+        self.ENV       =ENV(N,rng_seed, dict_para)
+        self.Uninform_info  =ENV.Uninform()
         
-        self.comm_mu  =dict_para['comm_mu']
-        self.priv_mu  =dict_para['priv_mu']
-        self.noise_mu =dict_para['noise_mu']
-        self.comm_var =dict_para['comm_var']
-        self.priv_var =dict_para['priv_var']
-        self.noise_var=dict_para['noise_var']
         
         
     def signal_DGP(self,flag_ID=0):
@@ -56,8 +63,8 @@ class Simu:
         pub_mu = self.comm_mu + g_m
         
         # random reservation ratio
-        r =  0.8 + 0.1*self.rng.rand() 
-        
+        # r =  0.8 + 0.1*self.rng.rand() 
+        r =  0.8
         
         
         mu_x = self.comm_mu+self.priv_mu+self.epsilon_mu
@@ -95,6 +102,12 @@ class Simu:
     
     def Data_simu(self,SS,T_end):
         # functions for simulating the bidding path given the numebr of simualted times
+        
+        # initilize the updating rule 
+        
+        Update_rule=Update_bid(self.Uninform_info)
+        
+        
         data_act=np.zeros((SS,T_end))
         pub_info=np.zeros((SS,T_end))
         data_state=np.zeros((SS,self.N))
@@ -103,12 +116,12 @@ class Simu:
         
         freq_i=np.zeros((SS,1))
         num_i = np.zeros((SS,1))
-        
+        diff_i = np.zeros((SS,1))
         
         # Active_flag=np.ones(self.N)
         flag_ID=0
         for s in range(0,SS):
-            [pub_mu,x_signal, reserve]=signal_DGP(flag_ID)
+            [pub_mu,x_signal, reserve]=self.signal_DGP(flag_ID)
             pub_info[s,:]=[pub_mu, reserve,self.N]
             
             price_v=[np.linspace(0.8*pub_mu,pub_mu*1.2, 30),np.linspace(1.24*pub_mu,pub_mu*1.8, 5),np.linspace(1.85*pub_mu,pub_mu*2.5,5)];
@@ -135,41 +148,71 @@ class Simu:
                         ss_state = [ii,i1,i2]
                
                         bid = max(ss_state)+1
-                        result = real_bid(x_signal(i),bid,ss_state)
-                        Active[i] = result.action_flag
+                        result = Update_rule.real_bid(x_signal(i),bid,ss_state,price_v)
+                        
+                        Active[i] = result[2]
                         
                         
                     if sum(Active) ==1:
-                       index=find(Active>0)
-                       posting=data_act[s,t-1];
-                       if index==posting:
-                           data_act[s,t:] = -1
-                       else:
-                           curr_bidder= index
-                           data_act[s,t] = curr_bidder;
-                           data_act[s,t+1:] = -1;
-                       
-                       break
-                   else
-                       if sum(Active) == 0:
-                           data_act[s,t:] = -1
-                           break
-                       
-                       
-                       
-                       posting=Data_activity[s,t-1]
-                       index=np.nonzero(Active)
-                       if posting in index
-                           index.reomve(posting)
+                        index=np.nonzero(Active)
+                        posting=data_act[s,t-1]
+                        if index == posting:
+                            data_act[s,t:] = -1
+                        else:
+                            curr_bidder      = index
+                            data_act[s,t]    = curr_bidder
+                            data_act[s,t+1:] = -1
+                        
+                        break
+                    else :
+                        if sum(Active) == 0:
+                            data_act[s,t:] = -1
+                            break
+                        
+                        
+                        
+                        posting=data_act[s,t-1]
+                        index=np.nonzero(Active)
+                        if posting in index :
+                            index.reomve(posting)
                            
                        
                        
-                       curr_bidder=rng.choice(index,1) 
-                       data_acts,t] = curr_bidder;
-                       State[curr_bidder]=max(State)+1;
+                        curr_bidder   = rng.choice(index,size=1) 
+                        data_act[s,t] = curr_bidder
+                        State[curr_bidder] = max(State) + 1
            
-        pass
-    
+        
+            # final state
+            data_state[s,:]=State
+            
+            # calculate the high posit
+            unique, counts = np.unique(data_act[s,:], return_counts=True)
+            a=zip(unique,counts) 
+            for ele in a:
+                if ele[0] != -1:
+                    data_bid_freq[s,ele[0]]=ele[1]
+                else:
+                    continue
+                    
+            # comb = list(combinations(list(range(0,self.N)), 2))
+            comb=np.array(np.meshgrid(data_bid_freq[s,:], data_bid_freq[s,:])).T.reshape(-1,2)
+            v=abs(comb[:,0]-comb[:,1])
+            freq_i(s)=sum(v)
+
+            
+            
+            # winning
+            data_win[s]=para.T_p(max(State)) / (pub_mu*reserve)
+            
+            # high posit
+            diff_i[s]=std(max(State)-State)
+            
+            
+            # find real bidding bidders
+            num_i[s]  =sum((State>0)*1)
+
+        return data_struct
     
             
         

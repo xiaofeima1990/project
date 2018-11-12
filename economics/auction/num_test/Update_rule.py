@@ -14,7 +14,7 @@ from scipy.stats import norm
 
 class Update_bid:
     
-    def __init__(self,para,price_v,re_price,Pub_value):
+    def __init__(self,para):
         self.xi_mu=para.xi_mu
         self.xi_sigma2 = para.xi_sigma2 
         self.vi_mu     = para.vi_mu
@@ -25,8 +25,7 @@ class Update_bid:
         self.xi_rival_sigma2 = para.xi_rival_sigma2
         self.N         =  self.N
         self.comm_var  = para.comm_var
-        self.T_p = price_v
-        self.Pub_value=Pub_value
+
         
     def l_bound(self,state):
         # uninformed lower bound 
@@ -45,7 +44,7 @@ class Update_bid:
         drop_info_v=np.zeros((self.N-1,7))
         info_drop = np.zeros(self.N-1)
         for k in range(0, self.N-2,1):
-            drop_info_v[k,:]=HS_system(k,info_struct,self.MU,self.SIGMA2,info_drop)
+            drop_info_v[k,:]=self.HS_system(k,info_struct,self.MU,self.SIGMA2,info_drop)
             info_drop=drop_info_v[:,0]
     
         drop_info_v=drop_info_v[drop_info_v[:,1].argsort()[::-1]]
@@ -115,8 +114,10 @@ class Update_bid:
             
         return np.array([x_drop,info_struct[-1-k,:]])
 
-    def real_bid(self,xi,bid,state):
-        lower_b = l_bound(state)
+    def real_bid(self,xi,bid,state,price_v):
+        self.T_p = price_v
+        
+        lower_b = self.l_bound(state)
         
         #  dropout x
         x_j_lower = lower_b[:,0]
@@ -126,7 +127,9 @@ class Update_bid:
 
         
         COV_xvi=np.append(self.vi_sigma2,np.ones(2)*self.comm_var)
-        CC_i = vi_mu - self.MU.T*Sigma_inv*COV_xvi
+        
+        
+        CC_i = self.vi_mu - self.MU.T*Sigma_inv*COV_xvi
         AA_coef =  Sigma_inv * COV_xvi
 
         AA_i = AA_coef[0]
@@ -138,7 +141,7 @@ class Update_bid:
             u_b = -1;
             mu_j = lower_b[j,3];
             sigma_j = lower_b[j,4];
-            x_j[j] = truc_x(mu_j,sigma_j,l_b,u_b)
+            x_j[j] = self.truc_x(mu_j,sigma_j,l_b,u_b)
             
         
         
@@ -153,9 +156,9 @@ class Update_bid:
         
         # conditional variance var(v_i | x_i , x_j , x_q)
         Si_va=Sigma_inv; 
-        part_mu=COV_xvi.T*Si_va[1:,:].T*MU[1:]
+        part_mu=COV_xvi.T*Si_va[1:,:].T*self.MU[1:]
         # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
-        var_update = part1=vi_sigma -AA_i*self.vi_sigma + (E_j+E_q -part_mu )^2
+        var_update = self.vi_sigma -AA_i*self.vi_sigma + (E_j+E_q -part_mu )^2
 
         Update_value = 0.5*var_update + E_update;
         
@@ -170,7 +173,7 @@ class Update_bid:
         
         # dropout x , dropout position, dropout price  x_mu x_sigma
         
-        upper_b_j = u_bound_E(bid,state)
+        upper_b_j = self.u_bound_E(bid,state)
         
         
         # the real expected value 
@@ -179,7 +182,7 @@ class Update_bid:
         Integ_part = 0;
         for s in range(0, j_N): 
     
-            Integ_part = Integ_part + AA_j(s)*truc_x(self.MU[s],self.SIGMA2[s,s],x_j_lower[s],upper_b_j[s,0]);
+            Integ_part = Integ_part + AA_j(s)*self.truc_x(self.MU[s],self.SIGMA2[s,s],x_j_lower[s],upper_b_j[s,0]);
         
         
         E_win_revenue=Integ_part+E_const +  + AA_i*xi -self.T_p(bid)
@@ -215,7 +218,7 @@ class Update_bid:
         drop_info_jj = np.zeros((self.N-1,7))
         for jj in range(0, self.N-1):
             # dropout x , dropout position, dropout price  x_mu x_sigma
-            drop_info_jj[jj,:]=HS_system(jj,info_struct,self.MU,self.SIGMA2,info_drop)
+            drop_info_jj[jj,:]=self.HS_system(jj,info_struct,self.MU,self.SIGMA2,info_drop)
             info_drop=drop_info_jj[:,0]
         
         
@@ -242,12 +245,11 @@ class Update_bid:
             if lower == -1:
                 result = Mu-Sigma*norm.pdf( b)/(1-norm.cdf( b))
             else:
-                result = Mu+Sigma* (norm.pdf(a) - norm.pdf(b) ) /(norm.cdf(b) - norm.cdf(a)) 
+                result = Mu+Sigma*(norm.pdf(a) - norm.pdf(b) ) /(norm.cdf(b) - norm.cdf(a)) 
             
             
         return result
         
-    def var_condition(self, vi_sigma, AA_i,E_j,E_q, part_mu):
         
     
        
