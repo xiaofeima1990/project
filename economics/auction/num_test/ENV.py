@@ -43,6 +43,9 @@ class ENV:
         
         
     def Uninform(self):
+        
+        
+        
         self.uninfo['xi_mu']     =  self.comm_mu+self.priv_mu + self.noise_mu
         self.uninfo['xi_sigma2'] =  self.comm_var+self.priv_var + self.noise_var
         self.uninfo['vi_mu']     =  self.comm_mu+self.priv_mu 
@@ -57,7 +60,7 @@ class ENV:
         self.uninfo['SiGMA2']      = self.uninfo['xi_sigma2']*np.ones((self.N,self.N)) + temp_matrix
         self.uninfo['MU']          = (self.comm_mu+self.priv_mu + self.noise_mu)*np.ones((self.N,1))
         self.uninfo['comm_var']    = self.comm_var
-        self.info_Id['comm_mu']    = self.comm_mu
+        self.uninfo['comm_mu']    = self.comm_mu
         return Info_result(self.uninfo)
         
     def Info_ID(self):

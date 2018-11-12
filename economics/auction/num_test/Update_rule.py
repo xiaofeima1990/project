@@ -25,7 +25,7 @@ class Update_bid:
         self.xi_rival_sigma2 = para.xi_rival_sigma2
         self.N         =  self.N
         self.comm_var  = para.comm_var
-
+        self.comm_mu  = para.comm_mu
         
     def l_bound(self,state):
         # uninformed lower bound 

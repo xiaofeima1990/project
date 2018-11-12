@@ -17,7 +17,6 @@ import numpy as np
 from Update_rule import Update_bid
 from scipy.interpolate import interpn
 from ENV import ENV 
-from itertools import combinations 
 
 
 para_dict={
@@ -74,7 +73,7 @@ class Simu:
         
         info_index=0
         
-        if flag_ID==1:
+        if info_index==1:
             mu_x = self.comm_mu+self.priv_mu
             sigma_x = self.comm_var + self.priv_var
         
@@ -211,8 +210,85 @@ class Simu:
             
             # find real bidding bidders
             num_i[s]  =sum((State>0)*1)
+            
+            
 
-        return data_struct
+        
+        data_dict={
+                'data_act':data_act,
+                'pub_info':pub_info,
+                'data_state':data_state,
+                'data_bid_freq':data_bid_freq,
+                'data_win':data_win,
+                'freq_i':freq_i,
+                'num_i':num_i,
+                'diff_i':diff_i
+                
+                }
+        
+
+        return data_struct(data_dict)
     
             
+class data_struct:
+    def __init__(self,data_dict):
+        self.data_dict=data_dict
+        
+    @property 
+    def data_act(self):
+        '''
+        return x i mu
+        '''
+        return self.data_dict['data_act']
+
+    @property 
+    def pub_info(self):
+        '''
+        return x i mu
+        '''
+        return self.data_dict['pub_info']
+
+    @property 
+    def data_state(self):
+        '''
+        return x i mu
+        '''
+        return self.data_dict['data_state']
+
+    @property 
+    def data_bid_freq(self):
+        '''
+        return x i mu
+        '''
+        return self.data_dict['data_bid_freq']
+
+    @property 
+    def data_win(self):
+        '''
+        return x i mu
+        '''
+        return self.data_dict['data_win']
+
+    @property 
+    def freq_i(self):
+        '''
+        return x i mu
+        '''
+        return self.data_dict['freq_i']
+
+    @property 
+    def num_i(self):
+        '''
+        return x i mu
+        '''
+        return self.data_dict['num_i']
+        
+    
+    @property 
+    def diff_i(self):
+        '''
+        return x i mu
+        '''
+        return self.data_dict['diff_i']
+        
         
