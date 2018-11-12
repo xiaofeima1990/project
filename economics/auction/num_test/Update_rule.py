@@ -253,6 +253,7 @@ class Update_bid:
        
         
         
+
 class update_results:
     def __init__(self,info_dict):
         self.info_dict=info_dict
