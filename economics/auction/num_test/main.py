@@ -15,3 +15,8 @@ doing paramellal programming
 
 
 
+
+
+if __name__ == '__main__':
+    
+    # fminsearch
