@@ -117,6 +117,7 @@ class Est:
                 price_v = np.linspace(0.8*pub_mu,pub_mu*1.2, T_end-10)
                 price_v=np.append(price_v,np.linspace(1.24*pub_mu,pub_mu*1.8, 5))
                 price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,5))
+                
                 State = np.zeros(self.N)
                 Active= np.ones(self.N)
                 
@@ -124,7 +125,7 @@ class Est:
                 for t in range(0,T_end):
                     
                     if t == 1: 
-                        curr_bidder=np.argmax(x_signal)
+                        curr_bidder=int(np.argmax(x_signal))
                         data_act[s,t] = curr_bidder
                         State[curr_bidder]=State[curr_bidder]+1
                     else:
@@ -132,45 +133,46 @@ class Est:
                         for i in range(0,self.N):
                             temp_state=State
                             
-                            ii = temp_state[i]
+                            ii = int(temp_state[i])
                             temp_state=np.delete(temp_state,i)
-                            i1 = temp_state[0]
-                            i2 = temp_state[1]
+                            i1 = int(temp_state[0])
+                            i2 = int(temp_state[1])
                             ss_state = [ii,i1,i2]
                    
                             bid = max(ss_state)+1
-                            result = Update_bid.real_bid(x_signal(i),bid,ss_state,price_v)
+                            result = Update_bid.real_bid(x_signal[i],bid,ss_state,price_v)
                             
                             Active[i] = result[2]
                             
                             
                         if sum(Active) ==1:
-                            index=np.nonzero(Active)
+                            index=np.nonzero(Active)[0].tolist()
+                            
                             posting=data_act[s,t-1]
                             if index == posting:
-                                data_act[s,t:] = -1
+                                data_act[s,t:] = int(-1)
                             else:
-                                curr_bidder      = index
-                                data_act[s,t]    = curr_bidder
-                                data_act[s,t+1:] = -1
+                                curr_bidder      = int(index[0])
+                                data_act[s,t]    = int(curr_bidder)
+                                data_act[s,t+1:] = int(-1)
                             
                             break
                         else :
                             if sum(Active) == 0:
-                                data_act[s,t:] = -1
+                                data_act[s,t:] = int(-1)
                                 break
                             
                             
                             
                             posting=data_act[s,t-1]
-                            index=np.nonzero(Active)
+                            index=np.nonzero(Active)[0].tolist()
                             if posting in index :
-                                index.reomve(posting)
+                                index.remove(posting)
                                
                            
                            
                             curr_bidder   = self.rng.choice(index,size=1) 
-                            data_act[s,t] = curr_bidder
+                            data_act[s,t] = int(curr_bidder)
                             State[curr_bidder] = max(State) + 1
                
             
@@ -182,7 +184,7 @@ class Est:
                 a=zip(unique,counts) 
                 for ele in a:
                     if ele[0] != -1:
-                        data_bid_freq[s,ele[0]]=ele[1]
+                        data_bid_freq[s,int(ele[0])]=ele[1]
                     else:
                         continue
                         
@@ -194,7 +196,7 @@ class Est:
                 
                 
                 # winning
-                data_win[s]=price_v(max(State)) / (pub_mu*reserve)
+                data_win[s]=price_v[int(max(State))] / (pub_mu*reserve)
                 
                 # high posit
                 diff_i[s]=np.std(max(State)-State)
@@ -206,17 +208,17 @@ class Est:
                 temp_state=State
                             
                 i = np.argmax(temp_state)
-                ii=  max(temp_state)
+                ii=  int(max(temp_state))
                 temp_state=np.delete(temp_state,i)
-                i1 = temp_state[0]
-                i2 = temp_state[1]
+                i1 = int(temp_state[0])
+                i2 = int(temp_state[1])
                 ss_state = [ii,i1,i2]
        
                 bid = ii
                 result = Update_rule.real_bid(x_signal(i),bid,ss_state,price_v)
                 win_low[s]=result[0]
                 
-                bid = bid = ii+1
+                bid  = ii+1
                 result = Update_rule.real_bid(x_signal(i),bid,ss_state,price_v)
                 win_up[s]=result[0]                
                 

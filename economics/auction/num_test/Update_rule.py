@@ -52,7 +52,8 @@ class Update_rule:
         
         drop_info_v=np.zeros((self.N-1,7))
         info_drop = np.zeros(self.N-1)
-        for k in range(0, self.N-2,1):
+        
+        for k in range(0, self.N-1,1):
             drop_info_v[k,:]=self.HS_system(k,info_struct,self.MU,self.SIGMA2,info_drop)
             info_drop=drop_info_v[:,0]
     
@@ -72,26 +73,44 @@ class Update_rule:
             
             # mu_k
             mu_k = np.append(self.vi_mu, info_struct[:n_r-k+1,4])
-            l_k  = np.ones((self.N-k,1))
-            Gamma_k = np.append(self.vi_sigma2, info_struct[:n_r-k+1,5])
             
-            Delta_k =self.vi_sigma2*np.eyes(self.N)+np.ones((self.N,self.N))*self.comm_var - np.eye(self.N)*self.comm_var  
+            
+            
+            mu_k = mu_k[0:self.N-k]
+            mu_k = mu_k.reshape(mu_k.size,1)
+
+            
+            l_k  = np.ones((self.N-k,1))
+            
+            Gamma_k = np.append(self.vi_sigma2, info_struct[:n_r-k+1,5])
+            Gamma_k = Gamma_k[0:self.N-k]
+            Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
+            
+            Delta_k =self.vi_sigma2 * np.eye(self.N)+np.ones((self.N,self.N)) * self.comm_var - np.eye(self.N) * self.comm_var  
+            Delta_k=Delta_k[:,0:self.N-k].T
             
             Sigma_inv = inv(Sigma)
             Sigma_inv_k1 = Sigma_inv[0:self.N-k,:]
             
-            Sigma_inv_k2 = Sigma_inv[self.N-k,:]
+            Sigma_inv_k2 = Sigma_inv[self.N-k:,:]
             
             
+
+            AA_k = inv(Delta_k @ (Sigma_inv_k1.T)) @ l_k
             
-            AA_k = inv(Delta_k*(Sigma_inv_k1.T))*l_k
-            CC_k = 0.5*inv(Delta_k*(Sigma_inv_k1.T))*(Gamma_k-np.diag(Delta_k*Sigma_inv*Delta_k.T) + 2*mu_k -2* Delta_k*Sigma_inv*MU)
-            DD_k = inv(Delta_k*(Sigma_inv_k1.T))*(Delta_k*(Sigma_inv_k2.T))
+            temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
+            temp_diag=temp_diag.reshape(temp_diag.size,1)
+            
+            CC_k = 0.5*inv(Delta_k @ Sigma_inv_k1.T) @ (Gamma_k - temp_diag + 2*mu_k -2* Delta_k @ Sigma_inv @ MU)
+
+            DD_k = inv(Delta_k @ (Sigma_inv_k1.T)) @ (Delta_k @ (Sigma_inv_k2.T))
             
             
+
             
-            x_drop = AA_k[-1]*p_k - DD_k[-1,:]*x_d - CC_k[-1];
-            
+
+            x_drop = AA_k[-1]*p_k - np.dot( DD_k[-1,:],  x_d) - CC_k[-1]
+
             
             
             
@@ -145,10 +164,10 @@ class Update_rule:
 
         
         COV_xvi=np.append(self.vi_sigma2,np.ones(2)*self.comm_var)
+
         
-        
-        CC_i = self.vi_mu - self.MU.T*Sigma_inv*COV_xvi
-        AA_coef =  Sigma_inv * COV_xvi
+        CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
+        AA_coef =  Sigma_inv @ COV_xvi
 
         AA_i = AA_coef[0]
         AA_j = AA_coef[1:]
@@ -164,7 +183,7 @@ class Update_rule:
         
         
         
-        E_j = x_j.T*AA_j
+        E_j = x_j.T @ AA_j
         
         
         # expectation 
@@ -174,9 +193,9 @@ class Update_rule:
         
         # conditional variance var(v_i | x_i , x_j , x_q)
         Si_va=Sigma_inv; 
-        part_mu=COV_xvi.T*Si_va[1:,:].T*self.MU[1:]
+        part_mu=COV_xvi.T @ Si_va[1:,:].T @ self.MU[1:]
         # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
-        var_update = self.vi_sigma -AA_i*self.vi_sigma + (E_j+E_q -part_mu )^2
+        var_update = self.vi_sigma2 -AA_i*self.vi_sigma2 + (E_j+E_q -part_mu )**2
 
         Update_value = 0.5*var_update + E_update;
         
@@ -195,19 +214,17 @@ class Update_rule:
         
         
         # the real expected value 
-    
-        
         Integ_part = 0;
         for s in range(0, j_N): 
     
-            Integ_part = Integ_part + AA_j(s)*self.truc_x(self.MU[s],self.SIGMA2[s,s],x_j_lower[s],upper_b_j[s,0]);
+            Integ_part = Integ_part + AA_j[s]*self.truc_x(self.MU[s],self.SIGMA2[s,s],x_j_lower[s],upper_b_j[s,0]);
         
         
-        E_win_revenue=Integ_part+E_const +  + AA_i*xi -self.T_p(bid)
+        E_win_revenue=Integ_part+E_const +  + AA_i*xi -self.T_p[bid]
 
         Pure_value = Integ_part+E_const +  + AA_i*xi 
         
-        flag = 1*(E_win_revenue>0)
+        flag = int(1*(E_win_revenue>0))
         # return pure value E_win and flag
         return [Pure_value,E_win_revenue,flag]
     
@@ -215,10 +232,15 @@ class Update_rule:
     def u_bound_E(self,bid,state):
         pos=state[1:]
         
-        price_v=[self.T_p(x) for x in pos]
+        price_v=[self.T_p[x] for x in pos]
+        
         pos     = np.asarray(pos)
+        pos     = pos.reshape(pos.size,1)
+        
         price_v = np.asarray(price_v)
-
+        price_v = price_v.reshape(price_v.size,1)
+        
+        
         info_struct=np.concatenate((pos,price_v,self.xi_rival_mu,self.xi_rival_sigma2,self.vi_rival_mu,self.vi_rival_sigma2),axis=1)
         # temp[::-1].sort() sorts the array in place
         info_struct=info_struct[info_struct[:,0].argsort()[::-1]]
@@ -227,13 +249,14 @@ class Update_rule:
         # new part: pulg in the bid price for the remainning guy
         #-------------------------------------------------
         
-        bid_price= self.T_p(bid)
+        bid_price= self.T_p[bid]
         
         info_struct[:,0] = bid
         info_struct[:,1] = bid_price
         
         info_drop=np.zeros(self.N-1)
         drop_info_jj = np.zeros((self.N-1,7))
+        
         for jj in range(0, self.N-1):
             # dropout x , dropout position, dropout price  x_mu x_sigma
             drop_info_jj[jj,:]=self.HS_system(jj,info_struct,self.MU,self.SIGMA2,info_drop)

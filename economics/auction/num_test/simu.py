@@ -106,7 +106,7 @@ class Simu:
         Update_bid=Update_rule(self.info_para)
         N = self.info_para.N
         
-        data_act=np.zeros((SS,T_end))
+        data_act=np.zeros((SS,T_end),dtype=int)
         pub_info=np.zeros((SS,4))
         data_state=np.zeros((SS,N))
         data_bid_freq=np.zeros((SS,N))
@@ -120,10 +120,13 @@ class Simu:
         for s in range(0,SS):
             [pub_mu,x_signal, reserve,info_index]=self.signal_DGP(N,info_flag)
             pub_info[s,:]=[pub_mu, reserve,N,info_index]
+            
             price_v = np.linspace(0.8*pub_mu,pub_mu*1.2, T_end-10)
             price_v=np.append(price_v,np.linspace(1.24*pub_mu,pub_mu*1.8, 5))
             price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,5))
+            
             self.T_p=price_v
+            
             State = np.zeros(N)
             Active= np.ones(N)
             
@@ -131,7 +134,7 @@ class Simu:
             for t in range(0,T_end):
                 
                 if t == 1: 
-                    curr_bidder=np.argmax(x_signal)
+                    curr_bidder=int(np.argmax(x_signal))
                     data_act[s,t] = curr_bidder
                     State[curr_bidder]=State[curr_bidder]+1
                 else:
@@ -139,10 +142,10 @@ class Simu:
                     for i in range(0,N):
                         temp_state=State
                         
-                        ii = temp_state[i]
+                        ii = int(temp_state[i])
                         temp_state=np.delete(temp_state,i)
-                        i1 = temp_state[0]
-                        i2 = temp_state[1]
+                        i1 = int(temp_state[0])
+                        i2 = int(temp_state[1])
                         ss_state = [ii,i1,i2]
                
                         bid = max(ss_state)+1
@@ -152,32 +155,33 @@ class Simu:
                         
                         
                     if sum(Active) ==1:
-                        index=np.nonzero(Active)
+                        index=np.nonzero(Active)[0].tolist()
+                        
                         posting=data_act[s,t-1]
                         if index == posting:
-                            data_act[s,t:] = -1
+                            data_act[s,t:] = int(-1)
                         else:
-                            curr_bidder      = index
-                            data_act[s,t]    = curr_bidder
-                            data_act[s,t+1:] = -1
+                            curr_bidder      = int(index[0])
+                            data_act[s,t]    = int(curr_bidder)
+                            data_act[s,t+1:] = int(-1)
                         
                         break
                     else :
                         if sum(Active) == 0:
-                            data_act[s,t:] = -1
+                            data_act[s,t:] = int(-1)
                             break
                         
                         
                         
                         posting=data_act[s,t-1]
-                        index=np.nonzero(Active)
+                        index=np.nonzero(Active)[0].tolist()
                         if posting in index :
-                            index.reomve(posting)
+                            index.remove(posting)
                            
                        
                        
                         curr_bidder   = self.rng.choice(index,size=1) 
-                        data_act[s,t] = curr_bidder
+                        data_act[s,t] = int(curr_bidder)
                         State[curr_bidder] = max(State) + 1
            
         
@@ -189,7 +193,7 @@ class Simu:
             a=zip(unique,counts) 
             for ele in a:
                 if ele[0] != -1:
-                    data_bid_freq[s,ele[0]]=ele[1]
+                    data_bid_freq[s,int(ele[0])]=ele[1]
                 else:
                     continue
                     
@@ -201,14 +205,14 @@ class Simu:
             
             
             # winning
-            data_win[s]=price_v(max(State)) / (pub_mu*reserve)
+            data_win[s]=price_v[int(max(State))] / (pub_mu*reserve)
             
             # high posit
             diff_i[s]=np.std(max(State)-State)
             
             
             # find real bidding bidders
-            num_i[s]  =sum((State>0)*1)
+            num_i[s]  =int(sum((State>0)*1))
             
             
 
