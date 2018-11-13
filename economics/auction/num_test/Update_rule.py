@@ -12,7 +12,7 @@ import numpy as np
 from numpy.linalg import inv
 from scipy.stats import norm
 
-class Update_bid:
+class Update_rule:
     
     def __init__(self,para):
         self.xi_mu=para.xi_mu
@@ -23,7 +23,9 @@ class Update_bid:
         self.SIGMA2    = para.SIGMA2
         self.xi_rival_mu = para.xi_rival_mu
         self.xi_rival_sigma2 = para.xi_rival_sigma2
-        self.N         =  self.N
+        self.vi_rival_mu = para.xi_rival_mu
+        self.vi_rival_sigma2 = para.xi_rival_sigma2
+        self.N         =  para.N
         self.comm_var  = para.comm_var
         self.comm_mu  = para.comm_mu
         
@@ -32,10 +34,17 @@ class Update_bid:
         # get the info structure
         
         pos=state[1:]
-        
-        price_v=[self.T_p(x) for x in pos]
+
+        price_v=[self.T_p[x] for x in pos]
+
         pos     = np.asarray(pos)
+        pos     = pos.reshape(pos.size,1)
+        
+
+        
+
         price_v = np.asarray(price_v)
+        price_v = price_v.reshape(price_v.size,1)
 
         info_struct=np.concatenate((pos,price_v,self.xi_rival_mu,self.xi_rival_sigma2,self.vi_rival_mu,self.vi_rival_sigma2),axis=1)
         # temp[::-1].sort() sorts the array in place
@@ -52,11 +61,12 @@ class Update_bid:
         
     def HS_system(self,k,info_struct,MU,Sigma,info_drop):
         
+        (n_r,n_c)=info_struct.shape
         if k != 0 :
             # drop out x at 
             x_d = info_drop
             x_d = x_d[x_d>0]
-            (n_r,n_c)=info_struct.shape
+            
             p_k=info_struct[-1-k, 1]
             
             
@@ -68,7 +78,7 @@ class Update_bid:
             Delta_k =self.vi_sigma2*np.eyes(self.N)+np.ones((self.N,self.N))*self.comm_var - np.eye(self.N)*self.comm_var  
             
             Sigma_inv = inv(Sigma)
-            Sigma_inv_k1 = Sigma_inv[0:self.N-k+1,:]
+            Sigma_inv_k1 = Sigma_inv[0:self.N-k,:]
             
             Sigma_inv_k2 = Sigma_inv[self.N-k,:]
             
@@ -87,32 +97,40 @@ class Update_bid:
             
             
         else:
-            p_k=p_k[-1, 1]
+            p_k=info_struct[-1, 1]
             
             
             
                 
             # mu_k
             mu_k = np.append(self.vi_mu, info_struct[:n_r-k+1,3])
-            l_k  = np.ones((self.N-k,1))
-            Gamma_k = np.append(self.vi_sigma2, info_struct[:n_r-k+1,4])
+            mu_k=mu_k.reshape(mu_k.size,1)
             
-            Delta_k =self.vi_sigma2*np.eyes(self.N)+np.ones((self.N,self.N))*self.comm_var - np.eye(self.N)*self.comm_var  
+            l_k  = np.ones((self.N-k,1))
+            
+            Gamma_k = np.append(self.vi_sigma2, info_struct[:n_r-k+1,4])
+            Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
+            
+            
+            Delta_k =self.vi_sigma2*np.eye(self.N)+np.ones((self.N,self.N))*self.comm_var - np.eye(self.N)*self.comm_var  
 
             
             Sigma_inv = inv(Sigma)
-            Sigma_inv_k1 = Sigma_inv[0:self.N-k+1,:]
+            Sigma_inv_k1 = Sigma_inv[0:self.N-k,:]
             # Sigma_inv_k2 = Sigma_inv(N-k+1:N,:);
             
             
-            AA_k = inv(Delta_k*(Sigma_inv_k1.T))*l_k
-            CC_k = 0.5*inv(Delta_k*(Sigma_inv_k1.T))*(Gamma_k-np.diag(Delta_k*Sigma_inv*Delta_k.T) + 2*mu_k -2* Delta_k*Sigma_inv*MU)
+            AA_k = inv(Delta_k @ Sigma_inv_k1.T) @ l_k
+            
+            temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
+            temp_diag=temp_diag.reshape(temp_diag.size,1)
+            CC_k = 0.5*inv(Delta_k @ (Sigma_inv_k1.T)) @ (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@MU)
             # DD_k = inv(Delta_k*(Sigma_inv_k1.T))*(Delta_k*(Sigma_inv_k2.T))
             
-   
-            x_drop = AA_k(-1)*p_k - CC_k(-1); 
-            
-        return np.array([x_drop,info_struct[-1-k,:]])
+
+            x_drop = AA_k[-1]*p_k - CC_k[-1]
+        
+        return np.append(x_drop,info_struct[-1-k,:])
 
     def real_bid(self,xi,bid,state,price_v):
         self.T_p = price_v

@@ -18,10 +18,10 @@ import numpy as np
 para_dict={
         "comm_mu":10,
         "priv_mu":1,
-        "noise_mu":0,
+        "epsilon_mu":0,
         "comm_var":0.8,
         "priv_var":1.2,
-        "noise_var":0.8,
+        "epsilon_var":0.8,
         }
 
 
@@ -29,15 +29,14 @@ para_dict={
 
 
 class ENV:
-    def __init__(self, N,rng_seed=123, dict_para=para_dict):
+    def __init__(self, N, dict_para=para_dict):
         self.comm_mu  =dict_para['comm_mu']
         self.priv_mu  =dict_para['priv_mu']
-        self.noise_mu =dict_para['noise_mu']
+        self.noise_mu =dict_para['epsilon_mu']
         self.comm_var =dict_para['comm_var']
         self.priv_var =dict_para['priv_var']
-        self.noise_var=dict_para['noise_var']
+        self.noise_var=dict_para['epsilon_var']
         self.N=N
-        self.rng=np.random.RandomState(12345)
         self.uninfo={}
         self.info_Id={}
         
@@ -56,8 +55,8 @@ class ENV:
         self.uninfo['vi_rival_mu'] = (self.comm_mu+self.priv_mu) * np.ones((self.N-1,1))
         self.uninfo['vi_rival_sigma2'] = (self.comm_var+self.priv_var ) * np.ones((self.N-1,1))
         temp_matrix= np.ones((self.N,self.N))*self.comm_var - np.eye(self.N)*self.comm_var              
-        self.uninfo['COV_i']       = np.concatenate((np.diag(self.uninfo['vi_sigma2']*np.ones(self.N)) + temp_matrix ), axis=1)
-        self.uninfo['SiGMA2']      = self.uninfo['xi_sigma2']*np.ones((self.N,self.N)) + temp_matrix
+        self.uninfo['COV_i']       = np.diag(self.uninfo['vi_sigma2']*np.ones(self.N)) + temp_matrix 
+        self.uninfo['SIGMA2']      = np.diag(self.uninfo['xi_sigma2']*np.ones(self.N)) + temp_matrix
         self.uninfo['MU']          = (self.comm_mu+self.priv_mu + self.noise_mu)*np.ones((self.N,1))
         self.uninfo['comm_var']    = self.comm_var
         self.uninfo['comm_mu']    = self.comm_mu
@@ -72,12 +71,12 @@ class ENV:
         self.info_Id['x_info_sigma2'] = self.comm_var+self.priv_var
         self.info_Id['N']         =  self.N
         temp_N2=(self.comm_mu+self.priv_mu + self.noise_mu) * np.ones((self.N-2,1))
-        self.info_Id['xi_rival_mu'] = np.concatenate(((self.comm_mu+self.priv_mu)*np.ones(1,1) , temp_N2), axis=0)
+        self.info_Id['xi_rival_mu'] = np.concatenate(((self.comm_mu+self.priv_mu)*np.ones((1,1)) , temp_N2), axis=0)
         temp_N2=(self.comm_var+self.priv_var + self.noise_var) * np.ones((self.N-2,1))
-        self.info_Id['xi_rival_sigma2'] = np.concatenate(((self.comm_var+self.priv_var)*np.ones(1,1) , temp_N2), axis=0)
+        self.info_Id['xi_rival_sigma2'] = np.concatenate(((self.comm_var+self.priv_var)*np.ones((1,1)) , temp_N2), axis=0)
         temp_matrix= np.ones((self.N,self.N))*self.comm_var - np.eye(self.N)*self.comm_var              
-        self.info_Id['COV_i']       = np.concatenate((np.diag(self.info_Id['vi_sigma2']*np.ones(self.N)) + temp_matrix ), axis=1)
-        self.info_Id['SiGMA2']      = self.info_Id['xi_sigma2']*np.ones((self.N,self.N)) + temp_matrix
+        self.info_Id['COV_i']       = np.diag(self.info_Id['vi_sigma2']*np.ones(self.N)) + temp_matrix 
+        self.info_Id['SIGMA2']      = np.diag(self.info_Id['xi_sigma2']*np.ones(self.N)) + temp_matrix
         self.info_Id['MU']          = (self.comm_mu+self.priv_mu + self.noise_mu)*np.ones((self.N,1))
         self.info_Id['comm_var']    = self.comm_var
         self.info_Id['comm_mu']    = self.comm_mu
@@ -174,11 +173,11 @@ class Info_result(object):
         return self.info_dict['COV_i']
 
     @property 
-    def SiGMA2(self):
+    def SIGMA2(self):
         '''
         return big SIGMA
         '''
-        return self.info_dict['SiGMA2']
+        return self.info_dict['SIGMA2']
 
     @property 
     def MU(self):
@@ -201,7 +200,13 @@ class Info_result(object):
         '''
         return self.info_dict['comm_mu']
     
-    
+    @property 
+    def N(self):
+        '''
+        return mu for 
+        '''
+        return self.info_dict['N']
+        
     
 
 

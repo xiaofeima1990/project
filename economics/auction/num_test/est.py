@@ -8,56 +8,29 @@ this is for estimation
 """
 
 import numpy as np
+from ENV import ENV
+from Update_rule import Update_rule
 
 
 para_dict={
         "comm_mu":10,
         "priv_mu":1,
-        "noise_mu":0,
+        "epsilon_mu":0,
         "comm_var":0.8,
         "priv_var":1.2,
-        "noise_var":0.8,
+        "epsilon_var":0.8,
         }
 
 
-
-class est:
-    def __init__(self,N,rng_seed=789):
+class Est:
+    def __init__(self,N,rng_seed=789,TT=200,SS=25,info_flag=0):
         self.N=N
         self.rng=np.random.RandomState(rng_seed)
+        self.info_flag=info_flag
+        self.SS  = 25
+        self.TT  = 200 
         # set up the setup
-        
-    
-    def para_setup(self,para_dict,SS=25):
-        comm_mu =para_dict['comm_mu']
-        priv_mu  = para_dict['priv_mu']
-        epsilon_mu   = para_dict['epsilon_mu']
-        
-        comm_var = para_dict['comm_var']
-        priv_var = para_dict['priv_var']
-        epsilon_var = para_dict['epsilon_var']
-        
-        
-        
-        # setup new parameters 
-        info['xi_mu']     =  self.comm_mu+self.priv_mu + self.noise_mu
-        info['xi_sigma2'] =  self.comm_var+self.priv_var + self.noise_var
-        info['vi_mu']     =  self.comm_mu+self.priv_mu 
-        info['vi_sigma2'] =  self.comm_var+self.priv_var
-        info['N']         =  self.N
-        info['xi_rival_mu'] = (self.comm_mu+self.priv_mu + self.noise_mu) * np.ones((self.N-1,1))
-        info['xi_rival_sigma2'] = (self.comm_var+self.priv_var + self.noise_var) * np.ones((self.N-1,1))
-        info['vi_rival_mu'] = (self.comm_mu+self.priv_mu) * np.ones((self.N-1,1))
-        info['vi_rival_sigma2'] = (self.comm_var+self.priv_var ) * np.ones((self.N-1,1))
-        temp_matrix= np.ones((self.N,self.N))*self.comm_var - np.eye(self.N)*self.comm_var              
-        info['COV_i']       = np.concatenate((np.diag(info['vi_sigma2']*np.ones(self.N)) + temp_matrix ), axis=1)
-        info['SiGMA2']      = info['xi_sigma2']*np.ones((self.N,self.N)) + temp_matrix
-        info['MU']          = (self.comm_mu+self.priv_mu + self.noise_mu)*np.ones((self.N,1))
-        info['comm_var']    = self.comm_var
-        info['comm_mu']    = self.comm_mu
-        info['SS']         = SS
-        return Info_result(info)
-    
+
     
     def signal_DGP_est(self,public_info,Theta):
         
@@ -96,13 +69,30 @@ class est:
         
         return [pub_mu,x_signal,r,info_index]
     
-    def SMM(self,Data_struct,Theta):
+    def SMM(self,Theta0,Data_struct,T_end):
         
-        para=para_setup(Theta)
-        SS=para.SS
-        TT=para.TT
+        Theta={
+        "comm_mu":Theta0[0],
+        "priv_mu":Theta0[1],
+        "epsilon_mu":Theta0[2],
+        "comm_var":Theta0[3],
+        "priv_var":Theta0[4],
+        "epsilon_var":Theta0[5],
+        }
+
         
-        Update_rule=Update_bid(para)
+        
+        Env=ENV(self.N, Theta)
+        if self.info_flag == 0 :
+            para=Env.Uninform()
+        else:
+            para=Env.Info_ID()
+        
+            
+        SS=self.SS
+        TT=self.TT
+        
+        Update_bid=Update_rule(para)
         Sg=np.zeros(10)
         
         for tt in range(0,TT):
@@ -119,13 +109,14 @@ class est:
             win_low=np.zeros((SS,1))
             win_up =np.zeros((SS,1))
             # Active_flag=np.ones(self.N)
-            flag_ID=0
+
             for s in range(0,SS):
                 [pub_mu,x_signal, reserve,info_index]=self.signal_DGP_est(Data_struct.public_info,Theta)
                 
                 
-                price_v=[np.linspace(0.8*pub_mu,pub_mu*1.2, 30),np.linspace(1.24*pub_mu,pub_mu*1.8, 5),np.linspace(1.85*pub_mu,pub_mu*2.5,5)];
-            
+                price_v = np.linspace(0.8*pub_mu,pub_mu*1.2, T_end-10)
+                price_v=np.append(price_v,np.linspace(1.24*pub_mu,pub_mu*1.8, 5))
+                price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,5))
                 State = np.zeros(self.N)
                 Active= np.ones(self.N)
                 
@@ -148,7 +139,7 @@ class est:
                             ss_state = [ii,i1,i2]
                    
                             bid = max(ss_state)+1
-                            result = Update_rule.real_bid(x_signal(i),bid,ss_state,price_v)
+                            result = Update_bid.real_bid(x_signal(i),bid,ss_state,price_v)
                             
                             Active[i] = result[2]
                             
@@ -178,7 +169,7 @@ class est:
                                
                            
                            
-                            curr_bidder   = rng.choice(index,size=1) 
+                            curr_bidder   = self.rng.choice(index,size=1) 
                             data_act[s,t] = curr_bidder
                             State[curr_bidder] = max(State) + 1
                
@@ -198,15 +189,15 @@ class est:
                 # comb = list(combinations(list(range(0,self.N)), 2))
                 comb=np.array(np.meshgrid(data_bid_freq[s,:], data_bid_freq[s,:])).T.reshape(-1,2)
                 v=abs(comb[:,0]-comb[:,1])
-                freq_i(s)=sum(v)
+                freq_i[s]=sum(v)
     
                 
                 
                 # winning
-                data_win[s]=para.T_p(max(State)) / (pub_mu*reserve)
+                data_win[s]=price_v(max(State)) / (pub_mu*reserve)
                 
                 # high posit
-                diff_i[s]=std(max(State)-State)
+                diff_i[s]=np.std(max(State)-State)
                 
                 
                 # find real bidding bidders
