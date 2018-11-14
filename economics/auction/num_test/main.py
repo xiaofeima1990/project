@@ -31,7 +31,7 @@ Simu_para_dict={
 
 
 
-def signal_DGP_est(self,public_info,Theta):
+def signal_DGP_est(public_info,Theta,rng,N):
     
     comm_mu =Theta['comm_mu']
     priv_mu  = Theta['priv_mu']
@@ -52,15 +52,15 @@ def signal_DGP_est(self,public_info,Theta):
     mu_x = comm_mu+priv_mu+epsilon_mu
     sigma_x = comm_var + priv_var+ epsilon_var
     
-    x_signal=self.rng.normal(mu_x,sigma_x,self.N)
+    x_signal=rng.normal(mu_x,sigma_x,N)
     
     info_index=public_info[3]
     
     if info_index >0:
-        mu_x = self.comm_mu+self.priv_mu
-        sigma_x = self.comm_var + self.priv_var
+        mu_x     = comm_mu+ priv_mu
+        sigma_x  = comm_var + priv_var
     
-        x_info=self.rng.normal(mu_x,sigma_x)
+        x_info   = rng.normal(mu_x,sigma_x)
         
         x_signal[info_index]=x_info
     
@@ -82,7 +82,6 @@ def SMM(Theta0,Data_struct,d_struct):
     "epsilon_var":Theta0[5],
     }
 
-    
     N=d_struct['N']
     T_end=d_struct['T_end']
     SS=d_struct['SS']
@@ -115,7 +114,7 @@ def SMM(Theta0,Data_struct,d_struct):
         # Active_flag=np.ones(N)
 
         for s in range(0,SS):
-            [pub_mu,x_signal, reserve,info_index]=signal_DGP_est(Data_struct.public_info,Theta)
+            [pub_mu,x_signal, reserve,info_index]=signal_DGP_est(Data_struct.pub_info[s,:],Theta,rng,N)
             
             
             price_v = np.linspace(0.8*pub_mu,pub_mu*1.2, T_end-10)
@@ -128,7 +127,7 @@ def SMM(Theta0,Data_struct,d_struct):
             
             for t in range(0,T_end):
                 
-                if t == 1: 
+                if t == 0: 
                     curr_bidder=int(np.argmax(x_signal))
                     data_act[s,t] = curr_bidder
                     State[curr_bidder]=State[curr_bidder]+1
@@ -158,6 +157,7 @@ def SMM(Theta0,Data_struct,d_struct):
                         else:
                             curr_bidder      = int(index[0])
                             data_act[s,t]    = int(curr_bidder)
+                            State[int(curr_bidder)] = max(State) + 1
                             data_act[s,t+1:] = int(-1)
                         
                         break
@@ -200,14 +200,14 @@ def SMM(Theta0,Data_struct,d_struct):
             
             
             # winning
-            data_win[s]=price_v(max(State)) / (pub_mu*reserve)
+            data_win[s]=price_v[int(max(State))] / (pub_mu*reserve)
             
             # high posit
             diff_i[s]=np.std(max(State)-State)
             
             
             # find real bidding bidders
-            num_i[s]  =sum((State>0)*1)
+            num_i[s]  =int(sum((State>0)*1))
             
             temp_state=State
                         
@@ -219,11 +219,11 @@ def SMM(Theta0,Data_struct,d_struct):
             ss_state = [ii,i1,i2]
    
             bid = ii
-            result = Update_rule.real_bid(x_signal(i),bid,ss_state,price_v)
+            result = Update_bid.real_bid(x_signal[i],bid,ss_state,price_v)
             win_low[s]=result[0]
             
             bid =  ii+1
-            result = Update_rule.real_bid(x_signal(i),bid,ss_state,price_v)
+            result = Update_bid.real_bid(x_signal[i],bid,ss_state,price_v)
             win_up[s]=result[0]                
             
         
@@ -248,7 +248,7 @@ def SMM(Theta0,Data_struct,d_struct):
         Sg[1]=Sg[1]+Data_struct.freq_i[tt]   - SM["freq_i_mu"]
         Sg[2]=Sg[2]+Data_struct.diff_i[tt]   - SM["num_i_mu"]
         Sg[3]=Sg[3]+Data_struct.num_i[tt]    - SM["diff_i_mu"]
-        Sg[4]=Sg[4]+Data_struct.Data_win2[tt]- SM["data_win_var"]
+        Sg[4]=Sg[4]+Data_struct.data_win2[tt]- SM["data_win_var"]
         Sg[5]=Sg[5]+Data_struct.freq_i[tt]   - SM["freq_i_var"]
         Sg[6]=Sg[6]+Data_struct.diff_i[tt]   - SM["num_i_var"]
         Sg[7]=Sg[7]+Data_struct.num_i[tt]    - SM["diff_i_var"]
@@ -268,11 +268,11 @@ if __name__ == '__main__':
     # fminsearch
     N=3
     rng_seed=123
-    T=200
+    T=50
     T_end=40
-    SIMU=Simu(N,T,rng_seed,Simu_para_dict)
-    simu_data=SIMU.Data_simu(T_end)
-    Theta= copy.deepcopy(Simu_para_dict)
+#    SIMU=Simu(N,T,rng_seed,Simu_para_dict)
+#    simu_data=SIMU.Data_simu(T_end)
+#    
     
     
     rng_seed=789
@@ -288,7 +288,10 @@ if __name__ == '__main__':
             'SS':SS,
             
             }
-
     
+#    Theta= copy.deepcopy(Simu_para_dict)
+    
+    Theta=[10,1,0,0.8,1.2,0.8]
+    s=SMM(Theta,simu_data,d_struct)
     # start the estimation 
-    res = minimize(SMM, Theta, method='nelder-mead',args=(simu_data,simu_data,d_struct))
+#    res = minimize(SMM, Theta, method='nelder-mead',args=(simu_data,simu_data,d_struct))
