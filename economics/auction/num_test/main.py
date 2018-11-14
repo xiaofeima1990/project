@@ -17,7 +17,7 @@ from Update_rule import Update_rule
 from est import Est
 from ENV import ENV
 from scipy.optimize import minimize
-import copy
+import copy ,time
 
 Simu_para_dict={
 
@@ -97,6 +97,11 @@ def SMM(Theta0,Data_struct,d_struct):
     rng=np.random.RandomState(d_struct['rng_seed'])
     Update_bid=Update_rule(para)
     Sg=np.zeros(10)
+    start = time.time()
+    print('--------------------------------------------------------')
+    print('current parameter set are :')
+    print(Theta)
+    print('# of auctions: '+str(TT) + '\t # of simus: '+str(SS))
     
     for tt in range(0,TT):
     
@@ -246,18 +251,22 @@ def SMM(Theta0,Data_struct,d_struct):
         
         Sg[0]=Sg[0]+Data_struct.data_win[tt] - SM["data_win_mu"]
         Sg[1]=Sg[1]+Data_struct.freq_i[tt]   - SM["freq_i_mu"]
-        Sg[2]=Sg[2]+Data_struct.diff_i[tt]   - SM["num_i_mu"]
-        Sg[3]=Sg[3]+Data_struct.num_i[tt]    - SM["diff_i_mu"]
+        Sg[2]=Sg[2]+Data_struct.diff_i[tt]   - SM["diff_i_mu"]
+        Sg[3]=Sg[3]+Data_struct.num_i[tt]    - SM["num_i_mu"]
         Sg[4]=Sg[4]+Data_struct.data_win2[tt]- SM["data_win_var"]
-        Sg[5]=Sg[5]+Data_struct.freq_i[tt]   - SM["freq_i_var"]
-        Sg[6]=Sg[6]+Data_struct.diff_i[tt]   - SM["num_i_var"]
-        Sg[7]=Sg[7]+Data_struct.num_i[tt]    - SM["diff_i_var"]
+        Sg[5]=Sg[5]+Data_struct.freq_i2[tt]   - SM["freq_i_var"]
+        Sg[6]=Sg[6]+Data_struct.diff_i2[tt]   - SM["diff_i_var"]
+        Sg[7]=Sg[7]+Data_struct.num_i2[tt]    - SM["num_i_var"]
         Sg[8]=Sg[8]+Data_struct.data_win[tt] - SM["win_low"]
         Sg[9]=Sg[9]+Data_struct.data_win[tt] - SM["win_up"]
 
     
     Sg=Sg/TT
     
+    end = time.time()
+    print("time spend in this loop: ")
+    print(end - start)
+    print('--------------------------------------------------------\n')
 
     return sum(np.square(Sg))
         
@@ -270,8 +279,8 @@ if __name__ == '__main__':
     rng_seed=123
     T=50
     T_end=40
-#    SIMU=Simu(N,T,rng_seed,Simu_para_dict)
-#    simu_data=SIMU.Data_simu(T_end)
+    SIMU=Simu(N,T,rng_seed,Simu_para_dict)
+    simu_data=SIMU.Data_simu(T_end)
 #    
     
     
