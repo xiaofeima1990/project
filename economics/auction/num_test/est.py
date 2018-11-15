@@ -258,7 +258,7 @@ class Est:
         return sum(np.square(Sg))
         
     def GMM_Ineq(self,Data_struct,Theta0):
-        
+        pass        
 
     
     

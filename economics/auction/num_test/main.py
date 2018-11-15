@@ -36,8 +36,7 @@ def list_duplicates(seq):
     tally = defaultdict(list)
     for i,item in enumerate(seq):
         tally[item].append(i)
-    return ((key,locs) for key,locs in tally.items() 
-                            if len(locs)>1)
+    return ((key,locs) for key,locs in tally.items() if len(locs)>1)
    
 
 
@@ -90,15 +89,15 @@ def signal_DGP_simu(public_info,para,rng,N,JJ=100):
     
     # random reservation ratio
     # r =  0.8 + 0.1*self.rng.rand() 
-    r =  public_info[:,2]
+    r =  public_info[:,1]
     
     
-    
-    x_signal=rng.multivariate_normal(MU,SIGMA2,JJ)
+    print(MU)
+    x_signal=rng.multivariate_normal(MU.flatten(),SIGMA2,JJ)
     
     info_index=public_info[3]
     
-    prob_x_signal=multivariate_normal.pdf(x_signal,MU,SIGMA2)
+    prob_x_signal=multivariate_normal.pdf(x_signal,MU.flatten(),SIGMA2)
     
     
     
@@ -315,9 +314,9 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
     "epsilon_var":Theta0[5],
     }
 
-    N=d_struct['N'] # number of bidders for the highest bidding price
-    T_end=d_struct['T_end']
-    
+    N     =d_struct['N'] # number of bidders for the highest bidding price
+    T_end =d_struct['T_end']
+    J     =d_struct["JJ"]
     
     TT=d_struct['T'] # number of auctions in the data
     
@@ -330,10 +329,12 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
     
     rng=np.random.RandomState(d_struct['rng_seed'])
     Update_bid=Update_rule(para)
-    Sg=np.zeros(10)
+
     start = time.time()
     
-    [pub_mu,x_signal,prob_x_signal,info_index,r]=signal_DGP_simu(Data_struct.pub_info,para,rng,N)
+    MoM=0
+    
+    [pub_mu,x_signal,prob_x_signal,info_index,resev]=signal_DGP_simu(Data_struct.pub_info,para,rng,N,J)
     
     print('--------------------------------------------------------')
     print('current parameter set are :')
@@ -341,18 +342,84 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
     print('# of auctions: '+str(TT) + '\t # of simus: '+str(SS))
     
     for tt in range(0,TT):
-        temp_act= deep.copy(Data_struct.data_act[tt,:])
-        temp_state=deep.copy(Data_struct.data_state[tt,:])
+        temp_act= copy.deepcopy(Data_struct.data_act[tt,:])
+        temp_state=copy.deepcopy(Data_struct.data_state[tt,:])
         
         can_bidder_lists=list(list_duplicates(temp_act))
+        can_bidder_lists=[x for x in can_bidder_lists if x[0] != -1 ]
+        can_bidder_lists.sort()
         
+        state_temp=np.zeros((N,N))
+        pub_mu_0=pub_mu[tt]
         
-        for n in range(0,N):
+        price_v = np.linspace(resev[tt]*pub_mu_0,pub_mu_0*1.2, T_end-10)
+        price_v=np.append(price_v,np.linspace(1.24*pub_mu_0,pub_mu_0*1.8, 5))
+        price_v=np.append(price_v,np.linspace(1.85*pub_mu_0,pub_mu_0*2.5,5))
+            
+        # get the bidders state for claculation
+        for i in range(0,len(temp_state)):
+            flag_select=[1,1,1]
+            flag_select[i]=0
+            select_flag=np.nonzero(flag_select)[0].tolist()
+            i_list=[0]
+            i_list=i_list + can_bidder_lists[i][1]
+            state_temp[i,0]=[x for x in can_bidder_lists[i][1]][-2]
+            
+            temp_s=[]
+            for j in select_flag:
+                bid_post=can_bidder_lists[j][1]
+                bid_post.append(0)
+                temp_s.append([x for x in bid_post[i][1] if x < temp_state[i] ][-2])
+            
+            state_temp[i,1:] = temp_s
             
             
-            pass 
-            
+        # for the expected value of each bidders
         
+
+        bid_low=[price_v(x) for x in temp_state]
+        bid_up =price_v(int(max(temp_state)+1))*np.ones(3)
+        
+        
+        
+        
+        
+        # now I need to calculate empirical int 
+        for j in range(0,J):
+            
+            exp_value=np.zeros(3)
+            low_case =np.zeros(3)
+            up_case  =np.zeros(3)
+            
+            
+            for i in range(0,N):
+                bid=int(max(state_temp[i,:]))+1
+                result = Update_bid.real_bid(x_signal[j,i],bid,state_temp,price_v)
+                
+                exp_value[i]=result[0]
+            
+            # calcuate the first part b-exp<= 0 
+            low_case=bid_low-exp_value
+            up_case =bid_up-exp_value
+        
+            
+            exp_value=sum(np.square((low_case>0)*1*low_case)) + sum(np.square((up_case<0)*1*up_case))
+            
+            exp_value=exp_value*prob_x_signal[j] + exp_value
+                
+                
+                
+            
+            
+        MoM = MoM + exp_value
+            
+    end = time.time()
+    print("time spend in this loop: ")
+    print(end - start)
+    print('--------------------------------------------------------\n')
+ 
+    return MoM
+
 
 if __name__ == '__main__':
     
@@ -361,14 +428,16 @@ if __name__ == '__main__':
     rng_seed=123
     T=50
     T_end=40
-    SIMU=Simu(N,T,rng_seed,Simu_para_dict)
-    simu_data=SIMU.Data_simu(T_end)
-#    
+#    SIMU=Simu(N,T,rng_seed,Simu_para_dict)
+#    simu_data=SIMU.Data_simu(T_end)
+##    
     
     
     rng_seed=789
     SS=25
+    JJ=100
     info_flag=0
+    
     #est=Est(N,rng_seed,TT,SS,info_flag)
     
     d_struct={
@@ -377,12 +446,14 @@ if __name__ == '__main__':
             'rng_seed':rng_seed,
             'T_end':T_end,
             'SS':SS,
+            "JJ":JJ,
             
             }
     
 #    Theta= copy.deepcopy(Simu_para_dict)
     
     Theta=[10,1,0,0.8,1.2,0.8]
-    s=SMM(Theta,simu_data,d_struct)
+#    s=SMM(Theta,simu_data,d_struct)
+    s=GMM_Ineq(Theta,simu_data,d_struct)
     # start the estimation 
 #    res = minimize(SMM, Theta, method='nelder-mead',args=(simu_data,simu_data,d_struct))

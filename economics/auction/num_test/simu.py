@@ -106,7 +106,7 @@ class Simu:
         Update_bid=Update_rule(self.info_para)
         N = self.info_para.N
         
-        data_act=np.zeros((SS,T_end),dtype=int)
+        data_act=np.ones((SS,T_end),dtype=int)*(-1)
         pub_info=np.zeros((SS,4))
         data_state=np.zeros((SS,N))
         data_bid_freq=np.zeros((SS,N))
@@ -116,12 +116,12 @@ class Simu:
         num_i = np.zeros((SS,1))
         diff_i = np.zeros((SS,1))
         
-        [pub_mu,x_signal, reserve,info_index]=self.signal_DGP(info_flag)
-        pub_info[s,:]=[pub_mu, reserve,N,info_index]
+
         # Active_flag=np.ones(N)
         for s in range(0,SS):
             
-            
+            [pub_mu,x_signal, reserve,info_index]=self.signal_DGP(info_flag)
+            pub_info[s,:]=[pub_mu, reserve,N,info_index]
             
             price_v = np.linspace(0.8*pub_mu,pub_mu*1.2, T_end-10)
             price_v=np.append(price_v,np.linspace(1.24*pub_mu,pub_mu*1.8, 5))
