@@ -50,7 +50,7 @@ class Simu:
 
         
         
-    def signal_DGP(self,N,flag_ID=0):
+    def signal_DGP(self,info_para,flag_ID=0):
         g_m = -1 + (1+1)*self.rng.rand() 
         # common value in public
         pub_mu = self.comm_mu + g_m
@@ -60,21 +60,21 @@ class Simu:
         r =  0.8
         
         
-        mu_x = self.info_para.xi_mu
-        sigma_x = self.info_para.xi_sigma2 
         
-        x_signal=self.rng.normal(mu_x,sigma_x,N)
+        MU     = self.info_para.MU
+        SIGMA2 = self.info_para.SIGMA2
         
-        info_index=0
         
-        if info_index==1:
-            mu_x = self.comm_mu+self.priv_mu
-            sigma_x = self.comm_var + self.priv_var
+        x_signal=self.rng.multivariate_normal(MU,SIGMA2)
         
-            x_info=self.rng.normal(mu_x,sigma_x)
+        
+        
+        if flag_ID==1:
             
-            info_index=self.rng.randint(3)
-            x_signal[info_index]=x_info
+            info_index=1
+        else:
+            info_index=0
+
         
         
         
@@ -116,10 +116,12 @@ class Simu:
         num_i = np.zeros((SS,1))
         diff_i = np.zeros((SS,1))
         
+        [pub_mu,x_signal, reserve,info_index]=self.signal_DGP(info_flag)
+        pub_info[s,:]=[pub_mu, reserve,N,info_index]
         # Active_flag=np.ones(N)
         for s in range(0,SS):
-            [pub_mu,x_signal, reserve,info_index]=self.signal_DGP(N,info_flag)
-            pub_info[s,:]=[pub_mu, reserve,N,info_index]
+            
+            
             
             price_v = np.linspace(0.8*pub_mu,pub_mu*1.2, T_end-10)
             price_v=np.append(price_v,np.linspace(1.24*pub_mu,pub_mu*1.8, 5))
@@ -133,7 +135,7 @@ class Simu:
             
             for t in range(0,T_end):
                 
-                if t == 1: 
+                if t == 0: 
                     curr_bidder=int(np.argmax(x_signal))
                     data_act[s,t] = curr_bidder
                     State[curr_bidder]=State[curr_bidder]+1
@@ -163,6 +165,7 @@ class Simu:
                         else:
                             curr_bidder      = int(index[0])
                             data_act[s,t]    = int(curr_bidder)
+                            State[curr_bidder] = max(State) + 1
                             data_act[s,t+1:] = int(-1)
                         
                         break

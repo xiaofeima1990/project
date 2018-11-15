@@ -18,6 +18,9 @@ from est import Est
 from ENV import ENV
 from scipy.optimize import minimize
 import copy ,time
+from collections import defaultdict,OrderedDict
+from scipy.stats import multivariate_normal
+
 
 Simu_para_dict={
 
@@ -28,6 +31,14 @@ Simu_para_dict={
         "priv_var":1.2,
         "epsilon_var":0.8,
         }
+
+def list_duplicates(seq):
+    tally = defaultdict(list)
+    for i,item in enumerate(seq):
+        tally[item].append(i)
+    return ((key,locs) for key,locs in tally.items() 
+                            if len(locs)>1)
+   
 
 
 
@@ -68,6 +79,30 @@ def signal_DGP_est(public_info,Theta,rng,N):
     
     return [pub_mu,x_signal,r,info_index]
 
+def signal_DGP_simu(public_info,para,rng,N,JJ=100):
+    
+
+    
+    MU       =para.MU
+    SIGMA2   =para.SIGMA2
+    # common value in public
+    pub_mu = public_info[:,0]
+    
+    # random reservation ratio
+    # r =  0.8 + 0.1*self.rng.rand() 
+    r =  public_info[:,2]
+    
+    
+    
+    x_signal=rng.multivariate_normal(MU,SIGMA2,JJ)
+    
+    info_index=public_info[3]
+    
+    prob_x_signal=multivariate_normal.pdf(x_signal,MU,SIGMA2)
+    
+    
+    
+    return [pub_mu,x_signal,prob_x_signal,info_index,r]
 
 
 
@@ -269,8 +304,55 @@ def SMM(Theta0,Data_struct,d_struct):
     print('--------------------------------------------------------\n')
 
     return sum(np.square(Sg))
-        
 
+def GMM_Ineq(Theta0,Data_struct,d_struct):
+    Theta={
+    "comm_mu":Theta0[0],
+    "priv_mu":Theta0[1],
+    "epsilon_mu":Theta0[2],
+    "comm_var":Theta0[3],
+    "priv_var":Theta0[4],
+    "epsilon_var":Theta0[5],
+    }
+
+    N=d_struct['N'] # number of bidders for the highest bidding price
+    T_end=d_struct['T_end']
+    
+    
+    TT=d_struct['T'] # number of auctions in the data
+    
+    # setup the env info structure
+    Env=ENV(N, Theta)
+    if info_flag == 0 :
+        para=Env.Uninform()
+    else:
+        para=Env.Info_ID()
+    
+    rng=np.random.RandomState(d_struct['rng_seed'])
+    Update_bid=Update_rule(para)
+    Sg=np.zeros(10)
+    start = time.time()
+    
+    [pub_mu,x_signal,prob_x_signal,info_index,r]=signal_DGP_simu(Data_struct.pub_info,para,rng,N)
+    
+    print('--------------------------------------------------------')
+    print('current parameter set are :')
+    print(Theta)
+    print('# of auctions: '+str(TT) + '\t # of simus: '+str(SS))
+    
+    for tt in range(0,TT):
+        temp_act= deep.copy(Data_struct.data_act[tt,:])
+        temp_state=deep.copy(Data_struct.data_state[tt,:])
+        
+        can_bidder_lists=list(list_duplicates(temp_act))
+        
+        
+        for n in range(0,N):
+            
+            
+            pass 
+            
+        
 
 if __name__ == '__main__':
     
