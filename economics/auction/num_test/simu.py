@@ -17,7 +17,7 @@ import numpy as np
 from Update_rule import Update_rule
 from scipy.interpolate import interpn
 from ENV import ENV 
-
+import copy
 
 
 para_dict={
@@ -65,7 +65,7 @@ class Simu:
         SIGMA2 = self.info_para.SIGMA2
         
         
-        x_signal=self.rng.multivariate_normal(MU,SIGMA2)
+        x_signal=self.rng.multivariate_normal(MU.flatten(),SIGMA2)
         
         
         
@@ -142,7 +142,7 @@ class Simu:
                 else:
                     
                     for i in range(0,N):
-                        temp_state=State
+                        temp_state=copy.deepcopy(State)
                         
                         ii = int(temp_state[i])
                         temp_state=np.delete(temp_state,i)
@@ -165,7 +165,7 @@ class Simu:
                         else:
                             curr_bidder      = int(index[0])
                             data_act[s,t]    = int(curr_bidder)
-                            State[curr_bidder] = max(State) + 1
+                            State[curr_bidder] = bid
                             data_act[s,t+1:] = int(-1)
                         
                         break
@@ -185,10 +185,12 @@ class Simu:
                        
                         curr_bidder   = self.rng.choice(index,size=1) 
                         data_act[s,t] = int(curr_bidder)
-                        State[curr_bidder] = max(State) + 1
+                        State[curr_bidder] = bid
            
         
             # final state
+            # notice there exist mismatch between data act and state 
+            # state is right data act need to add 1 
             data_state[s,:]=State
             
             # calculate the high posit
