@@ -369,7 +369,7 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
             for j in select_flag:
                 bid_post=can_bidder_lists[j][1]
                 bid_post.append(0)
-                temp_s.append([x for x in bid_post[i][1] if x < temp_state[i] ][-2])
+                temp_s=temp_s+[x for x in bid_post[i][1] if x < temp_state[i] ][-2]
             
             state_temp[i,1:] = temp_s
             
@@ -377,7 +377,7 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
         # for the expected value of each bidders
         
 
-        bid_low=[price_v(x) for x in temp_state]
+        bid_low=[price_v(x) for x in temp_state] 
         bid_up =price_v(int(max(temp_state)+1))*np.ones(3)
         
         
