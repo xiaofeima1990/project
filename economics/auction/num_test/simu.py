@@ -33,7 +33,7 @@ para_dict={
 
 
 class Simu:
-    def __init__(self,N=3,T=200,rng_seed=123,dict_para=para_dict):
+    def __init__(self,rng_seed=123,dict_para=para_dict):
 
 
         self.rng       =np.random.RandomState(rng_seed)
@@ -44,22 +44,29 @@ class Simu:
         self.comm_var  =dict_para['comm_var']
         self.priv_var  =dict_para['priv_var']
         self.noise_var =dict_para['epsilon_var']
-        self.T         =T
-        self.ENV       =ENV(N, dict_para)
+        self.dict_para =dict_para
+
+        
         
 
         
         
-    def signal_DGP(self,info_para,flag_ID=0):
+    def signal_DGP(self,flag_ID=0,flag_mode=0):
         g_m = -1 + (1+1)*self.rng.rand() 
         # common value in public
-        pub_mu = self.comm_mu + g_m
         
-        # random reservation ratio
-        # r =  0.8 + 0.1*self.rng.rand() 
-        r =  0.8
-        
-        
+        if flag_mode == 0 :
+            # fix pub_mu and randomize r 
+            pub_mu = self.comm_mu
+            r =  0.8 + 0.15*self.rng.rand() 
+        elif flag_mode == 1:
+            # fix the r and randomize pub_mu
+            pub_mu = self.comm_mu + g_m                 
+            r =  0.8
+        else: 
+            # randomize everything
+            pub_mu = self.comm_mu + g_m
+            r =  0.8 + 0.1*self.rng.rand() 
         
         MU     = self.info_para.MU
         SIGMA2 = self.info_para.SIGMA2
@@ -93,44 +100,44 @@ class Simu:
         return interpn((xi_v_old,T_p_old,T_p_old,T_p_old), E_update_rule, interp_points)
     
     
-    def Data_simu(self,T_end,info_flag=0):
+    def Data_simu(self,N,SS,T_end,info_flag=0,flag_mode=0):
         # functions for simulating the bidding path given the numebr of simualted times
         
         # initilize the updating rule 
-        SS=self.T
+        Env       =ENV(N, self.dict_para)
         if info_flag==0:
-            self.info_para  =self.ENV.Uninform()
+            self.info_para  =Env.Uninform()
         else:
-            self.info_para  =self.ENV.Info_ID()
+            self.info_para  =Env.Info_ID()
             
         Update_bid=Update_rule(self.info_para)
-        N = self.info_para.N
         
         data_act=np.ones((SS,T_end),dtype=int)*(-1)
         pub_info=np.zeros((SS,4))
-        data_state=np.zeros((SS,N))
+        data_state=np.zeros((SS,N),dtype=int)
         data_bid_freq=np.zeros((SS,N))
         data_win=np.zeros((SS,1))
         
-        freq_i=np.zeros((SS,1))
-        num_i = np.zeros((SS,1))
+#        freq_div_i=np.zeros((SS,1))
+        freq_dis_i = np.zeros((SS,1))
+        num_i = np.zeros((SS,1),dtype=int)
         diff_i = np.zeros((SS,1))
         
 
         # Active_flag=np.ones(N)
         for s in range(0,SS):
             
-            [pub_mu,x_signal, reserve,info_index]=self.signal_DGP(info_flag)
+            [pub_mu,x_signal, reserve,info_index]=self.signal_DGP(info_flag,flag_mode)
             pub_info[s,:]=[pub_mu, reserve,N,info_index]
             
-            price_v = np.linspace(0.8*pub_mu,pub_mu*1.2, T_end-10)
-            price_v=np.append(price_v,np.linspace(1.24*pub_mu,pub_mu*1.8, 5))
+            price_v = np.linspace(reserve*pub_mu,pub_mu*1.1, T_end-10)
+            price_v=np.append(price_v,np.linspace(1.12*pub_mu,pub_mu*1.8, 5))
             price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,5))
             
             self.T_p=price_v
             
-            State = np.zeros(N)
-            Active= np.ones(N)
+            State = np.zeros(N,dtype=int)
+            Active= np.ones(N,dtype=int)
             
             
             for t in range(0,T_end):
@@ -146,9 +153,9 @@ class Simu:
                         
                         ii = int(temp_state[i])
                         temp_state=np.delete(temp_state,i)
-                        i1 = int(temp_state[0])
-                        i2 = int(temp_state[1])
-                        ss_state = [ii,i1,i2]
+
+                        ss_state = [ii]
+                        ss_state = ss_state + temp_state.tolist()
                
                         bid = max(ss_state)+1
                         result = Update_bid.real_bid(x_signal[i],bid,ss_state,price_v)
@@ -193,7 +200,7 @@ class Simu:
             # state is right data act need to add 1 
             data_state[s,:]=State
             
-            # calculate the high posit
+            # calculate the bidding frequency for each bidders 
             unique, counts = np.unique(data_act[s,:], return_counts=True)
             a=zip(unique,counts) 
             for ele in a:
@@ -201,24 +208,30 @@ class Simu:
                     data_bid_freq[s,int(ele[0])]=ele[1]
                 else:
                     continue
-                    
-            # comb = list(combinations(list(range(0,N)), 2))
-            comb=np.array(np.meshgrid(data_bid_freq[s,:], data_bid_freq[s,:])).T.reshape(-1,2)
-            v=abs(comb[:,0]-comb[:,1])
-            freq_i[s]=sum(v)
+            
+            
+            # calculate the real bidding number 
+            temp_freq=[x for x in data_bid_freq[s,:] if x > 0]
+            freq_dis_i[s]=np.std(temp_freq)
+            # check the bidding frequency difference among the bidders fix the 
+            
+#            comb=np.array(np.meshgrid(temp_freq[s,:], temp_freq[s,:])).T.reshape(-1,2)
+#            #comb=np.array(np.meshgrid(data_bid_freq[s,:], data_bid_freq[s,:])).T.reshape(-1,2)
+#            v=abs(comb[:,0]-comb[:,1])
+#            freq_div_i[s]=np.std(v)
 
             
             
             # winning
             data_win[s]=price_v[int(max(State))] / (pub_mu*reserve)
             
-            # high posit
+            # std of posting price difference
             diff_i[s]=np.std(max(State)-State)
             
             
             # find real bidding bidders
             num_i[s]  =int(sum((State>0)*1))
-            
+            pub_info[s,2]=num_i[s]
             
 
         
@@ -228,10 +241,10 @@ class Simu:
                 'data_state':data_state,
                 'data_bid_freq':data_bid_freq,
                 'data_win':data_win,
-                'freq_i':freq_i,
+#                'freq_div_i':freq_div_i,
                 'num_i':num_i,
-                'diff_i':diff_i
-                
+                'diff_i':diff_i,
+                'freq_dis_i':freq_dis_i,
                 }
         
 
@@ -245,64 +258,64 @@ class data_struct:
     @property 
     def data_act(self):
         '''
-        return x i mu
+        return data_act
         '''
         return self.data_dict['data_act']
 
     @property 
     def pub_info(self):
         '''
-        return x i mu
+        return pub_info
         '''
         return self.data_dict['pub_info']
 
     @property 
     def data_state(self):
         '''
-        return x i mu
+        return data_state
         '''
         return self.data_dict['data_state']
 
     @property 
     def data_bid_freq(self):
         '''
-        return x i mu
+        return data_bid_freq
         '''
         return self.data_dict['data_bid_freq']
 
     @property 
     def data_win(self):
         '''
-        return x i mu
+        return data_win
         '''
         return self.data_dict['data_win']
     
     @property 
     def data_win2(self):
         '''
-        return x i mu
+        return data_win2
         '''
         return np.square(self.data_dict['data_win']-np.mean(self.data_dict['data_win']))
 
-    @property 
-    def freq_i(self):
-        '''
-        return x i mu
-        '''
-        return self.data_dict['freq_i']
-
-
-    @property 
-    def freq_i2(self):
-        '''
-        return x i mu
-        '''
-        return np.square(self.data_dict['freq_i']-np.mean(self.data_dict['freq_i']))
+#    @property 
+#    def freq_div_i(self):
+#        '''
+#        return freq_div_i
+#        '''
+#        return self.data_dict['freq_div_i']
+#
+#
+#    @property 
+#    def freq_div_i2(self):
+#        '''
+#        return freq_div_i2
+#        '''
+#        return np.square(self.data_dict['freq_div_i']-np.mean(self.data_dict['freq_div_i']))
 
     @property 
     def num_i(self):
         '''
-        return x i mu
+        return num_i
         '''
         return self.data_dict['num_i']
     
@@ -310,7 +323,7 @@ class data_struct:
     @property 
     def num_i2(self):
         '''
-        return x i mu
+        return num_i2 
         '''
         return np.square(self.data_dict['num_i']-np.mean(self.data_dict['num_i']))
         
@@ -318,14 +331,28 @@ class data_struct:
     @property 
     def diff_i(self):
         '''
-        return x i mu
+        return diff_i
         '''
         return self.data_dict['diff_i']
         
     @property 
     def diff_i2(self):
         '''
-        return x i mu
+        return diff_i2
         '''
         return np.square(self.data_dict['diff_i']-np.mean(self.data_dict['diff_i']))
-                
+    
+    
+    @property
+    def freq_dis_i(self):
+        '''
+        return freq_distance_i
+        '''
+        return self.data_dict['freq_dis_i']
+    
+    @property
+    def freq_dis_i2(self):
+        '''
+        return freq_distance_i2
+        '''
+        return np.square(self.data_dict['freq_dis_i']-np.mean(self.data_dict['freq_dis_i']))

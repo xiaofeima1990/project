@@ -163,7 +163,7 @@ class Update_rule:
         Sigma_inv = inv(self.SIGMA2);
 
         
-        COV_xvi=np.append(self.vi_sigma2,np.ones(2)*self.comm_var)
+        COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var)
 
         
         CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi

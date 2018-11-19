@@ -19,8 +19,11 @@ from ENV import ENV
 from scipy.optimize import minimize
 import copy ,time
 from collections import defaultdict,OrderedDict
+from functools import partial
 from scipy.stats import multivariate_normal
-
+import multiprocessing
+from functools import partial
+from contextlib import contextmanager
 
 Simu_para_dict={
 
@@ -38,7 +41,11 @@ def list_duplicates(seq):
         tally[item].append(i)
     return ((key,locs) for key,locs in tally.items() if len(locs)>1)
    
-
+@contextmanager
+def poolcontext(*args, **kwargs):
+    pool = multiprocessing.Pool(*args, **kwargs)
+    yield pool
+    pool.terminate()
 
 
 def signal_DGP_est(public_info,Theta,rng,N):
@@ -78,7 +85,7 @@ def signal_DGP_est(public_info,Theta,rng,N):
     
     return [pub_mu,x_signal,r,info_index]
 
-def signal_DGP_simu(public_info,para,rng,N,JJ=100):
+def signal_DGP_simu(public_info,para,rng,N,JJ=6000):
     
 
     
@@ -95,13 +102,40 @@ def signal_DGP_simu(public_info,para,rng,N,JJ=100):
 
     x_signal=rng.multivariate_normal(MU.flatten(),SIGMA2,JJ)
     
+    info_index=public_info[:,3]
+    
+#    prob_x_signal=multivariate_normal.pdf(x_signal,MU.flatten(),SIGMA2)
+    
+    
+    
+    return [pub_mu,x_signal,info_index,r]
+
+
+def signal_DGP_parallel(public_info,para,rng,N,JJ=6000):
+    
+
+    
+    MU       =para.MU
+    SIGMA2   =para.SIGMA2
+    # common value in public
+    pub_mu = public_info[0]
+    
+    # random reservation ratio
+    # r =  0.8 + 0.1*self.rng.rand() 
+    r =  public_info[1]
+    
+    
+
+    x_signal=rng.multivariate_normal(MU.flatten(),SIGMA2,JJ)
+    
     info_index=public_info[3]
     
-    prob_x_signal=multivariate_normal.pdf(x_signal,MU.flatten(),SIGMA2)
+#    prob_x_signal=multivariate_normal.pdf(x_signal,MU.flatten(),SIGMA2)
     
     
     
-    return [pub_mu,x_signal,prob_x_signal,info_index,r]
+    return [pub_mu,x_signal,info_index,r]
+
 
 def signal_DGP_dg(public_info,para,rng,N):
     
@@ -184,7 +218,7 @@ def SMM(Theta0,Data_struct,d_struct):
             State = np.zeros(N)
             Active= np.ones(N)
             
-            
+         
             for t in range(0,T_end):
                 
                 if t == 0: 
@@ -337,7 +371,7 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
 
     N     =d_struct['N'] # number of bidders for the highest bidding price
     T_end =d_struct['T_end']
-    
+    J     =d_struct["JJ"]
     
     TT=d_struct['T'] # number of auctions in the data
     
@@ -354,20 +388,191 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
     start = time.time()
     
     MoM=0
-#    [pub_mu,x_signal,prob_x_signal,info_index,resev]=signal_DGP_simu(Data_struct.pub_info,para,rng,N,1000)
-    [pub_mu,x_signal,prob_x_signal,info_index,resev]=signal_DGP_dg(Data_struct.pub_info,para,rng,N)
+#    monte carlo
+#    [pub_mu,x_signal,info_index,resev]=signal_DGP_simu(Data_struct.pub_info,para,rng,N,1000)
+#    integ
+#    [pub_mu,x_signal,prob_x_signal,info_index,resev]=signal_DGP_dg(Data_struct.pub_info,para,rng,N)
     
-    J     =len(x_signal)
+#    J     =len(x_signal)
     print('--------------------------------------------------------')
     print('current parameter set are :')
     print(Theta)
     print('# of auctions: '+str(TT) + '\t # of simus: '+str(SS))
+          
     
-    for tt in range(0,TT):
-        temp_act= copy.deepcopy(Data_struct.data_act[tt,:])
-        temp_state=copy.deepcopy(Data_struct.data_state[tt,:])
+#    
+#    for tt in range(0,TT):
+#        temp_act= copy.deepcopy(Data_struct.data_act[tt,:])
+#        temp_state=copy.deepcopy(Data_struct.data_state[tt,:])
+#        print(tt)
+#        can_bidder_lists=list(list_duplicates(temp_act))
+#        can_bidder_lists=[x for x in can_bidder_lists if x[0] != -1 ]
+#        can_bidder_lists.sort()
+#        # clean the data
+#        cc_bidder_list=[]
+#        for i in range(0,N):
+#
+#            if can_bidder_lists[i][0]==i:
+#                can_temp=[x+1 for x in can_bidder_lists[i][1]]
+#                can_temp.append(0)
+#                can_temp.sort()
+#                cc_bidder_list.append((i,can_temp))
+#            else:
+#                cc_bidder_list.insert(i,(i,[0]))
+#                can_bidder_lists.insert(i,(i,[0]))
+#            
+#                
+#                    
+#                
+#        
+#        
+#        state_temp=np.zeros((N,N))
+#        pub_mu_0=pub_mu[tt]
+#        
+#        price_v = np.linspace(resev[tt]*pub_mu_0,pub_mu_0*1.2, T_end-10)
+#        price_v=np.append(price_v,np.linspace(1.24*pub_mu_0,pub_mu_0*1.8, 5))
+#        price_v=np.append(price_v,np.linspace(1.85*pub_mu_0,pub_mu_0*2.5,5))
+#            
+#        # get the bidders state for claculation
+#        for i in range(0,len(temp_state)):
+#            flag_select=[1,1,1]
+#            flag_select[i]=0
+#            select_flag=np.nonzero(flag_select)[0].tolist()
+#
+#            state_temp[i,0]=temp_state[i]
+#            
+#            temp_s=[]
+#            for j in select_flag:
+#                bid_post=cc_bidder_list[j][1]
+#                
+#                temp_p=[x for x in bid_post if x < temp_state[i] ]
+#                temp_p.sort()
+#                temp_s.append(temp_p[-1])
+#            
+#            state_temp[i,1:] = temp_s
+#            
+#            
+#        # for the expected value of each bidders
+#        
+#        
+#        bid_low=[]
+#        
+#        for ele in temp_state:
+#            bid_low.append(price_v[int(ele)])
+#
+#        bid_up =price_v[int(max(temp_state)+1)]*np.ones(3)
+#        
+#        
+#        
+#        sum_value=0
+#        
+#        # now I need to calculate empirical int 
+#        for j in range(0,J):
+#            
+#            exp_value=np.zeros(3)
+#            low_case =np.zeros(3)
+#            up_case  =np.zeros(3)
+#            
+#            
+#            for i in range(0,N):
+#                bid=int(max(state_temp[i,:]))+1
+#                ss_state=[int(x) for x in state_temp[i,:].tolist()]
+#                result = Update_bid.real_bid(x_signal[j,i],bid,ss_state,price_v)
+#                
+#                exp_value[i]=result[0][0]
+#            
+#            # calcuate the first part b-exp<= 0 
+#            low_case=bid_low-exp_value
+#            up_case =bid_up-exp_value
+#            index_win=np.argmax(temp_state)
+#            up_case[index_win]=0
+#        
+#            # new
+#            sum_value=sum_value+sum(np.square((low_case>0)*1*low_case)) + sum(np.square((up_case<0)*1*up_case))
+#            
+#            # old
+##            exp_value=sum(np.square((low_case>0)*1*low_case)) + sum(np.square((up_case<0)*1*up_case))
+##            exp_value=exp_value*prob_x_signal[j] + exp_value
+#            
+#        MoM = MoM + sum_value/J
+    
+          
+#    para_fun(Update_bid,para,rng,T_end,N,J,(1,Data_struct.data_act[1,:],Data_struct.data_state[1,:],Data_struct.pub_info[1,:]))
+    results=[]
+    func=partial(para_fun,Update_bid,para,rng,T_end,N,J)
+    with poolcontext(processes=4) as pool:
+        results= pool.map(func, zip(range(0,TT), Data_struct.data_act,Data_struct.data_state,Data_struct.pub_info))
+                
+    MoM=sum(results)            
+            
+
+            
+    end = time.time()
+    print("time spend in this loop: ")
+    print(end - start)
+    print('--------------------------------------------------------\n')
+ 
+    return MoM/TT
+
+
+def GMM_Ineq_parall(Theta0,Data_struct,d_struct):
+    Theta={
+    "comm_mu":Theta0[0],
+    "priv_mu":Theta0[1],
+    "epsilon_mu":Theta0[2],
+    "comm_var":Theta0[3],
+    "priv_var":Theta0[4],
+    "epsilon_var":Theta0[5],
+    }
+    
+    ## numbers
+    N     =d_struct['N'] # number of bidders for the highest bidding price
+    T_end =d_struct['T_end']
+    J     =d_struct["JJ"]
+    
+    TT=d_struct['T'] # number of auctions in the data
+    
+    # setup the env info structure
+    Env=ENV(N, Theta)
+    if info_flag == 0 :
+        para=Env.Uninform()
+    else:
+        para=Env.Info_ID()
+    
+    rng=np.random.RandomState(d_struct['rng_seed'])
+    Update_bid=Update_rule(para)
+
+    start = time.time()
+    
+    MoM=0
+
+    print('--------------------------------------------------------')
+    print('current parameter set are :')
+    print(Theta)
+    print('# of auctions: '+str(TT) + '\t # of simus: '+str(SS))
+
+    # parallel programming      
+    results=[]
+    func=partial(para_fun,Update_bid,para,rng,T_end,N,J)
+    with poolcontext(processes=8) as pool:
+        results= pool.map(func, zip(range(0,TT), Data_struct.data_act,Data_struct.data_state,Data_struct.pub_info))
+                
+    MoM=sum(results)        
+
+    end = time.time()
+    print("time spend in this loop: ")
+    print(end - start)
+    print('--------------------------------------------------------\n')
+ 
+    return MoM/TT
+
+
+def para_fun(Update_bid,para,rng,T_end,N,J,arg_data):
+        tt,data_act,data_state,pub_info=arg_data
+        
+        [pub_mu,x_signal,info_index,r] = signal_DGP_parallel(pub_info,para,rng,J)
         print(tt)
-        can_bidder_lists=list(list_duplicates(temp_act))
+        can_bidder_lists=list(list_duplicates(data_act))
         can_bidder_lists=[x for x in can_bidder_lists if x[0] != -1 ]
         can_bidder_lists.sort()
         # clean the data
@@ -381,7 +586,7 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
                 cc_bidder_list.append((i,can_temp))
             else:
                 cc_bidder_list.insert(i,(i,[0]))
-
+                can_bidder_lists.insert(i,(i,[0]))
             
                 
                     
@@ -389,25 +594,24 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
         
         
         state_temp=np.zeros((N,N))
-        pub_mu_0=pub_mu[tt]
         
-        price_v = np.linspace(resev[tt]*pub_mu_0,pub_mu_0*1.2, T_end-10)
-        price_v=np.append(price_v,np.linspace(1.24*pub_mu_0,pub_mu_0*1.8, 5))
-        price_v=np.append(price_v,np.linspace(1.85*pub_mu_0,pub_mu_0*2.5,5))
+        price_v = np.linspace(pub_info[1]*pub_mu,pub_mu*1.2, T_end-10)
+        price_v=np.append(price_v,np.linspace(1.24*pub_mu,pub_mu*1.8, 5))
+        price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,5))
             
         # get the bidders state for claculation
-        for i in range(0,len(temp_state)):
+        for i in range(0,len(data_state)):
             flag_select=[1,1,1]
             flag_select[i]=0
             select_flag=np.nonzero(flag_select)[0].tolist()
 
-            state_temp[i,0]=temp_state[i]
+            state_temp[i,0]=data_state[i]
             
             temp_s=[]
             for j in select_flag:
                 bid_post=cc_bidder_list[j][1]
                 
-                temp_p=[x for x in bid_post if x < temp_state[i] ]
+                temp_p=[x for x in bid_post if x < data_state[i] ]
                 temp_p.sort()
                 temp_s.append(temp_p[-1])
             
@@ -419,15 +623,15 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
         
         bid_low=[]
         
-        for ele in temp_state:
+        for ele in data_state:
             bid_low.append(price_v[int(ele)])
 
-        bid_up =price_v[int(max(temp_state)+1)]*np.ones(3)
+        bid_up =price_v[int(max(data_state)+1)]*np.ones(3)
         
         
         
         
-        
+        sum_value=0
         # now I need to calculate empirical int 
         for j in range(0,J):
             
@@ -446,26 +650,20 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
             # calcuate the first part b-exp<= 0 
             low_case=bid_low-exp_value
             up_case =bid_up-exp_value
-            index_win=np.argmax(temp_state)
+            index_win=np.argmax(data_state)
             up_case[index_win]=0
         
+            # new
+            sum_value=sum_value+sum(np.square((low_case>0)*1*low_case)) + sum(np.square((up_case<0)*1*up_case))
             
-            exp_value=sum(np.square((low_case>0)*1*low_case)) + sum(np.square((up_case<0)*1*up_case))
+            # old
+#            exp_value=sum(np.square((low_case>0)*1*low_case)) + sum(np.square((up_case<0)*1*up_case))
+#            exp_value=exp_value*prob_x_signal[j] + exp_value
             
-            exp_value=exp_value*prob_x_signal[j] + exp_value
+        return sum_value/J
                 
                 
-                
             
-            
-        MoM = MoM + exp_value/sum(prob_x_signal)
-            
-    end = time.time()
-    print("time spend in this loop: ")
-    print(end - start)
-    print('--------------------------------------------------------\n')
- 
-    return MoM/TT
 
 
 if __name__ == '__main__':
@@ -475,14 +673,14 @@ if __name__ == '__main__':
     rng_seed=123
     T=50
     T_end=40
-#    SIMU=Simu(N,T,rng_seed,Simu_para_dict)
-#    simu_data=SIMU.Data_simu(T_end)
+    SIMU=Simu(N,T,rng_seed,Simu_para_dict)
+    simu_data=SIMU.Data_simu(T_end)
 ##    
     
     
     rng_seed=789
     SS=25
-    JJ=100
+    JJ=6000
     info_flag=0
     
     #est=Est(N,rng_seed,TT,SS,info_flag)
@@ -501,6 +699,28 @@ if __name__ == '__main__':
     
     Theta=[10,1,0,0.8,1.2,0.8]
 #    s=SMM(Theta,simu_data,d_struct)
-    s=GMM_Ineq(Theta,simu_data,d_struct)
+#    s=GMM_Ineq(Theta,simu_data,d_struct)
+#    print(s)
     # start the estimation 
-#    res = minimize(SMM, Theta, method='nelder-mead',args=(simu_data,simu_data,d_struct))
+#    res = minimize(GMM_Ineq_parall, Theta, method='nelder-mead',args=(simu_data,d_struct)) 
+# ‘Nelder-Mead’ 
+#‘Powell’
+#‘CG’
+#‘BFGS’
+#‘Newton-CG’ 
+#‘L-BFGS-B’ 
+#‘TNC’ 
+#‘COBYLA’ 
+#‘SLSQP’ )
+#‘trust-constr’
+#‘dogleg’ 
+#‘trust-ncg’ 
+#‘trust-exact’ 
+#‘trust-krylov’ 
+#    print(res)
+#    print(res.message)
+#    print(res.x)
+        
+    
+    
+    
