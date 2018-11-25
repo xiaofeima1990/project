@@ -213,12 +213,18 @@ class Update_rule:
         upper_b_j = self.u_bound_E(bid,state)
         
         
-        # the real expected value 
-        Integ_part = 0;
-        for s in range(0, j_N): 
-    
-            Integ_part = Integ_part + AA_j[s]*self.truc_x(self.MU[s],self.SIGMA2[s,s],x_j_lower[s],upper_b_j[s,0]);
+        # the real expected value
+        try:
+            Integ_part = 0;
+            for s in range(0, j_N): 
         
+                Integ_part = Integ_part + AA_j[s]*self.truc_x(self.MU[s],self.SIGMA2[s,s],x_j_lower[s],upper_b_j[s,0]);
+            
+        except Exception as e:
+            print(e)
+            print(x_j_lower)
+            print(upper_b_j)
+            print('-------------------------')
         
         E_win_revenue=Integ_part+E_const +  + AA_i*xi -self.T_p[bid]
 
@@ -256,16 +262,20 @@ class Update_rule:
         
         info_drop=np.zeros(self.N-1)
         drop_info_jj = np.zeros((self.N-1,7))
-        
-        for jj in range(0, self.N-1):
-            # dropout x , dropout position, dropout price  x_mu x_sigma
-            drop_info_jj[jj,:]=self.HS_system(jj,info_struct,self.MU,self.SIGMA2,info_drop)
-            info_drop=drop_info_jj[:,0]
-        
-        
-        drop_info_jj=drop_info_jj[drop_info_jj[:,1].argsort()[::-1]]
-        
-        
+        try:
+            for jj in range(0, self.N-1):
+                # dropout x , dropout position, dropout price  x_mu x_sigma
+                drop_info_jj[jj,:]=self.HS_system(jj,info_struct,self.MU,self.SIGMA2,info_drop)
+                info_drop=drop_info_jj[:,0]
+            
+            
+            drop_info_jj=drop_info_jj[drop_info_jj[:,1].argsort()[::-1]]
+            
+        except Exception as e:
+            print(e)
+            print(price_v)
+            
+            
         return drop_info_jj
 
   

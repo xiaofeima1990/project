@@ -7,6 +7,7 @@ Created on Mon Nov 19 10:58:20 2018
 main program for running the estimation test
 
 
+
 """
 
 
@@ -112,7 +113,9 @@ def GMM_Ineq_parall(Theta0,Data_struct,d_struct):
     # parallel programming      
     results=[]
     func=partial(para_fun,Theta,info_flag,rng,T_end,J)
-    with poolcontext(processes=5) as pool:
+    
+    cpu_num=multiprocessing.cpu_count()
+    with poolcontext(processes=cpu_num) as pool:
         results= pool.map(func, zip(range(0,TT), Data_struct.data_act,Data_struct.data_state,Data_struct.pub_info))
                 
     MoM=sum(results)        
@@ -213,9 +216,9 @@ def para_fun(Theta,info_flag,rng,T_end,J,arg_data):
         # now I need to calculate empirical int 
         for j in range(0,J):
             
-            exp_value=np.zeros(3)
-            low_case =np.zeros(3)
-            up_case  =np.zeros(3)
+            exp_value=np.zeros(N)
+            low_case =np.zeros(N)
+            up_case  =np.zeros(N)
             
             
             for i in range(0,N):
