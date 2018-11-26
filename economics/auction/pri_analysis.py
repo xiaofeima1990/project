@@ -24,7 +24,7 @@ graph_path = "E:/Dropbox/academic/ideas/IO field/justice auction/draft/pic/"
 
 con = sqlite3.connect(store_path+"auction_info_house.sqlite")
 
-PATH_output="E:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code2\\analysis\\"
+PATH_output="E:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code3\\analysis\\"
 
 df_1_s = pd.read_csv(PATH_output+"sample1_df.csv", sep='\t', encoding='utf-8')
 df_2_s = pd.read_csv(PATH_output+"sample2_df.csv", sep='\t', encoding='utf-8')
@@ -40,7 +40,7 @@ df_2_s['dist_volatility'] = (df_2_s['dist_high']-df_2_s['dist_high'].mean())/df_
 
 # get rid of extreme case 
 tail1=df_1_s['num_bidder'].quantile(.99)
-df_1_s=df_1_s.loc[df_1_s['num_bidder']<tail1,]
+df_1_s=df_1_s.loc[df_1_s['num_bidder']<20,]
 
 tail1=df_1_s['resev_proxy'].quantile(.99)
 df_1_s=df_1_s.loc[df_1_s['resev_proxy']<tail1,]
@@ -87,8 +87,9 @@ _ = plt.plot(xx1,yy1,marker=".", linestyle = "none",label = "without priority")
 _ = plt.plot(xx2,yy2,marker=".", linestyle = "none",label = "with priority")
 _ = plt.xlabel("number of bidder")
 _ = plt.ylabel("Empirical CDF")
+_ = plt.title("Number of bidder")
 _ = plt.margins(0.02)
-_ = plt.legend(loc='bottom right')
+_ = plt.legend(loc='upper left')
 _ = plt.grid(True)
 
 
@@ -149,11 +150,30 @@ plt.grid(True)
 #fig=graph_1[0].get_figure()
 #fig.savefig(graph_path+"priori_bid_spread.png")
 
+#plt.subplot(122)
+#graph_1=pri_group1.dist_volatility.plot.density(xlim=[-2,3],legend=True)
+#plt.title("Bid Spread With Normalization")
+#plt.margins(0.02)
+#plt.grid(True)
+
 plt.subplot(122)
-graph_1=pri_group1.dist_volatility.plot.density(xlim=[-2,3],legend=True)
+xx1 = np.sort(pri_group1.get_group(0)['dist_volatility'])
+density1 = stats.kde.gaussian_kde(xx1)
+xx2 = np.sort(pri_group1.get_group(1)['dist_volatility'])
+density2 = stats.kde.gaussian_kde(xx2)
+x1 = np.arange(-2, 2, 0.01)
+x2 = np.arange(-2, 2, 0.01)
+_ = plt.plot(x1,density1(x1),label = "without priority")
+_ = plt.plot(x2,density2(x2),label = "with priority")
+#_ = plt.xlabel("dist_volatility")
 plt.title("Bid Spread With Normalization")
 plt.margins(0.02)
+_ = plt.legend(loc='upper right')
 plt.grid(True)
+
+
+
+
 # save the graph independent
 #fig=graph_1[0].get_figure()
 #fig.savefig(graph_path+"priori_bid_spread.png")
@@ -192,14 +212,15 @@ xx2 = np.sort(pri_group1.get_group(1)['resev_proxy'])
 density2 = stats.kde.gaussian_kde(xx2)
 
 
-x1 = np.arange(0, xx1.max(), 0.1)
-x2 = np.arange(0, xx2.max(), 0.1)
+x1 = np.arange(0, xx1.max(), 0.01)
+x2 = np.arange(0, xx2.max(), 0.01)
 
 __ = plt.plot(x1,density1(x1),label = "without priority")
 __ = plt.plot(x2,density2(x2),label = "with priority")
 _ = plt.xlabel("winning price / reserve price -1 ")
 _ = plt.ylabel("Density")
 _ = plt.legend(loc='upper right')
+plt.title("Winning Premium")
 _ = plt.margins(0.02)
 _ = plt.grid(True)
 plt.subplots_adjust(bottom=0.25, top=0.75,hspace=0.2,wspace=0.5,left=0.05, right=1.2)
@@ -223,14 +244,28 @@ plt.show()
 # bid_freq 
 plt.subplot(121) 
 graph_1=pri_group1.bid_freq.plot.density(xlim=[0,200],legend=True)
-plt.title("Bid Frequence Without Normalization")
+plt.title("Bid Frequency Without Normalization")
 plt.margins(0.02)
 plt.grid(True)
 
 
 plt.subplot(122)
-graph_1=pri_group1.freq_norm.plot.density(xlim=[-1,1],legend=True)
-plt.title("Bid Frequence With Normalization")
+
+xx1 = np.sort(pri_group1.get_group(0)['freq_norm'])
+density1 = stats.kde.gaussian_kde(xx1)
+xx2 = np.sort(pri_group1.get_group(1)['freq_norm'])
+density2 = stats.kde.gaussian_kde(xx2)
+
+x1 = np.arange(-1, 1, 0.01)
+x2 = np.arange(-1, 1, 0.01)
+
+__ = plt.plot(x1,density1(x1),label = "without priority")
+__ = plt.plot(x2,density2(x2),label = "with priority")
+_ = plt.ylabel("Density")
+_ = plt.legend(loc='upper right')
+#graph_1=pri_group1.freq_norm.plot.density(xlim=[0,200],legend=True)
+plt.title("Bid Frequency With Normalization")
+#_ = plt.xlabel("normalized bid frequency ")
 plt.margins(0.02)
 plt.grid(True)
 plt.subplots_adjust(bottom=0.25, top=0.75,hspace=0.2,wspace=0.5,left=0.05, right=1.2)

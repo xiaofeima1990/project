@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 
 # path 
 link_path="E:/auction/link/"
-
+path = "E:/Dropbox/academic/ideas/IO field/justice auction/code4/analysis/"
 store_path="E:/auction/"
 
 
@@ -56,19 +56,25 @@ df_2 = pd.read_sql_query("SELECT * from xuzhou_2", con)
 con.close()
 
 
+
+# get whole data to analysis
+df_1 = pd.read_csv(path+"sample_raw1_df.csv",sep="\t")
+df_2 = pd.read_csv(path+"sample_raw2_df.csv",sep="\t")
+
 '''
 number of bidders
 
 '''
 necessary_col=['index','num_bidder','n_register','priority_people','reserve_price','win_bid','evaluation_price']
 
+
 # exclude the extreme value
-tail1=df_1['num_bidder'].quantile(.99)
+tail1=df_1['num_bidder'].quantile(.95)
 
 df_1_c=df_1.loc[df_1['num_bidder']<tail1,]
 df_1_c=df_1_c.loc[df_1['num_bidder']>0,]
 
-tail1=df_2['num_bidder'].quantile(.99)
+tail1=df_2['num_bidder'].quantile(.95)
 df_2_c=df_2.loc[df_2['num_bidder']<tail1,]
 df_2_c=df_2_c.loc[df_2['num_bidder']>0,]
 
@@ -84,9 +90,9 @@ yy = np.arange(1,len(xx)+1)/len(xx)
 _ = plt.plot(xx,yy,marker=".", linestyle = "none")
 _ = plt.xlabel("number of bidder")
 _ = plt.ylabel("Empirical CDF")  
-
+_ = plt.title("First Time Auction")  
 plt.margins(0.02)
-plt.annotate('more than 80% \n first time auctions \n have less than \n 6 bidders', xy=(6, 0.8), xytext=(8, 0.4),
+plt.annotate('nearly 80% of \n first time auctions \n have less than \n 9 bidders', xy=(9, 0.75), xytext=(11, 0.4),
              arrowprops=dict(facecolor='black', shrink=0.05),
              )
 plt.grid(True)
@@ -107,10 +113,10 @@ yy2 = np.arange(1,len(xx2)+1)/len(xx2)
 _ = plt.plot(xx2,yy2,marker=".", linestyle = "none")
 _ = plt.xlabel("number of bidder")
 _ = plt.ylabel("Empirical CDF")
-
+_ = plt.title("Second Time Auction")  
   
 plt.margins(0.02)
-plt.annotate('more than 80% \n second time auctions \n have less than \n 4 bidders', xy=(4, 0.8), xytext=(6, 0.4),
+plt.annotate('nearly 80% of \n second time auctions \n have less than \n 6 bidders', xy=(6, 0.75), xytext=(8, 0.4),
              arrowprops=dict(facecolor='black', shrink=0.06),
              )
 plt.grid(True)
@@ -158,6 +164,9 @@ necessary_col=['index','num_bidder','n_register','priority_people','reserve_pric
 
 ## check the reserve price situation
 
+df_1_c=df_1[df_1['status']=='done']
+df_2_c=df_2[df_2['status']=="done"]
+
 
 df_1_c['p_res_eva']=df_1_c['reserve_price']/df_1_c['evaluation_price']
 df_2_c['p_res_eva']=df_2_c['reserve_price']/df_2_c['evaluation_price']
@@ -177,8 +186,8 @@ tail2=df_2_c['resev_proxy'].quantile(.99)
 df_1_done=df_1_c.loc[df_1_c['resev_proxy']<tail1,['p_res_eva','resev_proxy']+necessary_col]
 df_2_done=df_2_c.loc[df_2_c['resev_proxy']<tail2,['p_res_eva','resev_proxy']+necessary_col]
 
-tail1=df_1_done['num_bidder'].quantile(.99) 
-tail2=df_2_done['num_bidder'].quantile(.99) 
+tail1=df_1_done['num_bidder'].quantile(.95) 
+tail2=df_2_done['num_bidder'].quantile(.95) 
 
 df_1_done=df_1_done.loc[df_1_done['num_bidder']<tail1,]
 df_2_done=df_2_done.loc[df_2_done['num_bidder']<tail2,]
@@ -188,6 +197,16 @@ tail2=df_2_done['p_res_eva'].quantile(.99)
 
 df_1_done=df_1_done.loc[df_1_done['p_res_eva']<tail1,]
 df_2_done=df_2_done.loc[df_2_done['p_res_eva']<tail2,]
+
+# first time auction at least larger than 0.7
+df_1_done=df_1_done.loc[df_1_done['p_res_eva']>0.7,]
+df_1_done=df_1_done.loc[df_1_done['p_res_eva']<=1, ]
+# second time auction at least larger than 0.6 
+df_2_done=df_2_done.loc[df_2_done['p_res_eva']>0.6,]
+
+df_2_done=df_2_done.loc[df_2_done['p_res_eva']<=1, ]
+
+
 
 #fig=df_1_done.plot.scatter(x="num_bidder",y='resev_proxy',c=df_1_done['index'],colormap='viridis')
 #fig.set_xlabel("number of bidder")
@@ -201,20 +220,26 @@ df_2_done=df_2_done.loc[df_2_done['p_res_eva']<tail2,]
 # color -> the reserve / eva 
 
 
-plt.scatter(x=df_1_done["num_bidder"], y=df_1_done['resev_proxy'],s=df_1_done['delay_count'], c=df_1_done['p_res_eva'],
+plt.scatter(x=df_1_done["num_bidder"], y=df_1_done['resev_proxy'],
+            #s=df_1_done['delay_count'], 
+#            c=df_1_done['p_res_eva'],
             alpha=0.5)
 
 plt.xlabel("number of bidder")
 plt.ylabel("winning price premium")
+plt.title("First Time Auction")
 cax = plt.axes([0.95, 0.1, 0.05, 0.8])
 plt.colorbar(cax =cax )
 plt.show()
 
-plt.scatter(x=df_2_done["num_bidder"], y=df_2_done['resev_proxy'], s=df_2_done['delay_count'], c=df_2_done['p_res_eva'],
+plt.scatter(x=df_2_done["num_bidder"], y=df_2_done['resev_proxy'], 
+#            s=df_2_done['delay_count'], 
+#            c=df_2_done['p_res_eva'],
             alpha=0.5)
 
 plt.xlabel("number of bidder")
 plt.ylabel("winning price premium")
+plt.title("Second Time Auction")
 cax = plt.axes([0.95, 0.1, 0.05, 0.8])
 plt.colorbar(cax =cax )
 plt.show()
