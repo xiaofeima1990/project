@@ -142,7 +142,7 @@ def para_fun(para,info_flag,rng,T_end,JJ,x_signal,w_x, arg_data):
     
     #end = time.time()
     
-#    print('return auction {} with # of bidder {} and result final_value {} '.format(tt,N,final_value))    
+    print('return auction {} with # of bidder {} and result final_value {} '.format(tt,N,final_value))    
     
 #    print('time expenditure')
 #    print(end - start)

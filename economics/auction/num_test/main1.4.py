@@ -179,13 +179,14 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     
     cpu_num=multiprocessing.cpu_count()
     #cpu_num=3
+    cpu_num_node=int((cpu_num-1)/data_n)
     
     auction_list=[]
     for Data_Struct in DATA_STRUCT:
-        auction_list.append(work_pool.submit(partial(para_data_allo_1,Theta, int(cpu_num/data_n),rng,d_struct),Data_Struct).result())
+        auction_list.append(work_pool.submit(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct),Data_Struct).result())
     
     
-    auction_result=np.mean(auction_list)
+    auction_result=np.nanmean(auction_list)
     
     end = time.time()
     
@@ -196,7 +197,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     
     ## save the parameters and objective value 
     
-    with open('para.txt', 'w') as f:
+    with open('para1.txt', 'a+') as f:
         for item in Theta0:
             f.write("%f\t" % item)
             

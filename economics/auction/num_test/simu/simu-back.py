@@ -174,17 +174,19 @@ class Simu:
         data_bid_freq=np.zeros((SS,N)) # each bidders bidding times 
         data_win=np.zeros((SS,1))
 
-        freq_i1 = np.zeros((SS,1))
-        freq_i2 = np.zeros((SS,1))
-        
+#        freq_div_i=np.zeros((SS,1))
+        freq_dis_i1 = np.zeros((SS,1))
+        freq_dis_i2 = np.zeros((SS,1))
         num_i = np.zeros((SS,1),dtype=int)
+        diff_i1 = np.zeros((SS,1))
+        diff_i2 = np.zeros((SS,1))
         sec_diff_i1=np.zeros((SS,1))
         sec_diff_i2=np.zeros((SS,1))
         sec_freq_i1=np.zeros((SS,1))
         sec_freq_i2=np.zeros((SS,1))
-        low_freq_ratio_i=np.zeros((SS,1))
-        
+        tot_freq_i=np.zeros((SS,1))
         third_win_i=np.zeros((SS,1))
+        freq_i     =np.zeros((SS,1))
 
         [pub_mu_v,x_signal_v, reserve_v,info_index]=self.signal_DGP_mul(int(SS),info_flag,flag_mode)
         # Active_flag=np.ones(N)
@@ -283,13 +285,26 @@ class Simu:
             
             # calculate the real bidding number 
             temp_freq=[x for x in data_bid_freq[s,:] if x > 0]
-            freq_i2[s]=np.std(temp_freq)/sum(temp_freq)
-            freq_i1[s]=np.mean(temp_freq)/sum(temp_freq)
+            freq_dis_i2[s]=np.std(temp_freq)/sum(temp_freq)
+            freq_dis_i1[s]=np.mean(temp_freq)/sum(temp_freq)
+            freq_i[s]     =sum(temp_freq)
+            
+            # check the bidding frequency difference among the bidders fix the 
+            
+#            comb=np.array(np.meshgrid(temp_freq[s,:], temp_freq[s,:])).T.reshape(-1,2)
+#            #comb=np.array(np.meshgrid(data_bid_freq[s,:], data_bid_freq[s,:])).T.reshape(-1,2)
+#            v=abs(comb[:,0]-comb[:,1])
+#            freq_div_i1[s]=np.std(v)
+#            freq_div_i2[s]=np.sum(v)
+
             
             
             # winning
             data_win[s]=price_v[int(max(State))] / (pub_mu*reserve)
             
+            # std of posting price difference
+            diff_i1[s]=np.mean(max(State)-State)
+            diff_i2[s]=np.std(max(State)-State)
             
             
             ## new adding 
@@ -321,7 +336,7 @@ class Simu:
             num_i[s]  =int(sum((State>0)*1))
             pub_info[s,2]=num_i[s]
 
-            low_freq_ratio_i[s]=sum(low_freq_list)/sum(freq_sum)
+            tot_freq_i[s]=sum(low_freq_list)/sum(freq_sum)
             
             # third highest winning price (relative)
             if N>=3:
@@ -336,16 +351,17 @@ class Simu:
                 'data_state':data_state,
                 'data_bid_freq':data_bid_freq,
                 'data_win':data_win,
+                'freq_i':freq_i,
                 'num_i':num_i,
 
-                'freq_i1':freq_i1,
-                'freq_i2':freq_i2,
+                'freq_dis_i1':freq_dis_i1,
+                'freq_dis_i2':freq_dis_i2,
                 
                 'sec_diff_i1':sec_diff_i1,
                 'sec_diff_i2':sec_diff_i2,
                 'sec_freq_i1':sec_freq_i1,
                 'sec_freq_i2':sec_freq_i2,
-                'low_freq_ratio_i' :low_freq_ratio_i,
+                'tot_freq_i' :tot_freq_i,
                 'third_win_i':third_win_i,
                 
                 }
@@ -368,9 +384,9 @@ class Simu:
         data_bid_freq=np.zeros((SS,N)) # each bidders bidding times 
         data_win=np.zeros((SS,1))
 
-        freq_i1 = np.zeros((SS,1))
-        freq_i2 = np.zeros((SS,1))
-        
+#        freq_div_i=np.zeros((SS,1))
+        freq_dis_i1 = np.zeros((SS,1))
+        freq_dis_i2 = np.zeros((SS,1))
         num_i = np.zeros((SS,1),dtype=int)
         diff_i1 = np.zeros((SS,1))
         diff_i2 = np.zeros((SS,1))
@@ -378,9 +394,9 @@ class Simu:
         sec_diff_i2=np.zeros((SS,1))
         sec_freq_i1=np.zeros((SS,1))
         sec_freq_i2=np.zeros((SS,1))
-        low_freq_ratio_i=np.zeros((SS,1))
-        
+        tot_freq_i=np.zeros((SS,1))
         third_win_i=np.zeros((SS,1))
+        freq_i     =np.zeros((SS,1))
 
         [pub_mu_v,x_signal_v, reserve_v,info_index]=self.signal_DGP_mul(int(SS),info_flag,flag_mode)
         # Active_flag=np.ones(N)
@@ -490,8 +506,18 @@ class Simu:
             
             # calculate the real bidding number 
             temp_freq=[x for x in data_bid_freq[s,:] if x > 0]
-            freq_i2[s]=np.std(temp_freq)
-            freq_i1[s]=np.mean(temp_freq)
+            freq_dis_i2[s]=np.std(temp_freq)/sum(temp_freq)
+            freq_dis_i1[s]=np.mean(temp_freq)/sum(temp_freq)
+            freq_i[s]     =sum(temp_freq)
+            
+            # check the bidding frequency difference among the bidders fix the 
+            
+#            comb=np.array(np.meshgrid(temp_freq[s,:], temp_freq[s,:])).T.reshape(-1,2)
+#            #comb=np.array(np.meshgrid(data_bid_freq[s,:], data_bid_freq[s,:])).T.reshape(-1,2)
+#            v=abs(comb[:,0]-comb[:,1])
+#            freq_div_i1[s]=np.std(v)
+#            freq_div_i2[s]=np.sum(v)
+
             
             
             # winning
@@ -500,6 +526,8 @@ class Simu:
             # std of posting price difference
             diff_i1[s]=np.mean(max(State)-State)
             diff_i2[s]=np.std(max(State)-State)
+            
+
             
             
             ## new adding 
@@ -531,14 +559,12 @@ class Simu:
             num_i[s]  =int(sum((State>0)*1))
             pub_info[s,2]=num_i[s]
 
-            low_freq_ratio_i[s]=sum(low_freq_list)/sum(freq_sum)
+            tot_freq_i[s]=sum(low_freq_list)/sum(freq_sum)
             
             # third highest winning price (relative)
-            # third highest winning price (relative)
-            if N>=3:
-                third_win_i[s] = price_v[State[order_ind[-3]]]/ (pub_mu*reserve)
-            else:
-                third_win_i[s] = np.nan
+            third_win_i[s] = price_v[State[order_ind[-3]]]/ (pub_mu*reserve)
+            
+
         
         data_dict={
                 'data_act':data_act,
@@ -546,16 +572,17 @@ class Simu:
                 'data_state':data_state,
                 'data_bid_freq':data_bid_freq,
                 'data_win':data_win,
+                'freq_i':freq_i,
                 'num_i':num_i,
 
-                'freq_i1':freq_i1,
-                'freq_i2':freq_i2,
+                'freq_dis_i1':freq_dis_i1,
+                'freq_dis_i2':freq_dis_i2,
                 
                 'sec_diff_i1':sec_diff_i1,
                 'sec_diff_i2':sec_diff_i2,
                 'sec_freq_i1':sec_freq_i1,
                 'sec_freq_i2':sec_freq_i2,
-                'low_freq_ratio_i' :low_freq_ratio_i,
+                'tot_freq_i' :tot_freq_i,
                 'third_win_i':third_win_i,
                 
                 }
@@ -610,6 +637,21 @@ class data_struct:
         return np.square(self.data_dict['data_win']-np.mean(self.data_dict['data_win']))
 
     @property 
+    def freq_i(self):
+        '''
+        return freq_i
+        '''
+        return self.data_dict['freq_i']
+
+
+#    @property 
+#    def freq_div_i2(self):
+#        '''
+#        return freq_div_i2
+#        '''
+#        return np.square(self.data_dict['freq_div_i']-np.mean(self.data_dict['freq_div_i']))
+
+    @property 
     def num_i(self):
         '''
         return num_i
@@ -625,19 +667,34 @@ class data_struct:
         return np.square(self.data_dict['num_i']-np.mean(self.data_dict['num_i']))
         
     
+#    @property 
+#    def diff_i(self):
+#        '''
+#       return diff_i
+#       '''
+#        return self.data_dict['diff_i']
+#        
+#    @property 
+#    def diff_i2(self):
+#        '''
+#        return diff_i2
+#        '''
+#        return np.square(self.data_dict['diff_i']-np.mean(self.data_dict['diff_i']))
+    
+    
     @property
-    def freq_i1(self):
+    def freq_dis_i1(self):
         '''
         return freq_distance_i
         '''
-        return self.data_dict['freq_i1']
+        return self.data_dict['freq_dis_i1']
     
     @property
-    def freq_i2(self):
+    def freq_dis_i2(self):
         '''
         return freq_distance_i2
         '''
-        return self.data_dict['freq_i2']
+        return self.data_dict['freq_dis_i2']
     
     
     
@@ -670,11 +727,11 @@ class data_struct:
         return self.data_dict['sec_freq_i2']
 
     @property
-    def low_freq_ratio_i(self):
+    def tot_freq_i(self):
         '''
         return tot_freq_i
         '''
-        return self.data_dict['low_freq_ratio_i']
+        return self.data_dict['tot_freq_i']
     
     @property
     def third_win_i(self):

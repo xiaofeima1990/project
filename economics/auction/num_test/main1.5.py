@@ -186,7 +186,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     
     ## save the parameters and objective value 
     
-    with open('para.txt', 'w') as f:
+    with open('para.txt', 'a+') as f:
         for item in Theta0:
             f.write("%f\t" % item)
             
