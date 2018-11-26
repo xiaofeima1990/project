@@ -136,8 +136,8 @@ def para_fun(para,info_flag,rng,T_end,JJ,x_signal,w_x, arg_data):
     up_case[index_win]=0
     
     
-    sum_value=np.sum(np.square((low_case>0)*1*low_case),axis=1) + np.sum(np.square((up_case<0)*1*up_case),axis=1)
-    sum_value=sum_value**0.5 *w_x
+    sum_value=np.sum(np.square((low_case>0)*1*low_case),axis=1)**0.5 + np.sum(np.square((up_case<0)*1*up_case),axis=1)**0.5
+    sum_value=sum_value * w_x
     final_value=np.sum(sum_value)
     
     #end = time.time()

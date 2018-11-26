@@ -229,11 +229,15 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
     
     # num of bidders in the auction
     N=int(pub[2])
-    
+    info_flag=pub[3]
     # setup the env info structure
     
     Env=ENV(N, Theta)
-    para=Env.Uninform()
+
+    if info_flag == 0 :
+        para=Env.Uninform()
+    else:
+        para=Env.Info_ID()
     
     
     [x_signal,w_x]=signal_DGP(para,rng,N,JJ)
@@ -303,14 +307,7 @@ def para_fun(para,info_flag,rng,T_end,JJ,x_signal,w_x, arg_data):
         except Exception as e:
             print(e)
             print("tt={} and N = {} ".format(tt,N))
-            print('cc_bidder_list : {}'.format(cc_bidder_list))
-            print('can_bidder_list: {}'.format(can_bidder_lists))
-            print(data_act)
-            print(data_state)
-            print(pub_info)
-            print(can_bidder_lists)
-            exit(1)
-    
+            return np.nan
     
     
     state_temp=np.zeros((N,N))
@@ -375,8 +372,8 @@ def para_fun(para,info_flag,rng,T_end,JJ,x_signal,w_x, arg_data):
     up_case[index_win]=0
     
     
-    sum_value=np.sum(np.square((low_case>0)*1*low_case),axis=1) + np.sum(np.square((up_case<0)*1*up_case),axis=1)
-    sum_value=sum_value**0.5 *w_x
+    sum_value=np.sum(np.square((low_case>0)*1*low_case),axis=1)**0.5 + np.sum(np.square((up_case<0)*1*up_case),axis=1)**0.5
+    sum_value=sum_value * w_x
     final_value=np.sum(sum_value)
     end = time.time()
     

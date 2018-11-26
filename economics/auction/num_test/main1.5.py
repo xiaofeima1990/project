@@ -190,7 +190,8 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
         for item in Theta0:
             f.write("%f\t" % item)
             
-        f.write("%f\n" % auction_result)
+        f.write("%f\t" % auction_result)
+        f.write("%f\n" % (end - start)/60)
     
     return auction_result
 
@@ -222,10 +223,15 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
     N=int(pub[2])
     
     # setup the env info structure
+    info_flag=pub[3]
+    # setup the env info structure
     
     Env=ENV(N, Theta)
-    para=Env.Uninform()
-    
+
+    if info_flag == 0 :
+        para=Env.Uninform()
+    else:
+        para=Env.Info_ID()
     
     [x_signal,w_x]=signal_DGP(para,rng,N,JJ)
     
@@ -238,11 +244,12 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
     
     start = time.time()
     results= pool.map(func, zip(range(0,TT), Data_struct.data_act,Data_struct.data_state,Data_struct.pub_info))
+
+    MoM=np.nanmean(list(results))
+    
     end = time.time()
     print('time expenditure for the auction estimation under N = {}'.format(N))
     print(end - start)
-    MoM=np.nanmean(list(results))
-    
     
     return MoM
 
