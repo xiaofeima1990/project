@@ -107,6 +107,7 @@ def SM_compute(simu_data,col_n):
 if __name__ == '__main__':
     
     ## pre parameter
+    mode_select=input('please select testing mode : 1: fix the number of bidders 2: move the number of bidders ')
     
     test_para_dict={
     
@@ -123,45 +124,97 @@ if __name__ == '__main__':
     T_end=90
 
     Rng_seed=123
-    flag_num=0
-    flag_mode=0
-    info_flag=0
-    
-    tt=[0.8,0.9,1,1.1,1.2,1.3,1.4]
-    
-    ele='epsilon_var'
-    
-    func=partial(Gen_Simu,N,T,T_end,test_para_dict,flag_num,ele,info_flag,flag_mode,Rng_seed)
-    
-    cpu_num=multiprocessing.cpu_count()
-    if cpu_num>len(tt):
-        cpu_num=len(tt)
-    
-    with poolcontext(processes=cpu_num) as pool:
-        results= pool.map(func, zip(tt))
-    
-    
-    df_results1=pd.concat(list(results), axis=1)
     
     
     
-    
-    ele='priv_var'
-    
-    func=partial(Gen_Simu,N,T,T_end,test_para_dict,flag_num,ele,info_flag,flag_mode,Rng_seed)
-    
-    cpu_num=multiprocessing.cpu_count()
-    if cpu_num>len(tt):
-        cpu_num=len(tt)
-    
-    with poolcontext(processes=cpu_num) as pool:
-        results= pool.map(func, zip(tt))
+    if int(mode_select)==1:
+        '''
+        fix the number of bidders to check the answer
         
-    df_results2=pd.concat(list(results), axis=1)
+        '''
+        flag_num=0
+        flag_mode=0
+        info_flag=0
+        
+        tt=[0.8,0.9,1,1.1,1.2,1.3,1.4]
+        
+        ele='epsilon_var'
+        
+        func=partial(Gen_Simu,N,T,T_end,test_para_dict,flag_num,ele,info_flag,flag_mode,Rng_seed)
+        
+        cpu_num=multiprocessing.cpu_count()
+        if cpu_num>len(tt):
+            cpu_num=len(tt)
+        
+        with poolcontext(processes=cpu_num) as pool:
+            results= pool.map(func, zip(tt))
+        
+        
+        df_results1=pd.concat(list(results), axis=1)
+        
+        
+        
+        
+        ele='priv_var'
+        
+        func=partial(Gen_Simu,N,T,T_end,test_para_dict,flag_num,ele,info_flag,flag_mode,Rng_seed)
+        
+        cpu_num=multiprocessing.cpu_count()
+        if cpu_num>len(tt):
+            cpu_num=len(tt)
+        
+        with poolcontext(processes=cpu_num) as pool:
+            results= pool.map(func, zip(tt))
+            
+        df_results2=pd.concat(list(results), axis=1)
+        
+        
+        
+    else:
+        '''
+        make the number of bidders changes and check whether the pattern still keeps the consistency
+        '''
+        df_com=[]
+        for n in range(4,5+1):
+            flag_num=0
+            flag_mode=0
+            info_flag=0
+            
+            tt=[0.8,0.9,1,1.1,1.2,1.3,1.4]
+            
+            ele='epsilon_var'
+            
+            func=partial(Gen_Simu,n,T,T_end,test_para_dict,flag_num,ele,info_flag,flag_mode,Rng_seed)
+            
+            cpu_num=multiprocessing.cpu_count()
+            if cpu_num>len(tt):
+                cpu_num=len(tt)
+            
+            with poolcontext(processes=cpu_num) as pool:
+                results= pool.map(func, zip(tt))
+            
+            
+            df_results1=pd.concat(list(results), axis=1)
+            
+            
+            
+            ele='priv_var'
+            
+            func=partial(Gen_Simu,n,T,T_end,test_para_dict,flag_num,ele,info_flag,flag_mode,Rng_seed)
+            
+            cpu_num=multiprocessing.cpu_count()
+            if cpu_num>len(tt):
+                cpu_num=len(tt)
+            
+            with poolcontext(processes=cpu_num) as pool:
+                results= pool.map(func, zip(tt))
+                
+            df_results2=pd.concat(list(results), axis=1)
+            
+            df_com.append(df_results2.subtract(df_results1,fill_value=0))
+            
+            
+            
+        
     
     
-    
-    
-    
-
-

@@ -196,7 +196,7 @@ class Simu:
 #            [pub_mu,x_signal, reserve,info_index]=self.signal_DGP(info_flag,flag_mode)
             pub_info[s,:]=[pub_mu, reserve,N,info_index[s]]
             
-            n_Tend=int((T_end-10)/2)
+            n_Tend=int(T_end-10/2)
             price_v = np.linspace(reserve*pub_mu,pub_mu*1.1, n_Tend)
             price_v=np.append(price_v,np.linspace(1.12*pub_mu,pub_mu*1.8, n_Tend))
             price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,int(T_end-2*n_Tend)))
@@ -391,7 +391,7 @@ class Simu:
             
 #            [pub_mu,x_signal, reserve,info_index]=self.signal_DGP(info_flag,flag_mode)
             pub_info[s,:]=[pub_mu, reserve,N,info_index[s]]
-            n_Tend=int((T_end-10)/2)
+            n_Tend=int(T_end-10/2)
             price_v = np.linspace(reserve*pub_mu,pub_mu*1.1, n_Tend)
             price_v=np.append(price_v,np.linspace(1.12*pub_mu,pub_mu*1.8, n_Tend))
             price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,int(T_end-2*n_Tend)))

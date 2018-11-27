@@ -80,7 +80,7 @@ if __name__ == '__main__':
     
     start_n=3
     end_n=5
-    T=100
+    T=200
     T_end=90
     
     flag_mode=0
