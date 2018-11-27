@@ -20,7 +20,6 @@ import seaborn as sns
 
 import pickle as pk
 from simu import Simu
-from ENV import ENV
 import numpy as np
 
 Simu_para_dict={
@@ -29,7 +28,7 @@ Simu_para_dict={
         "priv_mu":1,
         "epsilon_mu":0,
         "comm_var":0.8,
-        "priv_var":1.2,
+        "priv_var":0.8,
         "epsilon_var":0.8,
         }
 
@@ -79,11 +78,10 @@ def Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_mode=0,flag_mode=0,rng_se
 if __name__ == '__main__':
     
     start_n=3
-    end_n=5
+    end_n=7
     T=200
-    T_end=90
+    T_end=100
     
-    flag_mode=0
     Rng_seed=123
     
     mode_flag=1 # 1 -> run the simulation ; 0 -> read the data
@@ -96,8 +94,8 @@ if __name__ == '__main__':
     if mode_flag ==1:
         info_flag=0
         flag_mode=0
-        simu_data_1= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
-        pk.dump(simu_data_1, open( "simu_data_info.pkl", "wb"))
+        simu_data_0= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
+        pk.dump(simu_data_0, open( "simu_data_uninfo.pkl", "wb"))
     else:
     # load the uninformed case 
         
@@ -129,9 +127,8 @@ if __name__ == '__main__':
     N_chunk=len(simu_data_1)
     
     # check the moments
-    cmp_list=['data_win','sec_diff_i1','sec_freq_i1','low_freq_ratio_i']
+    cmp_list=['data_win','sec_diff_i1','sec_freq_i1','low_freq_ratio_i','freq_i1']
 
-    ## winning bid 
     for i in range(0,N_chunk):
         temp_sim_0=simu_data_0[i]
         temp_sim_1=simu_data_1[i]
@@ -144,9 +141,9 @@ if __name__ == '__main__':
             sim_0_list.append(np.nanmean(temp_sim_0.data_dict[ele]))
             sim_1_list.append(np.nanmean(temp_sim_1.data_dict[ele]))
             
-        print('           -: win bid \t sec_diff \t sec_freq \t low_freq_ratio')
-        print('uninformed -:'+'\t '.join(str(round(x,4)) for x in sim_0_list))
-        print('  informed -:'+'\t '.join(str(round(x,4)) for x in sim_1_list))
+        print('           -: win bid \t sec_diff_mean \t sec_freq \t low_freq_ratio \t freq')
+        print('uninformed -:'+' \t '.join(str(round(x,4)) for x in sim_0_list))
+        print('  informed -:'+' \t '.join(str(round(x,4)) for x in sim_1_list))
         
 #    
 #    sns.set(color_codes=True)
@@ -158,33 +155,33 @@ if __name__ == '__main__':
     3 bidding frequency
     '''
     
-    cmp_list=['data_win','sec_diff_i1','sec_freq_i1','tot_freq_i']
-    
-    n_set=1
-    cmp_ele=cmp_list[3]
-    
-    temp_sim_0=simu_data_0[n_set]
-    temp_sim_1=simu_data_1[n_set]
-    
-    f, axes = plt.subplots(1, 2, figsize=(7, 7), sharex=True)
-    
-    x=temp_sim_0.data_dict[cmp_ele]
-    tail=np.percentile(x,99)
-    x=x[x<tail]
-    sns.distplot(x, hist=False, rug=True,ax=axes[ 0])
-    sns.distplot(x, bins=20, kde=False,ax=axes[0])
-    axes[0].set_title("uninformed")
-    axes[0].set_ylabel('density')
-    
-    y=temp_sim_1.data_dict[cmp_ele]
-    tail=np.percentile(y,99)
-    y=y[y<tail]
-    sns.distplot(y, hist=False, rug=True,ax=axes[1])
-    sns.distplot(y, bins=20, kde=False,ax=axes[1])
-    axes[1].set_title("informed")
-    plt.subplots_adjust(bottom=0.25, top=0.75,hspace=0.2,wspace=0.2,left=0.05, right=1.2)
-    
-    plt.show()
+#    cmp_list=['data_win','sec_diff_i1','sec_freq_i1','tot_freq_i']
+#    
+#    n_set=1
+#    cmp_ele=cmp_list[2]
+#    
+#    temp_sim_0=simu_data_0[n_set]
+#    temp_sim_1=simu_data_1[n_set]
+#    
+#    f, axes = plt.subplots(1, 2, figsize=(7, 7), sharex=True)
+#    
+#    x=temp_sim_0.data_dict[cmp_ele]
+#    tail=np.percentile(x,99)
+#    x=x[x<tail]
+#    sns.distplot(x, hist=False, rug=True,ax=axes[ 0])
+#    sns.distplot(x, bins=20, kde=False,ax=axes[0])
+#    axes[0].set_title("uninformed")
+#    axes[0].set_ylabel('density')
+#    
+#    y=temp_sim_1.data_dict[cmp_ele]
+#    tail=np.percentile(y,99)
+#    y=y[y<tail]
+#    sns.distplot(y, hist=False, rug=True,ax=axes[1])
+#    sns.distplot(y, bins=20, kde=False,ax=axes[1])
+#    axes[1].set_title("informed")
+#    plt.subplots_adjust(bottom=0.25, top=0.75,hspace=0.2,wspace=0.2,left=0.05, right=1.2)
+#    
+#    plt.show()
     
     
 

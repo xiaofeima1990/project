@@ -283,8 +283,8 @@ class Simu:
             
             # calculate the real bidding number 
             temp_freq=[x for x in data_bid_freq[s,:] if x > 0]
-            freq_i2[s]=np.std(temp_freq)/sum(temp_freq)
-            freq_i1[s]=np.mean(temp_freq)/sum(temp_freq)
+            freq_i2[s]=np.std(temp_freq)
+            freq_i1[s]=np.mean(temp_freq)
             
             
             # winning
@@ -415,7 +415,6 @@ class Simu:
                     for i in range(0,N):
                         temp_state=copy.deepcopy(State)
                         if i !=1:
-                            
                             
                             
                             ii = int(temp_state[i])
