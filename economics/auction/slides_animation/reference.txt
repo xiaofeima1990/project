@@ -1,0 +1,7 @@
+https://stackoverflow.com/questions/9401658/how-to-animate-a-scatter-plot
+https://towardsdatascience.com/how-to-create-animated-graphs-in-python-bb619cc2dec1
+https://python-graph-gallery.com/340-scatterplot-animation/
+https://python-graph-gallery.com/341-python-gapminder-animation/
+https://jakevdp.github.io/blog/2012/08/18/matplotlib-animation-tutorial/
+
+https://tex.stackexchange.com/questions/240243/getting-gif-and-or-moving-images-into-a-latex-presentation
