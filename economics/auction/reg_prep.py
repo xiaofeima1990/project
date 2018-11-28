@@ -90,26 +90,26 @@ DF_1_s=DF_1.loc[DF_1['status']=='done',]
 DF_2_s=DF_2.loc[DF_2['status']=='done',]
 
 
-col_name= ['index', 'ID','n_register','reserve_price','p_res_eva', 'resev_proxy','num_bidder','priority_people','status', 'win_bid','city','year']
+col_name= ['index', 'ID','n_register','reserve_price','evaluation_price','bid_ladder','p_res_eva', 'resev_proxy','num_bidder','priority_people','status', 'win_bid','city','year','lat','lgt']
 
 
 
 DF_1_s=DF_1_s.loc[DF_1_s['p_res_eva']<=1,col_name]
 DF_1_s=DF_1_s.loc[DF_1_s['p_res_eva']>=0.7,]
-DF_1_s=DF_1_s.loc[DF_1_s['num_bidder']>1,]
+DF_1_s=DF_1_s.loc[DF_1_s['num_bidder']>0,]
 DF_1_s=DF_1_s.loc[DF_1_s['resev_proxy']>0.01,]
 
 
 DF_2_s=DF_2_s.loc[DF_2_s['p_res_eva']<=1,col_name]
 DF_2_s=DF_2_s.loc[DF_2_s['p_res_eva']>=0.6,]
-DF_2_s=DF_2_s.loc[DF_2_s['num_bidder']>1,]
+DF_2_s=DF_2_s.loc[DF_2_s['num_bidder']>0,]
 DF_2_s=DF_2_s.loc[DF_2_s['resev_proxy']>0.01,]
 
 
 
-PATH_output="E:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code2\\analysis\\"
-DF_1_s.to_csv(PATH_output+"sample1_df.csv", sep='\t', encoding='utf-8', index=False)
-DF_2_s.to_csv(PATH_output+"sample2_df.csv", sep='\t', encoding='utf-8', index=False)
+PATH_output="E:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code4\\analysis\\"
+DF_1_s.to_csv(PATH_output+"sample_raw1_df.csv", sep='\t', encoding='utf-8', index=False)
+DF_2_s.to_csv(PATH_output+"sample_raw2_df.csv", sep='\t', encoding='utf-8', index=False)
 
 
 
@@ -186,3 +186,51 @@ DF_1_s=DF_1_s.loc[DF_1_s['p_res_eva']<=1,col_name+["dist_high","bid_freq"]]
 DF_1_s=DF_1_s.loc[DF_1_s['p_res_eva']>=0.7,]
 DF_1_s=DF_1_s.loc[DF_1_s['num_bidder']>1,]
 DF_1_s=DF_1_s.loc[DF_1_s['resev_proxy']>0.01,]
+
+
+
+# merge with DF_2
+
+    
+flag=0
+for city in second_market:
+    DF_2_temp = pd.read_sql_query("SELECT * from " +city, con_bid_info)
+    if flag ==0:
+        DF_2_bid = DF_2_temp.copy()
+        flag=1
+    else:
+        DF_2_bid = DF_2_bid.append(DF_1_temp,ignore_index=True)
+
+
+df_2_bid_group=DF_2_bid.groupby("ID")
+
+bid_df_stat=pd.DataFrame(columns=["ID","dis_var",'bid_freq'])
+
+temp_df=df_2_bid_group.dist_high.std()
+temp_df=pd.DataFrame(temp_df)
+temp_df['bid_freq'] =df_2_bid_group.position.max()+1
+temp_df=temp_df.reset_index()    
+
+
+# merge with DF_1
+
+DF_2_full = DF_2.merge(temp_df,how="right",left_on='ID', right_on ='ID')
+
+
+
+DF_2_full['p_res_eva']=DF_2_full['reserve_price']/DF_2_full['evaluation_price']
+
+
+DF_2_full['resev_proxy'] = (DF_2_full['win_bid']-DF_2_full['reserve_price'])/DF_2_full['reserve_price']
+
+
+DF_2_full.dropna(subset=['p_res_eva','resev_proxy','dist_high'],inplace=True)
+
+DF_2_full['year'] = DF_2_full['finish_time'].apply(yy)
+
+DF_2_s=DF_2_full.loc[DF_2_full['status']=='done',]
+
+DF_2_s=DF_2_s.loc[DF_2_s['p_res_eva']<=1,col_name+["dist_high","bid_freq"]]
+DF_2_s=DF_2_s.loc[DF_2_s['p_res_eva']>=0.7,]
+DF_2_s=DF_2_s.loc[DF_2_s['num_bidder']>1,]
+DF_2_s=DF_2_s.loc[DF_2_s['resev_proxy']>0.01,]

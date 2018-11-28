@@ -1,0 +1,20 @@
+for N = 3.0 auctions
+           -: win bid    sec_diff_mean   sec_freq        low_freq_ratio          freq
+uninformed -:1.4692      5.145   13.715          0.2885          15.7833
+  informed -:1.4797      9.375   12.925          0.2648          16.1583
+for N = 4.0 auctions
+           -: win bid    sec_diff_mean   sec_freq        low_freq_ratio          freq
+uninformed -:1.4939      9.4325          10.35   0.4164          12.3638
+  informed -:1.4866      9.93    10.0925         0.4076          12.275
+for N = 5.0 auctions
+           -: win bid    sec_diff_mean   sec_freq        low_freq_ratio          freq
+uninformed -:1.5063      10.325          8.5517          0.5084          10.055
+  informed -:1.5052      10.7667         8.485   0.5037          10.0488
+for N = 6.0 auctions
+           -: win bid    sec_diff_mean   sec_freq        low_freq_ratio          freq
+uninformed -:1.5088      11.6825         7.1983          0.5678          8.4023
+  informed -:1.5147      11.3975         7.2512          0.5671          8.4595
+for N = 7.0 auctions
+           -: win bid    sec_diff_mean   sec_freq        low_freq_ratio          freq
+uninformed -:1.5248      12.884          6.2617          0.6048          7.3612
+  informed -:1.5283      13.16   6.2892          0.6037          7.397

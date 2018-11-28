@@ -160,10 +160,11 @@ class Simu:
         
         # initilize the updating rule 
         Env       =ENV(N, self.dict_para)
-        if info_flag==0:
-            self.info_para  =Env.Uninform()
-        else:
-            self.info_para  =Env.Info_ID()
+#        if info_flag==0:
+#            self.info_para  =Env.Uninform()
+#        else:
+#            self.info_para  =Env.Info_ID()
+        self.info_para  =Env.Uninform()
             
         Update_bid=Update_rule(self.info_para)
         
@@ -197,9 +198,10 @@ class Simu:
 #            [pub_mu,x_signal, reserve,info_index]=self.signal_DGP(info_flag,flag_mode)
             pub_info[s,:]=[pub_mu, reserve,N,info_index[s]]
             
-            price_v = np.linspace(reserve*pub_mu,pub_mu*1.1, T_end-10)
-            price_v=np.append(price_v,np.linspace(1.12*pub_mu,pub_mu*1.8, 5))
-            price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,5))
+            n_Tend=int(T_end-10/2)
+            price_v = np.linspace(reserve*pub_mu,pub_mu*1.1, n_Tend)
+            price_v=np.append(price_v,np.linspace(1.12*pub_mu,pub_mu*1.8, n_Tend))
+            price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,int(T_end-2*n_Tend)))
             
             self.T_p=price_v
             
@@ -229,6 +231,227 @@ class Simu:
                         
                         Active[i] = result[2]
                         
+                        
+                    if sum(Active) ==1:
+                        index=np.nonzero(Active)[0].tolist()
+                        
+                        posting=data_act[s,t-1]
+                        if index == posting:
+                            data_act[s,t:] = int(-1)
+                        else:
+                            curr_bidder      = int(index[0])
+                            data_act[s,t]    = int(curr_bidder)
+                            State[curr_bidder] = bid
+                            data_act[s,t+1:] = int(-1)
+                        
+                        break
+                    else :
+                        if sum(Active) == 0:
+                            data_act[s,t:] = int(-1)
+                            break
+                        
+                        
+                        
+                        posting=data_act[s,t-1]
+                        index=np.nonzero(Active)[0].tolist()
+                        if posting in index :
+                            index.remove(posting)
+                           
+                       
+                       
+                        curr_bidder   = self.rng.choice(index,size=1) 
+                        data_act[s,t] = int(curr_bidder)
+                        State[curr_bidder] = bid
+           
+        
+            # final state
+            # notice there exist mismatch between data act and state 
+            # state is right data act need to add 1 
+            data_state[s,:]=State
+            
+            # calculate the bidding frequency for each bidders 
+            unique, counts = np.unique(data_act[s,:], return_counts=True)
+
+#            freq_list=[x for x in zip(unique,counts) if x[0] != -1]
+#            data_bid_freq[s,:]=np.array(freq_list)
+            
+            a=zip(unique,counts) 
+            for ele in a:
+                if ele[0] != -1:
+                    data_bid_freq[s,int(ele[0])]=ele[1]
+                else:
+                    continue
+            
+            
+            # calculate the real bidding number 
+            temp_freq=[x for x in data_bid_freq[s,:] if x > 0]
+            freq_dis_i2[s]=np.std(temp_freq)/sum(temp_freq)
+            freq_dis_i1[s]=np.mean(temp_freq)/sum(temp_freq)
+            freq_i[s]     =sum(temp_freq)
+            
+            # check the bidding frequency difference among the bidders fix the 
+            
+#            comb=np.array(np.meshgrid(temp_freq[s,:], temp_freq[s,:])).T.reshape(-1,2)
+#            #comb=np.array(np.meshgrid(data_bid_freq[s,:], data_bid_freq[s,:])).T.reshape(-1,2)
+#            v=abs(comb[:,0]-comb[:,1])
+#            freq_div_i1[s]=np.std(v)
+#            freq_div_i2[s]=np.sum(v)
+
+            
+            
+            # winning
+            data_win[s]=price_v[int(max(State))] / (pub_mu*reserve)
+            
+            # std of posting price difference
+            diff_i1[s]=np.mean(max(State)-State)
+            diff_i2[s]=np.std(max(State)-State)
+            
+            
+            ## new adding 
+            order_ind=np.argsort(State)
+            # second higest bidder to the difference
+            
+            i_ed = order_ind[-2]
+            i_rest =order_ind[:-2]
+            temp_pos=(State[i_ed] - np.array(State[i_rest]))
+            
+            sec_diff_i1[s]= np.mean(temp_pos)
+            sec_diff_i2[s]= np.std(temp_pos)
+            
+            # lower rank freq 
+            low_freq_list=[]
+            
+            freq_list=[x for x in zip(unique,counts) if x[0] != -1]
+            freq_sum=[x[1] for x in zip(unique,counts) if x[0] != -1]
+            for ele in freq_list:
+                if ele[0] != order_ind[-1] and ele[0] != order_ind[-2]:
+                    low_freq_list.append(ele[1])
+            
+            
+            sec_freq_i1[s]=np.mean(low_freq_list)
+            sec_freq_i2[s]=np.std(low_freq_list)
+            
+            
+            # find real bidding bidders
+            num_i[s]  =int(sum((State>0)*1))
+            pub_info[s,2]=num_i[s]
+
+            tot_freq_i[s]=sum(low_freq_list)/sum(freq_sum)
+            
+            # third highest winning price (relative)
+            if N>=3:
+                third_win_i[s] = price_v[State[order_ind[-3]]]/ (pub_mu*reserve)
+            else:
+                third_win_i[s] = np.nan
+
+        
+        data_dict={
+                'data_act':data_act,
+                'pub_info':pub_info,
+                'data_state':data_state,
+                'data_bid_freq':data_bid_freq,
+                'data_win':data_win,
+                'freq_i':freq_i,
+                'num_i':num_i,
+
+                'freq_dis_i1':freq_dis_i1,
+                'freq_dis_i2':freq_dis_i2,
+                
+                'sec_diff_i1':sec_diff_i1,
+                'sec_diff_i2':sec_diff_i2,
+                'sec_freq_i1':sec_freq_i1,
+                'sec_freq_i2':sec_freq_i2,
+                'tot_freq_i' :tot_freq_i,
+                'third_win_i':third_win_i,
+                
+                }
+        
+
+        return data_struct(data_dict)
+
+    def Data_simu_info(self,N,SS,T_end,info_flag=1,flag_mode=0):
+        # functions for simulating the bidding path given the numebr of simualted times
+        
+        # initilize the updating rule 
+        Env       =ENV(N, self.dict_para)
+        self.info_para  =Env.Info_ID()
+        
+        Update_bid=Update_rule(self.info_para)
+        
+        data_act=np.ones((SS,T_end),dtype=int)*(-1)  # bidding path 
+        pub_info=np.zeros((SS,4))
+        data_state=np.zeros((SS,N),dtype=int)  # current posting bid position for each bidder
+        data_bid_freq=np.zeros((SS,N)) # each bidders bidding times 
+        data_win=np.zeros((SS,1))
+
+#        freq_div_i=np.zeros((SS,1))
+        freq_dis_i1 = np.zeros((SS,1))
+        freq_dis_i2 = np.zeros((SS,1))
+        num_i = np.zeros((SS,1),dtype=int)
+        diff_i1 = np.zeros((SS,1))
+        diff_i2 = np.zeros((SS,1))
+        sec_diff_i1=np.zeros((SS,1))
+        sec_diff_i2=np.zeros((SS,1))
+        sec_freq_i1=np.zeros((SS,1))
+        sec_freq_i2=np.zeros((SS,1))
+        tot_freq_i=np.zeros((SS,1))
+        third_win_i=np.zeros((SS,1))
+        freq_i     =np.zeros((SS,1))
+
+        [pub_mu_v,x_signal_v, reserve_v,info_index]=self.signal_DGP_mul(int(SS),info_flag,flag_mode)
+        # Active_flag=np.ones(N)
+        for s in range(0,SS):
+            x_signal=x_signal_v[s,:]
+            pub_mu=pub_mu_v[s]
+            reserve=reserve_v[s]
+            
+#            [pub_mu,x_signal, reserve,info_index]=self.signal_DGP(info_flag,flag_mode)
+            pub_info[s,:]=[pub_mu, reserve,N,info_index[s]]
+            n_Tend=int(T_end-10/2)
+            price_v = np.linspace(reserve*pub_mu,pub_mu*1.1, n_Tend)
+            price_v=np.append(price_v,np.linspace(1.12*pub_mu,pub_mu*1.8, n_Tend))
+            price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,int(T_end-2*n_Tend)))
+            
+            self.T_p=price_v
+            
+            State = np.zeros(N,dtype=int)
+            Active= np.ones(N,dtype=int)
+            
+            
+            for t in range(0,T_end):
+                
+                if t == 0: 
+                    curr_bidder=int(np.argmax(x_signal))
+                    data_act[s,t] = curr_bidder
+                    State[curr_bidder]=State[curr_bidder]+1
+                else:
+                    
+                    
+                    
+                    for i in range(0,N):
+                        temp_state=copy.deepcopy(State)
+                        if i !=1:
+                            
+                            
+                            
+                            ii = int(temp_state[i])
+                            i_info=int(temp_state[1])
+                            temp_state=np.delete(temp_state,[i,1])
+    
+                            ss_state = [ii,i_info]
+                            ss_state = ss_state + temp_state.tolist()
+                   
+                            bid = max(ss_state)+1
+                            result = Update_bid.real_bid(x_signal[i],bid,ss_state,price_v)
+                            
+                            
+                        else:
+                            bid = max(temp_state)+1
+                            Evx=x_signal[i]
+                            result=[Evx,Evx-price_v[bid],1*(Evx-price_v[bid]>0)]
+                            
+                        Active[i] = result[2]
+                            
                         
                     if sum(Active) ==1:
                         index=np.nonzero(Active)[0].tolist()
@@ -366,7 +589,6 @@ class Simu:
         
 
         return data_struct(data_dict)
-    
             
 class data_struct:
     def __init__(self,data_dict):
