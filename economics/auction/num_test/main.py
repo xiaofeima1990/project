@@ -609,29 +609,18 @@ def para_fun(Update_bid,para,rng,T_end,N,J,arg_data):
             
             temp_s=[]
             for j in select_flag:
-<<<<<<< HEAD
                 bid_post=can_bidder_lists[j][1]
                 bid_post.append(0)
                 temp_s=temp_s+[x for x in bid_post[i][1] if x < temp_state[i] ][-2]
-=======
-                bid_post=cc_bidder_list[j][1]
-                
-                temp_p=[x for x in bid_post if x < data_state[i] ]
-                temp_p.sort()
-                temp_s.append(temp_p[-1])
->>>>>>> f5bad364f3705769b02b7a8b032256277def42bd
             
             state_temp[i,1:] = temp_s
             
             
         # for the expected value of each bidders
         
-<<<<<<< HEAD
 
         bid_low=[price_v(x) for x in temp_state] 
         bid_up =price_v(int(max(temp_state)+1))*np.ones(3)
-=======
->>>>>>> f5bad364f3705769b02b7a8b032256277def42bd
         
         bid_low=[]
         
