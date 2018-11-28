@@ -366,7 +366,6 @@ p.set_ylim(0, 150)
 p.set_xlabel('auctions given the number of bidders')
 p.set_ylabel('average bidding frequency')
 p.title("Average Bidding Frequncy With Prority Bidder")
-# draw the graph 
 
 
 
