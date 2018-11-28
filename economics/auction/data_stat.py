@@ -31,9 +31,9 @@ import time, re,copy
 import matplotlib.pyplot as plt
 
 # path 
-link_path="G:/auction/link/"
-path = "G:/Dropbox/academic/ideas/IO field/justice auction/code4/analysis/"
-store_path="G:/auction/"
+link_path="E:/auction/link/"
+path = "E:/Dropbox/academic/ideas/IO field/justice auction/code4/analysis/"
+store_path="E:/auction/"
 
 
 

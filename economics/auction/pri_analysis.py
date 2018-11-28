@@ -24,7 +24,7 @@ graph_path = "E:/Dropbox/academic/ideas/IO field/justice auction/draft/pic/"
 
 con = sqlite3.connect(store_path+"auction_info_house.sqlite")
 
-PATH_output="G:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code3\\analysis\\"
+PATH_output="E:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code4\\analysis\\"
 
 df_1_s = pd.read_csv(PATH_output+"sample1_df.csv", sep='\t', encoding='utf-8')
 df_2_s = pd.read_csv(PATH_output+"sample2_df.csv", sep='\t', encoding='utf-8')
@@ -231,16 +231,6 @@ plt.show()
 ------------------------------------------------------
 '''
 
-
-
-
-
-
-
-
-
-
-
 # bid_freq 
 plt.subplot(121) 
 graph_1=pri_group1.bid_freq.plot.density(xlim=[0,200],legend=True)
@@ -286,39 +276,93 @@ plt.show()
 
 
 
-# bidding activity test
-# transh
-
-con = sqlite3.connect(store_path+"auction_info_house.sqlite")
-con_bid_info = sqlite3.connect(store_path+"bid_house_info.sqlite")
-
-# load the data
-cursor = con.cursor()
-tab_name=cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-tab_name_list=[]
-for name in tab_name:
-    tab_name_list.append(name[0])
-    
-
-df_1 = pd.read_sql_query("SELECT * from shenzhen_1", con)
-
-df_1_bid = pd.read_sql_query("SELECT * from shenzhen_1", con_bid_info)
 
 
-# get priority people ID 
-df_1_group=df_1.groupby("priority_people")
-pri_id=df_1_group.get_group(1).ID.tolist()
-
-df_1_bid_group=df_1_bid.groupby("ID")
-
-bid_df_stat=pd.DataFrame(columns=["ID","dis_var",'bid_freq'])
-
-temp_df=df_1_bid_group.dist_high.std()
-temp_df=pd.DataFrame(temp_df)
-temp_df['bid_freq'] =df_1_bid_group.position.max()+1
-temp_df=temp_df.reset_index()    
 
 
+'''
+-------------------------------------------------------------------------------
+pic2 
+-------------------------------------------------------------------------------
+'''
+
+
+'''
+# of auctions w.r.t. # of bidders
+hist 
+and density
+density=True or False
+'''
+
+
+
+bins = np.linspace(df1_freq['num_bidder'].min(), df1_freq['num_bidder'].max(), 60)
+
+z1=df_1_s.loc[df_1_s['priority_people']==0,'num_bidder']
+
+
+z2=df_1_s.loc[df_1_s['priority_people']==1,'num_bidder']
+
+plt.hist((z1,z2),bins,density=True, label=['without priority bidder', 'with priority bidder'])
+p=plt.gca()
+p.set_xlabel('the number of bidders')
+p.set_ylabel('density')
+p.set_title("Number of Auctions with/without Prority Bidder")
+p.legend()
+p.grid(True)
+
+
+'''
+winning price w.r.t. number of bidders
+
+'''
+pri_group1 = df_1_s.groupby("priority_people")
+xx1 = np.sort(pri_group1.get_group(0)['p_ratio'])
+density1 = stats.kde.gaussian_kde(xx1)
+xx2 = np.sort(pri_group1.get_group(1)['p_ratio'])
+density2 = stats.kde.gaussian_kde(xx2)
+
+x1 = np.arange(0.75, 3, 0.01)
+x2 = np.arange(0.75, 3, 0.01)
+
+_ = plt.plot(x1,density1(x1),label = "without priority")
+_ = plt.plot(x2,density2(x2),label = "with priority")
+_ = plt.xlabel("winning price / reserve price")
+_ = plt.ylabel("Density")
+_ = plt.title("Distribution of Winning Bid with/without Prority Bidder")
+_ = plt.margins(0.02)
+_ = plt.legend(loc='upper right')
+_ = plt.grid(True)
+
+
+
+# fix the number of bidders
+group_freq1=df_1_s.groupby(['num_bidder','priority_people'])
+group_freq2=df_2_s.groupby(['num_bidder','priority_people'])
+
+df1_freq=group_freq1.p_ratio.mean()
+df1_temp=group_freq1.bid_freq.count()
+df1_temp=df1_temp.rename('num_auction')
+df1_freq=pd.concat([df1_freq, df1_temp], axis=1)
+df1_freq=df1_freq.reset_index()
+df1_freq=df1_freq[df1_freq['num_bidder']<25]
+df1_freq=df1_freq[df1_freq['num_bidder']!=16]
+
+w = 0.3
+x1=np.array(df1_freq.loc[df1_freq['priority_people']==0,'num_bidder'])
+y1=np.array(df1_freq.loc[df1_freq['priority_people']==0,'p_ratio'])
+x2=np.array(df1_freq.loc[df1_freq['priority_people']==1,'num_bidder'])
+y2=np.array(df1_freq.loc[df1_freq['priority_people']==1,'p_ratio'])
+
+plt.bar(x1-0.5*w, y1,width=w,align='center',label="with priority bidder")
+plt.bar(x2+0.5*w, y2,width=w,align='center',label="without priority bidder")
+plt.autoscale(tight=True)
+plt.ylim([1,2.4])
+plt.xlim([1,25])
+plt.ylabel('win bid / reserve price')
+plt.title('Average Winning Bid with/without Prority Bidder')
+plt.xlabel('the number of bidders')
+plt.grid(True)
 
 
 '''
@@ -340,34 +384,68 @@ df1_freq=df1_freq[df1_freq['num_bidder']<25]
 df1_freq=df1_freq[df1_freq['bid_freq']<300]
 
 
-x=np.array(df1_freq.loc[df1_freq['priority_people']==0,'num_bidder'])
-y=np.array(df1_freq.loc[df1_freq['priority_people']==0,'bid_freq'])
-z=np.array(df1_freq.loc[df1_freq['priority_people']==0,'num_auction'])
-plt.stem(x,y)
-plt.scatter(x, y,color='#1f77b4', s=z, alpha=1)
+x1=np.array(df1_freq.loc[df1_freq['priority_people']==0,'num_bidder'])
+y1=np.array(df1_freq.loc[df1_freq['priority_people']==0,'bid_freq'])
+z1=np.array(df1_freq.loc[df1_freq['priority_people']==0,'num_auction'])
+plt.stem(x1,y1,color='#1f77b4')
+plt.scatter(x1, y1,color='#1f77b4', s=z1, alpha=1)
+#p=plt.gca()
+#for i,text in enumerate(z1):
+#    p.annotate(text, (x1[i], y1[i]+5))
+#p.set_ylim(0, 150)
+#p.set_xlabel('auctions given the number of bidders')
+#p.set_ylabel('average bidding frequency')
+#p.set_title("Average Bidding Frequncy Without Prority Bidder")
+#
+
+x2=np.array(df1_freq.loc[df1_freq['priority_people']==1,'num_bidder'])
+y2=np.array(df1_freq.loc[df1_freq['priority_people']==1,'bid_freq'])
+z2=np.array(df1_freq.loc[df1_freq['priority_people']==1,'num_auction'])
+markerline, stemlines, baseline =plt.stem(x2+0.3,y2,markerfmt='')
+plt.setp(stemlines, color='#ff7f0e', linewidth=1)
+plt.setp(markerline, color='#ff7f0e', linewidth=0)
+plt.scatter(x2+0.33, y2,color='#ff7f0e', s=z2, alpha=1)
 p=plt.gca()
-for i,text in enumerate(z):
-    p.annotate(text, (x[i], y[i]+5))
+#for i,text in enumerate(z2):
+#    p.annotate(text, (x2[i], y2[i]+4))
 p.set_ylim(0, 150)
+
 p.set_xlabel('auctions given the number of bidders')
 p.set_ylabel('average bidding frequency')
-p.title("Average Bidding Frequncy Without Prority Bidder")
-
-
-x=np.array(df1_freq.loc[df1_freq['priority_people']==1,'num_bidder'])
-y=np.array(df1_freq.loc[df1_freq['priority_people']==1,'bid_freq'])
-z=np.array(df1_freq.loc[df1_freq['priority_people']==1,'num_auction'])
-plt.stem(x,y)
-plt.scatter(x, y,color='#1f77b4', s=z, alpha=1)
-p=plt.gca()
-for i,text in enumerate(z):
-    p.annotate(text, (x[i], y[i]+4))
-p.set_ylim(0, 150)
-p.set_xlabel('auctions given the number of bidders')
-p.set_ylabel('average bidding frequency')
-p.title("Average Bidding Frequncy With Prority Bidder")
+p.set_title("Average Bidding Frequncy With Prority Bidder")
+p.grid(True)
 
 
 
+'''
+bidding spread 
+average bidding distance among the bidders 
+
+'''
+pri_group1 = df_1_s.groupby("priority_people")
+
+xx1 = np.sort(pri_group1.get_group(0)['dist_high'])
+tail=np.percentile(xx1,99)
+xx1 = xx1[xx1<tail]
+density1 = stats.kde.gaussian_kde(xx1)
+xx2 = np.sort(pri_group1.get_group(1)['dist_high'])
+tail=np.percentile(xx2,99)
+xx2 = xx2[xx2<tail]
+density2 = stats.kde.gaussian_kde(xx2)
+
+
+x1 = np.arange(0, 110, 1)
+x2 = np.arange(0, 110, 1)
+
+
+
+_ = plt.plot(x1,density1(x1),label = "without priority")
+_ = plt.plot(x2,density2(x2),label = "with priority")
+_ = plt.xlabel("average bidding distance among the bidders ")
+_ = plt.ylabel("density")
+_ = plt.title("Distribution of Bidding Distance with/without Prority Bidder")
+_ = plt.margins(0.02)
+_ = plt.legend(loc='upper right')
+_ = plt.grid(True)
 
 
