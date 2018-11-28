@@ -66,9 +66,9 @@ text_content="A Typical English Auction with 4 Bidders\nreserve price: 1000 \nmi
 
 # these are matplotlib.patch.Patch properties
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-plt.text(1,2250,text_content,ha="left", va="center",fontsize=14,bbox=props)
+plt.text(1.5,2250,text_content,ha="left", va="center",fontsize=14,bbox=props)
 
-filename='step'+str(0)+'.png'
+filename='step'+str(1)+'.png'
 plt.savefig(filename, dpi=my_dpi)
 
 
@@ -84,9 +84,9 @@ plt.plot( 'bid_path', 'bidder_2_ex', data=data_df, marker='', color='aqua',alpha
 plt.plot( 'bid_path', 'bidder_3_ex', data=data_df, marker='', color='red',alpha=0.5, linewidth=2, linestyle='dashed', label="bidder 3")
 plt.plot( 'bid_path', 'bidder_4_ex', data=data_df, marker='', color='blue',alpha=0.5, linewidth=2, linestyle='dashed', label="bidder 4")
 plt.legend(loc='upper left')
-plt.legend(legend_elements,loc='upper left')
+#plt.legend(legend_elements,loc='upper left')
 
-filename='step'+str(1)+'.png'
+filename='step'+str(2)+'.png'
 plt.savefig(filename, dpi=my_dpi)
 
 x1=np.array(data_df['bid_path'][1:])
@@ -120,7 +120,7 @@ for i in range(1,16+1):
     plt.xlabel("bidding period")
     plt.ylabel("bidding price")
     
-    filename='step'+str(i+1)+'.png'
+    filename='step'+str(i+2)+'.png'
     plt.savefig(filename, dpi=my_dpi)
     plt.gca()
 

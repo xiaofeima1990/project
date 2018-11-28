@@ -90,7 +90,7 @@ DF_1_s=DF_1.loc[DF_1['status']=='done',]
 DF_2_s=DF_2.loc[DF_2['status']=='done',]
 
 
-col_name= ['index', 'ID','n_register','reserve_price','evaluation_price','p_res_eva', 'resev_proxy','num_bidder','priority_people','status', 'win_bid','city','year']
+col_name= ['index', 'ID','n_register','reserve_price','evaluation_price','bid_ladder','p_res_eva', 'resev_proxy','num_bidder','priority_people','status', 'win_bid','city','year','lat','lgt']
 
 
 

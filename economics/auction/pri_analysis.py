@@ -24,7 +24,7 @@ graph_path = "E:/Dropbox/academic/ideas/IO field/justice auction/draft/pic/"
 
 con = sqlite3.connect(store_path+"auction_info_house.sqlite")
 
-PATH_output="E:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code3\\analysis\\"
+PATH_output="G:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code3\\analysis\\"
 
 df_1_s = pd.read_csv(PATH_output+"sample1_df.csv", sep='\t', encoding='utf-8')
 df_2_s = pd.read_csv(PATH_output+"sample2_df.csv", sep='\t', encoding='utf-8')
@@ -317,3 +317,58 @@ temp_df=df_1_bid_group.dist_high.std()
 temp_df=pd.DataFrame(temp_df)
 temp_df['bid_freq'] =df_1_bid_group.position.max()+1
 temp_df=temp_df.reset_index()    
+
+
+
+
+'''
+bidding frequency : 
+    fix the number of bidders 
+    fix the priority bidders 
+    
+'''
+
+group_freq1=df_1_s.groupby(['num_bidder','priority_people'])
+group_freq2=df_2_s.groupby(['num_bidder','priority_people'])
+
+df1_freq=group_freq1.bid_freq.mean()
+df1_temp=group_freq1.bid_freq.count()
+df1_temp=df1_temp.rename('num_auction')
+df1_freq=pd.concat([df1_freq, df1_temp], axis=1)
+df1_freq=df1_freq.reset_index()
+df1_freq=df1_freq[df1_freq['num_bidder']<25]
+df1_freq=df1_freq[df1_freq['bid_freq']<300]
+
+
+x=np.array(df1_freq.loc[df1_freq['priority_people']==0,'num_bidder'])
+y=np.array(df1_freq.loc[df1_freq['priority_people']==0,'bid_freq'])
+z=np.array(df1_freq.loc[df1_freq['priority_people']==0,'num_auction'])
+plt.stem(x,y)
+plt.scatter(x, y,color='#1f77b4', s=z, alpha=1)
+p=plt.gca()
+for i,text in enumerate(z):
+    p.annotate(text, (x[i], y[i]+5))
+p.set_ylim(0, 150)
+p.set_xlabel('auctions given the number of bidders')
+p.set_ylabel('average bidding frequency')
+p.title("Average Bidding Frequncy Without Prority Bidder")
+
+
+x=np.array(df1_freq.loc[df1_freq['priority_people']==1,'num_bidder'])
+y=np.array(df1_freq.loc[df1_freq['priority_people']==1,'bid_freq'])
+z=np.array(df1_freq.loc[df1_freq['priority_people']==1,'num_auction'])
+plt.stem(x,y)
+plt.scatter(x, y,color='#1f77b4', s=z, alpha=1)
+p=plt.gca()
+for i,text in enumerate(z):
+    p.annotate(text, (x[i], y[i]+4))
+p.set_ylim(0, 150)
+p.set_xlabel('auctions given the number of bidders')
+p.set_ylabel('average bidding frequency')
+p.title("Average Bidding Frequncy With Prority Bidder")
+# draw the graph 
+
+
+
+
+
