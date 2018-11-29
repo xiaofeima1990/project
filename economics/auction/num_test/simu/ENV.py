@@ -60,12 +60,18 @@ class ENV:
         self.uninfo['MU']          = (self.comm_mu+self.priv_mu + self.noise_mu)*np.ones((self.N,1))
         self.uninfo['comm_var']    = self.comm_var
         self.uninfo['comm_mu']    = self.comm_mu
+        
+        self.uninfo['xi_rival_mu']=self.uninfo['xi_rival_mu']*0.8
+        self.uninfo['vi_mu']    = self.uninfo['vi_mu'] *0.8
+        self.uninfo['xi_mu']    = self.uninfo['xi_mu'] *0.8
+        self.uninfo['vi_rival_mu'] = self.uninfo['vi_rival_mu']*0.8
+        self.uninfo['MU'] = self.uninfo['MU']*0.8
         return Info_result(self.uninfo)
         
     def Info_ID(self):
         self.info_Id['xi_mu']     =  self.comm_mu+self.priv_mu + self.noise_mu
         self.info_Id['xi_sigma2'] =  self.comm_var+self.priv_var + self.noise_var
-        self.info_Id['vi_mu']     =  self.comm_mu+self.priv_mu 
+        self.info_Id['vi_mu']     =  (self.comm_mu+self.priv_mu) *0.8
         self.info_Id['vi_sigma2'] =  self.comm_var+self.priv_var
         self.info_Id['x_info_mu'] = self.comm_mu+self.priv_mu 
         self.info_Id['x_info_sigma2'] = self.comm_var+self.priv_var
@@ -167,6 +173,13 @@ class Info_result(object):
         return  x i's  rival sigma square 
         '''
         return self.info_dict['xi_rival_sigma2']
+    
+    @property 
+    def vi_rival_sigma2(self):
+        '''
+        return  x i's  rival sigma square 
+        '''
+        return self.info_dict['vi_rival_sigma2']
 
     @property 
     def COV_i(self):
@@ -202,14 +215,7 @@ class Info_result(object):
         return mu for 
         '''
         return self.info_dict['comm_mu']
-    
-    @property 
-    def N(self):
-        '''
-        return mu for 
-        '''
-        return self.info_dict['N']
-        
+
     
 
 

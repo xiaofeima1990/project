@@ -11,10 +11,11 @@ bidding functions or updating rules
 import numpy as np
 from numpy.linalg import inv
 from scipy.stats import norm
-
+import warnings
+warnings.filterwarnings('error')
 class Update_rule:
     
-    def __init__(self,para):
+    def __init__(self,para,ladder=0.02):
         self.xi_mu=para.xi_mu
         self.xi_sigma2 = para.xi_sigma2 
         self.vi_mu     = para.vi_mu
@@ -24,11 +25,11 @@ class Update_rule:
         self.xi_rival_mu = para.xi_rival_mu
         self.xi_rival_sigma2 = para.xi_rival_sigma2
         self.vi_rival_mu = para.xi_rival_mu
-        self.vi_rival_sigma2 = para.xi_rival_sigma2
+        self.vi_rival_sigma2 = para.vi_rival_sigma2
         self.N         =  para.N
         self.comm_var  = para.comm_var
         self.comm_mu  = para.comm_mu
-        
+        self.ladder   =ladder
     def l_bound(self,state):
         # uninformed lower bound 
         # get the info structure
@@ -122,12 +123,12 @@ class Update_rule:
             
                 
             # mu_k
-            mu_k = np.append(self.vi_mu, info_struct[:n_r-k+1,3])
+            mu_k = np.append(self.xi_mu, info_struct[:n_r-k+1,4])
             mu_k=mu_k.reshape(mu_k.size,1)
             
             l_k  = np.ones((self.N-k,1))
             
-            Gamma_k = np.append(self.vi_sigma2, info_struct[:n_r-k+1,4])
+            Gamma_k = np.append(self.vi_sigma2, info_struct[:n_r-k+1,5])
             Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
             
             
@@ -284,21 +285,29 @@ class Update_rule:
     def truc_x(self,Mu,Sigma,lower,upper):
         Sigma=Sigma**0.5
         
+        
         a = (lower-Mu)/(Sigma)
         b = (upper-Mu)/(Sigma)
+        
         
         if upper == -1:
             result = Mu + Sigma * norm.pdf( a)/(1-norm.pdf( a))
             # result = truncate(pd,lower,Inf);
            
         else:
-            
-            if lower == -1:
-                result = Mu-Sigma*norm.pdf( b)/(1-norm.cdf( b))
-            else:
-                result = Mu+Sigma*(norm.pdf(a) - norm.pdf(b) ) /(norm.cdf(b) - norm.cdf(a)) 
-            
-            
+            try:
+                if lower == -1:
+                    result = Mu-Sigma*norm.pdf( b)/(1-norm.cdf( b))
+                else:
+                    if (upper-lower)<self.ladder:
+                        b = (lower+self.ladder-Mu)/(Sigma)
+                        
+                        
+                    result = Mu+Sigma*(norm.pdf(a) - norm.pdf(b) ) /(norm.cdf(b) - norm.cdf(a)) 
+            except Exception as e:
+                print(e)
+                print('a is {}, b is {}, norm.cdf(b) is , norm.cdf(a) is '.format(a,b,norm.cdf(b), norm.cdf(a)))
+                exit(1)
         return result
         
         

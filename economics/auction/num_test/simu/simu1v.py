@@ -74,15 +74,16 @@ class Simu:
         MU     = self.info_para.MU
         SIGMA2 = self.info_para.SIGMA2
         
-        x_signal=np.array([0,0,0])
+        x_signal=np.ones(N)
         EVX=self.info_para.vi_mu+(self.info_para.comm_var/self.info_para.xi_sigma2)*(min(x_signal)-self.info_para.xi_mu)
         while EVX < r*pub_mu:
         
-            x_signal=self.rng.multivariate_normal(np.array(N) *(pub_mu*r),SIGMA2)
+            x_signal=self.rng.multivariate_normal(np.ones(N) *(pub_mu*r*1.1),SIGMA2)
             EVX=self.info_para.vi_mu+(self.info_para.comm_var/self.info_para.xi_sigma2)*(min(x_signal)-self.info_para.xi_mu)
             
-        
-        
+#        self.info_para.MU=np.ones([N,1])*pub_mu*r*1.1
+#        self.info_para.vi_mu=pub_mu*r*1.1
+#        
         if flag_ID==1:
             
             info_index=1
@@ -90,7 +91,7 @@ class Simu:
             info_index=0
 
         
-        ladder=0.002 + 0.003*self.rng.rand()
+        ladder=0.03 + 0.02*self.rng.rand()
         
         return [pub_mu,x_signal,r,info_index,ladder]
     
@@ -123,7 +124,7 @@ class Simu:
         x_signal=x_signal[x_signal_min>r[0]*pub_mu[0]]
         
         if x_signal.size < SS:
-            x_signal=self.rng.multivariate_normal(np.array(N) *(pub_mu*r),SIGMA2,SS*3)
+            x_signal=self.rng.multivariate_normal(np.ones(N) *(pub_mu*r),SIGMA2,SS*3)
         
             x_signal=x_signal[x_signal>(r*pub_mu)]
         
@@ -136,7 +137,7 @@ class Simu:
         else:
             info_index=np.zeros(SS)
             
-        ladder=0.002 + 0.003*self.rng.rand()
+        ladder=0.02 + 0.02*self.rng.rand()
         return [pub_mu,x_signal,r,info_index,ladder]
     
     
@@ -194,8 +195,8 @@ class Simu:
             pub_info[s,:]=[pub_mu, reserve,N,info_index,ladder]
             
 
-            price_v = np.array(T_end-1)*ladder + pub_mu*reserve
-            price_v = np.append([pub_mu*reserve,price_v])
+            price_v = np.array(range(1,T_end+1))*ladder + pub_mu*reserve
+            price_v = np.append(pub_mu*reserve,price_v)
             # n_Tend=int((T_end-10)/2)
             # price_v = np.linspace(reserve*pub_mu,pub_mu*1.1, n_Tend)
             # price_v=np.append(price_v,np.linspace(1.12*pub_mu,pub_mu*1.8, n_Tend))
@@ -265,69 +266,78 @@ class Simu:
             # final state
             # notice there exist mismatch between data act and state 
             # state is right data act need to add 1 
-            data_state[s,:]=State
-            
-            # calculate the bidding frequency for each bidders 
-            unique, counts = np.unique(data_act[s,:], return_counts=True)
-
-#            freq_list=[x for x in zip(unique,counts) if x[0] != -1]
-#            data_bid_freq[s,:]=np.array(freq_list)
-            
-            a=zip(unique,counts) 
-            for ele in a:
-                if ele[0] != -1:
-                    data_bid_freq[s,int(ele[0])]=ele[1]
+            try:
+                data_state[s,:]=State
+                
+                # calculate the bidding frequency for each bidders 
+                unique, counts = np.unique(data_act[s,:], return_counts=True)
+    
+    #            freq_list=[x for x in zip(unique,counts) if x[0] != -1]
+    #            data_bid_freq[s,:]=np.array(freq_list)
+                
+                a=zip(unique,counts) 
+                for ele in a:
+                    if ele[0] != -1:
+                        data_bid_freq[s,int(ele[0])]=ele[1]
+                    else:
+                        continue
+                
+                
+                # calculate the real bidding number 
+                temp_freq=[x for x in data_bid_freq[s,:] if x > 0]
+                freq_i2[s]=np.std(temp_freq)
+                freq_i1[s]=np.mean(temp_freq)
+                
+                
+                # winning
+                data_win[s]=price_v[int(max(State))] / (pub_mu*reserve)
+                
+                
+                
+                ## new adding 
+                order_ind=np.argsort(State)
+                # second higest bidder to the difference
+                
+                i_ed = order_ind[-2]
+                i_rest =order_ind[:-2]
+                temp_pos=(State[i_ed] - np.array(State[i_rest]))
+                
+                sec_diff_i1[s]= np.mean(temp_pos)
+                sec_diff_i2[s]= np.std(temp_pos)
+                
+                # lower rank freq 
+                low_freq_list=[]
+                
+                freq_list=[x for x in zip(unique,counts) if x[0] != -1]
+                freq_sum=[x[1] for x in zip(unique,counts) if x[0] != -1]
+                for ele in freq_list:
+                    if ele[0] != order_ind[-1] and ele[0] != order_ind[-2]:
+                        low_freq_list.append(ele[1])
+                
+                if len(low_freq_list)==0 :
+                    sec_freq_i1[s]=0
+                    sec_freq_i2[s]=np.nan
+                    low_freq_ratio_i[s]=0
                 else:
-                    continue
-            
-            
-            # calculate the real bidding number 
-            temp_freq=[x for x in data_bid_freq[s,:] if x > 0]
-            freq_i2[s]=np.std(temp_freq)
-            freq_i1[s]=np.mean(temp_freq)
-            
-            
-            # winning
-            data_win[s]=price_v[int(max(State))] / (pub_mu*reserve)
-            
-            
-            
-            ## new adding 
-            order_ind=np.argsort(State)
-            # second higest bidder to the difference
-            
-            i_ed = order_ind[-2]
-            i_rest =order_ind[:-2]
-            temp_pos=(State[i_ed] - np.array(State[i_rest]))
-            
-            sec_diff_i1[s]= np.mean(temp_pos)
-            sec_diff_i2[s]= np.std(temp_pos)
-            
-            # lower rank freq 
-            low_freq_list=[]
-            
-            freq_list=[x for x in zip(unique,counts) if x[0] != -1]
-            freq_sum=[x[1] for x in zip(unique,counts) if x[0] != -1]
-            for ele in freq_list:
-                if ele[0] != order_ind[-1] and ele[0] != order_ind[-2]:
-                    low_freq_list.append(ele[1])
-            
-            
-            sec_freq_i1[s]=np.mean(low_freq_list)
-            sec_freq_i2[s]=np.std(low_freq_list)
-            
-            
-            # find real bidding bidders
-            num_i[s]  =int(sum((State>0)*1))
-            pub_info[s,2]=num_i[s]
-
-            low_freq_ratio_i[s]=sum(low_freq_list)/sum(freq_sum)
-            
-            # third highest winning price (relative)
-            if N>=3:
-                third_win_i[s] = price_v[State[order_ind[-3]]]/ (pub_mu*reserve)
-            else:
-                third_win_i[s] = np.nan
+                    sec_freq_i1[s]=np.nanmean(low_freq_list)
+                    sec_freq_i2[s]=np.nanstd(low_freq_list)
+                    low_freq_ratio_i[s]=sum(low_freq_list)/sum(freq_sum)
+                
+                
+                # find real bidding bidders
+                num_i[s]  =int(sum((State>0)*1))
+                pub_info[s,2]=num_i[s]
+                
+                
+                
+                # third highest winning price (relative)
+                if N>=3:
+                    third_win_i[s] = price_v[State[order_ind[-3]]]/ (pub_mu*reserve)
+                else:
+                    third_win_i[s] = np.nan
+            except Exception as e:
+                print(e)
+                print('s:{},State:{},act:{}'.format(s,State,data_act[s,]))
 
         
         data_dict={
