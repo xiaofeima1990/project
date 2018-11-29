@@ -24,7 +24,7 @@ graph_path = "E:/Dropbox/academic/ideas/IO field/justice auction/draft/pic/"
 
 con = sqlite3.connect(store_path+"auction_info_house.sqlite")
 
-PATH_output="E:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code4\\analysis\\"
+PATH_output="G:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code4\\analysis\\"
 
 df_1_s = pd.read_csv(PATH_output+"sample1_df.csv", sep='\t', encoding='utf-8')
 df_2_s = pd.read_csv(PATH_output+"sample2_df.csv", sep='\t', encoding='utf-8')
@@ -388,7 +388,7 @@ x1=np.array(df1_freq.loc[df1_freq['priority_people']==0,'num_bidder'])
 y1=np.array(df1_freq.loc[df1_freq['priority_people']==0,'bid_freq'])
 z1=np.array(df1_freq.loc[df1_freq['priority_people']==0,'num_auction'])
 plt.stem(x1,y1,color='#1f77b4')
-plt.scatter(x1, y1,color='#1f77b4', s=z1, alpha=1)
+plt.scatter(x1, y1,color='#1f77b4', s=z1, alpha=1,label='without priority')
 #p=plt.gca()
 #for i,text in enumerate(z1):
 #    p.annotate(text, (x1[i], y1[i]+5))
@@ -404,15 +404,15 @@ z2=np.array(df1_freq.loc[df1_freq['priority_people']==1,'num_auction'])
 markerline, stemlines, baseline =plt.stem(x2+0.3,y2,markerfmt='')
 plt.setp(stemlines, color='#ff7f0e', linewidth=1)
 plt.setp(markerline, color='#ff7f0e', linewidth=0)
-plt.scatter(x2+0.33, y2,color='#ff7f0e', s=z2, alpha=1)
+plt.scatter(x2+0.33, y2,color='#ff7f0e', s=z2, alpha=1,label='with priority')
 p=plt.gca()
 #for i,text in enumerate(z2):
 #    p.annotate(text, (x2[i], y2[i]+4))
 p.set_ylim(0, 150)
-
+_ = plt.legend(loc='upper right')
 p.set_xlabel('auctions given the number of bidders')
 p.set_ylabel('average bidding frequency')
-p.set_title("Average Bidding Frequncy With Prority Bidder")
+p.set_title("Average Bidding Frequncy With/Without Prority Bidder")
 p.grid(True)
 
 

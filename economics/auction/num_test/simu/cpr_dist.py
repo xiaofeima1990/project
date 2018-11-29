@@ -21,13 +21,13 @@ import seaborn as sns
 import pickle as pk
 from simu1v import Simu
 import numpy as np
-
+from scipy import stats
 Simu_para_dict={
 
         "comm_mu":10,
         "priv_mu":1,
         "epsilon_mu":0,
-        "comm_var":0.1,
+        "comm_var":0.15,
         "priv_var":0.1,
         "epsilon_var":0.1,
         }
@@ -77,9 +77,9 @@ def Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_mode=0,flag_mode=0,rng_se
 
 if __name__ == '__main__':
     
-    start_n=4
-    end_n=4
-    T=50
+    start_n=3
+    end_n=8
+    T=200
     T_end=100
     
     Rng_seed=123
@@ -92,11 +92,11 @@ if __name__ == '__main__':
     
     '''
     
-    info_flag=0
-    flag_mode=2 # randomize the pub info
-    simu_data_0= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
-    
-    
+#    info_flag=1
+#    flag_mode=2 # randomize the pub info
+#    simu_data_0= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
+#    
+#    
     
     
     
@@ -107,59 +107,59 @@ if __name__ == '__main__':
     the case for uninformed 
     
     '''
-#    if mode_flag ==1:
-#        info_flag=0
-#        flag_mode=0
-#        simu_data_0= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
-#        pk.dump(simu_data_0, open( "simu_data_uninfo.pkl", "wb"))
-#    else:
-#    # load the uninformed case 
-#        
-#        simu_data_0=pk.load( open( path+ "simu_data_uninfo.pkl", "rb"))
-#    #    
-#    '''
-#    the case for informed
-#    
-#    '''
-#    if mode_flag ==1:
-#        info_flag=1
-#        flag_mode=0
-#        simu_data_1= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
-#        pk.dump(simu_data_1, open( "simu_data_info.pkl", "wb"))
-#    else:
-#    # load the uninformed case 
-#        simu_data_1=pk.load( open( path+ "simu_data_info.pkl", "rb"))
-#    #    
-#    '''
-#    calculate the moments for 
-#    1 winning bid 
-#    2 bidding frequency
-#    3 bidding distance
-#    
-#    '''
-#    
-#
-#    
-#    N_chunk=len(simu_data_1)
-#    
-#    # check the moments
-#    cmp_list=['data_win','sec_diff_i1','sec_freq_i1','low_freq_ratio_i','freq_i1']
-#
-#    for i in range(0,N_chunk):
-#        temp_sim_0=simu_data_0[i]
-#        temp_sim_1=simu_data_1[i]
-#        sim_0_list=[]
-#        sim_1_list=[]
-#        print('for N = {} auctions'.format(temp_sim_1.pub_info[1,2]))
-#        
-#        for ele in cmp_list:
-#    
-#            sim_0_list.append(np.nanmean(temp_sim_0.data_dict[ele]))
-#            sim_1_list.append(np.nanmean(temp_sim_1.data_dict[ele]))
-#            
-#        print('           -: win bid \t sec_diff_mean \t sec_freq \t low_freq_ratio \t freq')
-#        print('uninformed -:'+' \t '.join(str(round(x,4)) for x in sim_0_list))
-#        print('  informed -:'+' \t '.join(str(round(x,4)) for x in sim_1_list))
+    if mode_flag ==1:
+        info_flag=0
+        flag_mode=2
+        simu_data_0= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
+        pk.dump(simu_data_0, open( "simu_data_uninfo.pkl", "wb"))
+    else:
+    # load the uninformed case 
+        
+        simu_data_0=pk.load( open( path+ "simu_data_uninfo.pkl", "rb"))
+    #    
+    '''
+    the case for informed
+    
+    '''
+    if mode_flag ==1:
+        info_flag=1
+        flag_mode=2
+        simu_data_1= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
+        pk.dump(simu_data_1, open( "simu_data_info.pkl", "wb"))
+    else:
+    # load the uninformed case 
+        simu_data_1=pk.load( open( path+ "simu_data_info.pkl", "rb"))
+    #    
+    '''
+    calculate the moments for 
+    1 winning bid 
+    2 bidding frequency
+    3 bidding distance
+    
+    '''
+    
+
+    
+    N_chunk=len(simu_data_1)
+    
+    # check the moments
+    cmp_list=['data_win','sec_diff_i1','sec_freq_i1','low_freq_ratio_i','freq_i1']
+
+    for i in range(0,N_chunk):
+        temp_sim_0=simu_data_0[i]
+        temp_sim_1=simu_data_1[i]
+        sim_0_list=[]
+        sim_1_list=[]
+        print('for N = {} auctions'.format(temp_sim_1.pub_info[6,2]))
+        
+        for ele in cmp_list:
+    
+            sim_0_list.append(np.nanmean(temp_sim_0.data_dict[ele]))
+            sim_1_list.append(np.nanmean(temp_sim_1.data_dict[ele]))
+            
+        print('           -: win bid \t sec_diff_mean \t sec_freq \t low_freq_ratio \t freq')
+        print('uninformed -:'+' \t '.join(str(round(x,4)) for x in sim_0_list))
+        print('  informed -:'+' \t '.join(str(round(x,4)) for x in sim_1_list))
 #        
 #    
         
@@ -199,4 +199,63 @@ if __name__ == '__main__':
 #    plt.show()
     
     
+    
+    '''
+    bid frequency
+    '''
+    N_chunk=len(simu_data_1)
+    big_win_v0=np.array([])
+    big_win_v1=np.array([])
+    for i in range(0,N_chunk):
+        big_win_v0=np.append(big_win_v0,simu_data_0[i].freq_i1)
+        big_win_v1=np.append(big_win_v1,simu_data_1[i].freq_i1)
+        
+        
+    
+    xx1 = np.sort(big_win_v0)
+    density1 = stats.kde.gaussian_kde(xx1)
+    xx2 = np.sort(big_win_v1)
+    density2 = stats.kde.gaussian_kde(xx2)
+    
+    x1 = np.arange(0, 25, 1)
+    x2 = np.arange(0, 25, 1)
+    
+    _ = plt.plot(x1,density1(x1),label = "without informed bidder")
+    _ = plt.plot(x2,density2(x2),label = "with informed bidder")
+    _ = plt.xlabel("bidding times")
+    _ = plt.ylabel("Density")
+    _ = plt.title("Simulated Distribution of bidding frequency")
+    _ = plt.margins(0.02)
+    _ = plt.legend(loc='upper right')
+    _ = plt.grid(True)
 
+
+    '''
+    winning bid spread
+    '''
+    N_chunk=len(simu_data_1)
+    big_win_v0=np.array([])
+    big_win_v1=np.array([])
+    for i in range(0,N_chunk):
+        big_win_v0=np.append(big_win_v0,simu_data_0[i].data_win)
+        big_win_v1=np.append(big_win_v1,simu_data_1[i].data_win)
+        
+        
+    
+    xx1 = np.sort(big_win_v0)
+    density1 = stats.kde.gaussian_kde(xx1)
+    xx2 = np.sort(big_win_v1)
+    density2 = stats.kde.gaussian_kde(xx2)
+    
+    x1 = np.arange(0.9, 1.4, 0.001)
+    x2 = np.arange(0.9, 1.4, 0.001)
+    
+    _ = plt.plot(x1,density1(x1),label = "without informed bidder")
+    _ = plt.plot(x2,density2(x2),label = "with informed bidder")
+    _ = plt.xlabel("winning price / reserve price")
+    _ = plt.ylabel("Density")
+    _ = plt.title("Simulated Distribution of Winning Bid")
+    _ = plt.margins(0.02)
+    _ = plt.legend(loc='upper right')
+    _ = plt.grid(True)
+#    
