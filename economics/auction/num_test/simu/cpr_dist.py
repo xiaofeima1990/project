@@ -77,10 +77,10 @@ def Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_mode=0,flag_mode=0,rng_se
 
 if __name__ == '__main__':
     
-    start_n=3
-    end_n=3
-    T=100
-    T_end=120
+    start_n=4
+    end_n=4
+    T=50
+    T_end=100
     
     Rng_seed=123
     

@@ -91,7 +91,7 @@ class Simu:
             info_index=0
 
         
-        ladder=0.03 + 0.02*self.rng.rand()
+        ladder=0.02 + 0.02*self.rng.rand()
         
         return [pub_mu,x_signal,r,info_index,ladder]
     

@@ -66,12 +66,13 @@ class ENV:
         self.uninfo['xi_mu']    = self.uninfo['xi_mu'] *0.8
         self.uninfo['vi_rival_mu'] = self.uninfo['vi_rival_mu']*0.8
         self.uninfo['MU'] = self.uninfo['MU']*0.8
+        self.uninfo['comm_mu']    = self.uninfo['comm_mu']*0.8
         return Info_result(self.uninfo)
         
     def Info_ID(self):
         self.info_Id['xi_mu']     =  self.comm_mu+self.priv_mu + self.noise_mu
         self.info_Id['xi_sigma2'] =  self.comm_var+self.priv_var + self.noise_var
-        self.info_Id['vi_mu']     =  (self.comm_mu+self.priv_mu) *0.8
+        self.info_Id['vi_mu']     =  self.comm_mu+self.priv_mu
         self.info_Id['vi_sigma2'] =  self.comm_var+self.priv_var
         self.info_Id['x_info_mu'] = self.comm_mu+self.priv_mu 
         self.info_Id['x_info_sigma2'] = self.comm_var+self.priv_var
@@ -86,9 +87,19 @@ class ENV:
         temp_var[1]=self.info_Id['x_info_sigma2']
         self.info_Id['SIGMA2']      = np.diag(temp_var) + temp_matrix
         self.info_Id['MU']          = (self.comm_mu+self.priv_mu + self.noise_mu)*np.ones((self.N,1))
-        self.info_Id['MU'][1,0]=self.info_Id['x_info_mu']
+        
         self.info_Id['comm_var']    = self.comm_var
         self.info_Id['comm_mu']    = self.comm_mu
+        
+        self.info_Id['xi_rival_mu']=self.info_Id['xi_rival_mu']*0.8
+        self.info_Id['vi_mu']    = self.info_Id['vi_mu'] *0.8
+        self.info_Id['xi_mu']    = self.info_Id['xi_mu'] *0.8
+        self.info_Id['vi_rival_mu'] = self.info_Id['vi_rival_mu']*0.8
+        self.info_Id['MU'] = self.info_Id['MU']*0.8
+        self.info_Id['x_info_mu'] = self.info_Id['x_info_mu']*0.85 
+        self.info_Id['MU'][1,0]=self.info_Id['x_info_mu']
+        self.info_Id['comm_mu'] = self.info_Id['comm_mu']*0.8
+        
         return Info_result(self.info_Id)
     
     

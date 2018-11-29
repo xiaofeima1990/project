@@ -12,7 +12,8 @@ import numpy as np
 from numpy.linalg import inv
 from scipy.stats import norm
 import warnings
-warnings.filterwarnings('error')
+warnings.filterwarnings('default')
+
 class Update_rule:
     
     def __init__(self,para,ladder=0.02):
