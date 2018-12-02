@@ -62,7 +62,7 @@ fig_size_h=4
 fig = plt.figure(figsize=(fig_size_w, fig_size_h), dpi=my_dpi)
 plt.xlim(0, 18)
 plt.ylim(1000, 3200)
-text_content="A Typical English Auction with 4 Bidders\nreserve price: 1000 \nminimum increment: 100\na bidder forms evaluation: $x_i$"
+text_content="A Typical English Auction with 4 Bidders\nreserve price: 1000 \nminimum increment: 100"
 
 # these are matplotlib.patch.Patch properties
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)

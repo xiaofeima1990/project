@@ -44,8 +44,10 @@ from functools import partial
 from scipy.stats import norm
 #from scipy.stats import multivariate_normal
 import multiprocessing
-from concurrent.futures import ThreadPoolExecutor,ProcessPoolExecutor
 import threading
+from pathos.multiprocessing import ProcessPool
+from pathos.threading import ThreadPool
+
 
 from contextlib import contextmanager
 import pickle as pk
@@ -167,15 +169,21 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     '''
     data_n=len(DATA_STRUCT)
     
-    work_pool = ThreadPoolExecutor(max_workers=data_n)
+    work_pool = ThreadPool(nodes=data_n)
     
     cpu_num=multiprocessing.cpu_count()
     
     cpu_num_node=int((cpu_num-1)/data_n)
     # change the submit to mpa so that we can run multi-part altogether
-    auction_list=work_pool.map(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct),iter(DATA_STRUCT))
+    results=work_pool.amap(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct),iter(DATA_STRUCT))
+    work_pool.close()
+    while not results.ready():
+        time.sleep(5)
+        print(".")
+        
+#    work_pool.join()
     
-    auction_result=np.nanmean(list(auction_list))
+    auction_result=np.nanmean(list(results.get()))
     
     end = time.time()
     
@@ -239,8 +247,9 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
     
     
     func=partial(para_fun,para,info_flag,rng,T_end,int(JJ*N),x_signal,w_x)
+    pool = ProcessPool(nodes=cpu_num)
 
-    pool = ProcessPoolExecutor(max_workers=cpu_num)
+#    pool = ProcessPoolExecutor(max_workers=cpu_num)
     
     start = time.time()
     results= pool.map(func, zip(range(0,TT), Data_struct.data_act,Data_struct.data_state,Data_struct.pub_info))
