@@ -21,6 +21,7 @@ print(results.get())
 
 
 # do one item at a time, using a pipe
+
 print(pool.pipe(pow, 1, 5))
 print(pool.pipe(pow, 2, 6))
 
@@ -30,3 +31,9 @@ result1 = pool.apipe(pow, 1, 5)
 result2 = pool.apipe(pow, 2, 6)
 print(result1.get())
 print(result2.get())
+
+
+print("hello world")
+
+
+

@@ -32,7 +32,7 @@ df_1_s['p_ratio']=df_1_s['win_bid']/df_1_s['reserve_price']
 df_2_s['p_ratio']=df_2_s['win_bid']/df_2_s['reserve_price']
 
 df_1_s['freq_norm'] = (df_1_s['bid_freq']-df_1_s['bid_freq'].mean())/df_1_s['bid_freq'].std()
-df_2_s['freq_norm'] = (df_2_s['bid_freq'])/df_2_s['bid_freq'].std()
+df_2_s['freq_norm'] = (df_2_s['bid_freq']-df_1_s['bid_freq'].mean())/df_2_s['bid_freq'].std()
 
 df_1_s['dist_volatility'] = (df_1_s['dist_high']-df_1_s['dist_high'].mean())/df_1_s['dist_high'].std()
 df_2_s['dist_volatility'] = (df_2_s['dist_high']-df_2_s['dist_high'].mean())/df_2_s['dist_high'].std()
@@ -269,17 +269,6 @@ plt.show()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 '''
 -------------------------------------------------------------------------------
 pic2 
@@ -294,9 +283,9 @@ and density
 density=True or False
 '''
 
-
-
-bins = np.linspace(df1_freq['num_bidder'].min(), df1_freq['num_bidder'].max(), 60)
+group_freq1=df_1_s.groupby(['num_bidder','priority_people'])
+max_bin=df_1_s.loc[df_1_s['priority_people']==1,'num_bidder'].max()
+bins = np.linspace( min(group_freq1.num_bidder.min()), max_bin, 40)
 
 z1=df_1_s.loc[df_1_s['priority_people']==0,'num_bidder']
 
@@ -345,8 +334,8 @@ df1_temp=group_freq1.bid_freq.count()
 df1_temp=df1_temp.rename('num_auction')
 df1_freq=pd.concat([df1_freq, df1_temp], axis=1)
 df1_freq=df1_freq.reset_index()
-df1_freq=df1_freq[df1_freq['num_bidder']<25]
-df1_freq=df1_freq[df1_freq['num_bidder']!=16]
+df1_freq=df1_freq[df1_freq['num_bidder']<16]
+#df1_freq=df1_freq[df1_freq['num_bidder']!=16]
 
 w = 0.3
 x1=np.array(df1_freq.loc[df1_freq['priority_people']==0,'num_bidder'])
@@ -380,7 +369,7 @@ df1_temp=group_freq1.bid_freq.count()
 df1_temp=df1_temp.rename('num_auction')
 df1_freq=pd.concat([df1_freq, df1_temp], axis=1)
 df1_freq=df1_freq.reset_index()
-df1_freq=df1_freq[df1_freq['num_bidder']<25]
+df1_freq=df1_freq[df1_freq['num_bidder']<18]
 df1_freq=df1_freq[df1_freq['bid_freq']<300]
 
 
@@ -414,6 +403,40 @@ p.set_xlabel('auctions given the number of bidders')
 p.set_ylabel('average bidding frequency')
 p.set_title("Average Bidding Frequncy With/Without Prority Bidder")
 p.grid(True)
+
+
+'''
+winning price w.r.t. number of bidders
+
+'''
+tail=df_1_s['bid_freq'].quantile(0.95)
+df_1_s=df_1_s[df_1_s['bid_freq']<tail]
+
+df_1_s=df_1_s[df_1_s['num_bidder']<18]
+
+pri_group1 = df_1_s.groupby("priority_people")
+
+xx1 = np.sort(pri_group1.get_group(0)['bid_freq'])
+density1 = stats.kde.gaussian_kde(xx1)
+xx2 = np.sort(pri_group1.get_group(1)['bid_freq'])
+density2 = stats.kde.gaussian_kde(xx2)
+
+# this is for bidding frequency
+x1 = np.arange(0, 120, 1)
+x2 = np.arange(0, 120, 1)
+
+_ = plt.plot(x1,density1(x1),label = "without priority")
+_ = plt.plot(x2,density2(x2),label = "with priority")
+_ = plt.xlabel("bidding times")
+_ = plt.ylabel("Density")
+_ = plt.title("Distribution of Bid Frequency with/without Prority Bidder")
+_ = plt.margins(0.02)
+_ = plt.legend(loc='upper right')
+_ = plt.grid(True)
+
+
+
+
 
 
 
