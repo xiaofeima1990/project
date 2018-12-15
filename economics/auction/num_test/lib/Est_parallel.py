@@ -11,7 +11,6 @@ from collections import defaultdict,OrderedDict
 import time,datetime
 import numpy as np
 from Update_rule import Update_rule
-from est import Est
 from ENV import ENV
 
 
@@ -44,6 +43,7 @@ def para_fun(para,info_flag,rng,T_end,JJ,x_signal,w_x, arg_data):
     pub_mu=pub_info[0]
     r     =pub_info[1]
     N     =int(pub_info[2])
+    ladder=pub_info[4]
     
             
 #    print('start calculating auction {} with # of bidder {}'.format(tt,N))
@@ -75,10 +75,8 @@ def para_fun(para,info_flag,rng,T_end,JJ,x_signal,w_x, arg_data):
     
     state_temp=np.zeros((N,N))
     
-    price_v = np.linspace(r*pub_mu,pub_mu*1.2, T_end-10)
-    price_v=np.append(price_v,np.linspace(1.24*pub_mu,pub_mu*1.8, 5))
-    price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,5))
-        
+    price_v = np.array(range(1,T_end+1))*ladder + pub_mu*r
+    price_v = np.append(pub_mu*r,price_v)
     # get the bidders state for claculation
     for i in range(0,len(data_state)):
         flag_select=np.ones(N)

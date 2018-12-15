@@ -32,7 +32,7 @@ from functools import partial
 from scipy.stats import norm
 #from scipy.stats import multivariate_normal
 import multiprocessing
-from concurrent.futures import ThreadPoolExecutor,ProcessPoolExecutor
+
 from functools import partial
 from contextlib import contextmanager
 import pickle as pk
@@ -59,13 +59,6 @@ def list_duplicates(seq):
         tally[item].append(i)
     return ((key,locs) for key,locs in tally.items() if len(locs)>=1)
    
-@contextmanager
-def poolcontext(*args, **kwargs):
-    pool = multiprocessing.Pool(*args, **kwargs)
-    yield pool
-    pool.terminate()
-
-
 
 
 def signal_DGP_parallel(public_info,para,rng,N,JJ=15):
@@ -81,8 +74,7 @@ def signal_DGP_parallel(public_info,para,rng,N,JJ=15):
     # r =  0.8 + 0.1*self.rng.rand() 
     r =  public_info[1]
     
-    
-
+ 
 #    x_signal=rng.multivariate_normal(MU.flatten(),SIGMA2,JJ)
     [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
     info_index=public_info[3]

@@ -30,13 +30,21 @@ install the package :
 '''
 
 
+PATH = os.path.dirname(os.path.realpath(__file__))
+
+lib_path= os.path.dirname(PATH) + '/lib/'
+sys.path.append(lib_path)
+
+data_path= os.path.dirname(PATH) + '/data/Simu/'
+
 
 
 import numpy as np
 from simu import Simu
 from Update_rule import Update_rule
-from est import Est
+from Est_parallel import * 
 from ENV import ENV
+from Util import *
 from scipy.optimize import minimize
 import time,datetime
 
@@ -53,7 +61,6 @@ from contextlib import contextmanager
 import pickle as pk
 import quantecon  as qe
 from numpy import linalg as LA
-from para_run import *
 
 
 
@@ -77,64 +84,6 @@ def poolcontext(*args, **kwargs):
     pool.terminate()
 
 
-
-
-def signal_DGP_parallel(public_info,para,rng,N,JJ=15):
-    
-
-    
-    MU       =para.MU
-    SIGMA2   =para.SIGMA2
-    # common value in public
-    pub_mu = public_info[0]
-    
-    # random reservation ratio
-    # r =  0.8 + 0.1*self.rng.rand() 
-    r =  public_info[1]
-    
-    
-
-#    x_signal=rng.multivariate_normal(MU.flatten(),SIGMA2,JJ)
-    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
-    info_index=public_info[3]
-    
-#    prob_x_signal=multivariate_normal.pdf(x_signal,MU.flatten(),SIGMA2)
-    
-    
-    
-    return [pub_mu,x_signal,w_x,info_index,r]
-
-def signal_DGP(para,rng,N,JJ=400):
-
-
-    
-    MU       =para.MU
-    SIGMA2   =para.SIGMA2
-    # common value in public
-#    pub_mu = public_info[0]
-    
-    # random reservation ratio
-#    r =  public_info[1]
-    
-    
-    # Cholesky Decomposition
-    lambda_0,B=LA.eig(SIGMA2)
-    lambda_12=lambda_0**(0.5)
-    Sigma=B@np.diag(lambda_12)@LA.inv(B)
-    
-    # lattices 
-    [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)
-    
-    a_n= norm.ppf(xi_n)
-    
-    x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
-    x_signal= x_signal.T
-
-#    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
-#    info_index=public_info[3]
-    
-    
-    return [x_signal,w_n]
 
 
 

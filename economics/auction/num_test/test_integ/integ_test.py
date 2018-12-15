@@ -10,6 +10,25 @@ next task : function approximation
 
 """
 
+
+import os,sys
+
+sys.path.append('/storage/work/g/gum27/system/pkg/')
+
+'''
+install the package :
+    eg. I am in the work directory and want to install on the pkg 
+    pip install --target=system/pkg/ package_name
+
+'''
+
+PATH = os.path.dirname(os.path.realpath(__file__))
+
+lib_path= os.path.dirname(PATH) + '/lib/'
+sys.path.append(lib_path)
+
+data_path= os.path.dirname(PATH) + '/data/Simu/'
+
 import numpy as np
 from Update_rule import Update_rule
 from ENV import ENV 

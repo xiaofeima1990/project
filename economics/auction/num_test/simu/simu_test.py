@@ -12,20 +12,32 @@ This is for simulation test:
 
 import matplotlib.pyplot as plt
 import pickle as pk
+import os,sys
+sys.path.append('/storage/work/g/gum27/system/pkg/')
+
+PATH = os.getcwd()
+lib_path= os.path.dirname(PATH) + '/lib/'
+print(lib_path)
+sys.path.append(lib_path)
+
+data_path= os.path.dirname(PATH) + '/input/'
+
+
 from simu import Simu
 from Update_rule import Update_rule
 from est import Est
 from ENV import ENV
 import numpy as np
 
+
 Simu_para_dict={
 
         "comm_mu":10,
         "priv_mu":1,
         "epsilon_mu":0,
-        "comm_var":0.8,
-        "priv_var":1.2,
-        "epsilon_var":0.8,
+        "comm_var":0.15,
+        "priv_var":0.1,
+        "epsilon_var":0.1,
         }
 
 
@@ -131,7 +143,6 @@ def SM_compute(simu_data):
     return [SM_mu,SM_std]
 
 # load the data
-path = "G:\\github\\project\\economics\\auction\\num_test\\"
 
 simu_data = pk.load( open( path+ "simu_data.pkl", "rb"))
 

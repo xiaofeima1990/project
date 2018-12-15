@@ -12,14 +12,24 @@ next task:
     randomize the number of bidders in each types of auction
 
 """
+import os,sys
+
+sys.path.append('/storage/work/g/gum27/system/pkg/')
+
+PATH = os.path.dirname(os.path.realpath(__file__))
+print(PATH)
+lib_path= os.path.dirname(PATH) + '/lib/'
+# lib_path= PATH + '/lib/'
+print(lib_path)
+sys.path.append(lib_path)
+
+data_path= os.path.dirname(PATH) + '/data/Simu/'
 
 
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-
 import pickle as pk
-from simu1v import Simu
+from simu import Simu
 import numpy as np
 from scipy import stats
 Simu_para_dict={
@@ -84,22 +94,7 @@ if __name__ == '__main__':
     
     Rng_seed=123
     
-    mode_flag=1 # 1 -> run the simulation ; 0 -> read the data
-    path = "E:\\github\\project\\economics\\auction\\num_test\\simu\\"
-    
-    
-    '''
-    
-    '''
-    
-#    info_flag=1
-#    flag_mode=2 # randomize the pub info
-#    simu_data_0= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
-#    
-#    
-    
-    
-    
+    mode_flag=0 # 1 -> run the simulation ; 0 -> read the data
     
     
     
@@ -111,11 +106,12 @@ if __name__ == '__main__':
         info_flag=0
         flag_mode=2
         simu_data_0= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
-        pk.dump(simu_data_0, open( "simu_data_uninfo.pkl", "wb"))
+        with open( data_path + "simu_data_uninfo.pkl", "wb") as f : 
+            pk.dump(simu_data_0, f)
     else:
     # load the uninformed case 
-        
-        simu_data_0=pk.load( open( path+ "simu_data_uninfo.pkl", "rb"))
+        with open( data_path + "simu_data_uninfo.pkl", "rb") as f :
+            simu_data_0=pk.load( f)
     #    
     '''
     the case for informed
@@ -125,11 +121,14 @@ if __name__ == '__main__':
         info_flag=1
         flag_mode=2
         simu_data_1= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
-        pk.dump(simu_data_1, open( "simu_data_info.pkl", "wb"))
+        with open( data_path + "simu_data_info.pkl", "wb") as f:
+            pk.dump(simu_data_1, f)
     else:
-    # load the uninformed case 
-        simu_data_1=pk.load( open( path+ "simu_data_info.pkl", "rb"))
-    #    
+    # load the uninformed case
+        with open( data_path + "simu_data_info.pkl", "rb") as f: 
+            simu_data_1=pk.load(f)
+        
+
     '''
     calculate the moments for 
     1 winning bid 
@@ -170,33 +169,33 @@ if __name__ == '__main__':
     3 bidding frequency
     '''
     
-#    cmp_list=['data_win','sec_diff_i1','sec_freq_i1','tot_freq_i']
-#    
-#    n_set=1
-#    cmp_ele=cmp_list[2]
-#    
-#    temp_sim_0=simu_data_0[n_set]
-#    temp_sim_1=simu_data_1[n_set]
-#    
-#    f, axes = plt.subplots(1, 2, figsize=(7, 7), sharex=True)
-#    
-#    x=temp_sim_0.data_dict[cmp_ele]
-#    tail=np.percentile(x,99)
-#    x=x[x<tail]
-#    sns.distplot(x, hist=False, rug=True,ax=axes[ 0])
-#    sns.distplot(x, bins=20, kde=False,ax=axes[0])
-#    axes[0].set_title("uninformed")
-#    axes[0].set_ylabel('density')
-#    
-#    y=temp_sim_1.data_dict[cmp_ele]
-#    tail=np.percentile(y,99)
-#    y=y[y<tail]
-#    sns.distplot(y, hist=False, rug=True,ax=axes[1])
-#    sns.distplot(y, bins=20, kde=False,ax=axes[1])
-#    axes[1].set_title("informed")
-#    plt.subplots_adjust(bottom=0.25, top=0.75,hspace=0.2,wspace=0.2,left=0.05, right=1.2)
-#    
-#    plt.show()
+   cmp_list=['data_win','sec_diff_i1','sec_freq_i1','tot_freq_i']
+   
+   n_set=1
+   cmp_ele=cmp_list[2]
+   
+   temp_sim_0=simu_data_0[n_set]
+   temp_sim_1=simu_data_1[n_set]
+   
+   f, axes = plt.subplots(1, 2, figsize=(7, 7), sharex=True)
+   
+   x=temp_sim_0.data_dict[cmp_ele]
+   tail=np.percentile(x,99)
+   x=x[x<tail]
+   sns.distplot(x, hist=False, rug=True,ax=axes[ 0])
+   sns.distplot(x, bins=20, kde=False,ax=axes[0])
+   axes[0].set_title("uninformed")
+   axes[0].set_ylabel('density')
+   
+   y=temp_sim_1.data_dict[cmp_ele]
+   tail=np.percentile(y,99)
+   y=y[y<tail]
+   sns.distplot(y, hist=False, rug=True,ax=axes[1])
+   sns.distplot(y, bins=20, kde=False,ax=axes[1])
+   axes[1].set_title("informed")
+   plt.subplots_adjust(bottom=0.25, top=0.75,hspace=0.2,wspace=0.2,left=0.05, right=1.2)
+   
+   plt.show()
     
     
     
@@ -257,5 +256,4 @@ if __name__ == '__main__':
     _ = plt.title("Simulated Distribution of Winning Bid")
     _ = plt.margins(0.02)
     _ = plt.legend(loc='upper right')
-    _ = plt.grid(True)
-#    
+    _ = plt.grid(True)    

@@ -100,7 +100,6 @@ class Update_rule:
         
         #  dropout x
         x_j_lower = lower_b[:,0]
-        j_N = len(x_j_lower)
 
 
         # Constat part 
@@ -132,7 +131,7 @@ class Update_rule:
             print('-------------------------')
 
         # conditional variance var(v_i | x_i , x_j , x_q)
-        Si_va=Sigma_inv; 
+        Si_va=Sigma_inv
         part_mu=COV_xvi.T @ Si_va[1:,:].T @ self.MU[1:]
         # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
         var_update = self.vi_sigma2 -AA_i*self.vi_sigma2 + (E_j-part_mu )**2
@@ -194,7 +193,9 @@ class Update_rule:
         a = (lower-Mu)/(Sigma)
         b = (upper-Mu)/(Sigma)
         
-        result = Mu+Sigma*(norm.pdf(a) - norm.pdf(b) ) /(norm.cdf(b) - norm.cdf(a)) 
+        temp_de = np.log(norm.cdf(b) - norm.cdf(a))
+        temp_no = np.log(norm.pdf(a) - norm.pdf(b))
+        result = Mu+Sigma*np.exp(temp_no - temp_de)
 
 
         # if sum(upper == -1:
