@@ -1,0 +1,18 @@
+#!/bin/bash
+#PBS -N cpu_t
+
+#PBS -l nodes=1:ppn=1
+#PBS -l walltime=48:00:00
+#PBS -l pmem=8gb
+#PBS -A open
+#PBS -m abe
+#PBS -M gum27@psu.edu
+
+
+cd ../../../work/g/gum27/auction2
+chmod +x cpu_t.sh
+./cpu_t.sh
+
+echo " "
+echo "Job ended at `date`"
+echo " "

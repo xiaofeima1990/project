@@ -44,8 +44,8 @@ def balance_data(DATA_STRUCT,n_work):
     for i in range(n_work):
         temp_dict={}
         T_len=len(DATA_STRUCT[0].data_dict['data_win'])
-        start_point=i*int(np.floor(pecentil_slice))
-        end_point  =(i+1)*int(np.floor(pecentil_slice)) * 1*(i !=n_work) + T_len * 1*(i ==n_work)
+        start_point=i*int(np.floor(pecentil_slice*T_len)) 
+        end_point  =(i+1)*int(np.floor(pecentil_slice*T_len)) * 1*(i !=n_work) + T_len * 1*(i ==n_work)
 
         for key, ele in DATA_STRUCT[0].data_dict.items():
             temp_dict[key]=ele[start_point:end_point,]
@@ -57,12 +57,21 @@ def balance_data(DATA_STRUCT,n_work):
     for i in range(n_work):
         for j in range(1,data_n):
             T_len=len(DATA_STRUCT[j].data_dict['data_win'])
-            start_point=i*int(np.floor(pecentil_slice))
-            end_point  =(i+1)*int(np.floor(pecentil_slice)) * 1*(i !=n_work) + T_len * 1*(i ==n_work)
-
+            start_point=i*int(np.floor(pecentil_slice*T_len)) 
+            end_point  =(i+1)*int(np.floor(pecentil_slice*T_len)) * 1*(i !=n_work) + T_len * 1*(i ==n_work)
 
             for key, ele in DATA_STRUCT[j].data_dict.items():
-                Data_Struct_c[i][key]=np.append(Data_Struct_c[i][key],ele[start_point:end_point,], axis=0)
+                r_1,c_1 = Data_Struct_c[i][key].shape
+                _,c_2 = ele[start_point:end_point,].shape
+                if c_1 < c_2:
+                    extra_array=np.ones([r_1,c_2-c_1])*(-1)
+                    temp_array =np.hstack((Data_Struct_c[i][key],extra_array))
+                else:
+                    temp_array =Data_Struct_c[i][key]
+                Data_Struct_c[i][key]=np.append(temp_array, ele[start_point:end_point,], axis=0)
+
+
+
     # turn to the data_struct
 
     return [data_struct(ele) for ele in Data_Struct_c ]

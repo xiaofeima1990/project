@@ -67,12 +67,12 @@ class Update_rule:
         p_k=info_struct[:, 1]
         p_k=p_k.reshape(p_k.size,1)
         # mu_k
-        mu_k = np.append(self.vi_mu, info_struct[:n_r+1,3])
+        mu_k = np.append(self.vi_mu, info_struct[:n_r+1,4])
         mu_k=mu_k.reshape(mu_k.size,1)
         
         l_k  = np.ones((self.N,1))
         
-        Gamma_k = np.append(self.vi_sigma2, info_struct[:n_r+1,4])
+        Gamma_k = np.append(self.vi_sigma2, info_struct[:n_r+1,5])
         Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
         
         

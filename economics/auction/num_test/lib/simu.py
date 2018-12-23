@@ -24,9 +24,9 @@ para_dict={
         "comm_mu":10,
         "priv_mu":1,
         "epsilon_mu":0,
-        "comm_var":0.8,
-        "priv_var":1.2,
-        "epsilon_var":0.8,
+        "comm_var":0.15,
+        "priv_var":0.1,
+        "epsilon_var":0.1,
         }
 
 

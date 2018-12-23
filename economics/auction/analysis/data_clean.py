@@ -66,7 +66,7 @@ for name in   tab_name_list:
     temp_max=temp_max.loc[ :, col_name_bid]
     
     df_bid_info=df_bid_info.append(temp_max,ignore_index=True)
-    
+     
     
     
     if flag==0:
