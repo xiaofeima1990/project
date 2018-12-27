@@ -78,6 +78,8 @@ bidder_state=[]
 for ele in x: 
 	bidder_state.append(ele[1][-1])
 
+# I think I can make the bid_info into a big dataframe 
+
 bid_info={
 	'ID',ID_index,
 	'bidder_act',bidder_act,
