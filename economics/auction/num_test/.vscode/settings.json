@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "/Users/xiaofeima/anaconda3/bin/python"
+    // "python.pythonPath": "/Users/xiaofeima/anaconda3/bin/python",
+    "python.pythonPath": "H:\\System\\Anaconda\\python.exe",
 }

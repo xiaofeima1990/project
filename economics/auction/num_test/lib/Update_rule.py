@@ -12,6 +12,10 @@ Now this is used for estimation. I can simultaneously estimation all the lower b
 import numpy as np
 from numpy.linalg import inv
 from scipy.stats import norm
+import warnings
+
+# warnings.filterwarnings('error')
+
 
 class Update_rule:
     
@@ -95,7 +99,7 @@ class Update_rule:
 
     def real_bid(self,xi,bid,state,price_v):
         self.T_p = price_v
-        
+        ladder=price_v[-1]-price_v[-2]
         lower_b = self.l_bound(state)
         
         #  dropout x
@@ -122,8 +126,11 @@ class Update_rule:
 
         # prepare for the winning bid expectation : take expectation on x_j 
         # up + lower of the rivals
+        x_j_upper=upper_b_j[:,0]
+        x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder )
+
         try:
-            E_j=sum(AA_j*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,upper_b_j[:,0]))
+            E_j=sum(AA_j*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
         except Exception as e:
             print(e)            
             print(x_j_lower)
@@ -141,8 +148,10 @@ class Update_rule:
         E_const = CC_i+0.5*var_update
         
         # total expected value
-        E_win_revenue=E_j+E_const  + AA_i*xi -self.T_p[bid]
-
+        try:
+            E_win_revenue=E_j+E_const  + AA_i*xi -self.T_p[bid]
+        except Exception as e:
+            print(E_j,E_const)
         Pure_value = E_j+E_const + AA_i*xi 
         
         flag = int(1*(E_win_revenue>0))
@@ -193,9 +202,9 @@ class Update_rule:
         a = (lower-Mu)/(Sigma)
         b = (upper-Mu)/(Sigma)
         
-        temp_de = np.log(norm.cdf(b) - norm.cdf(a))
-        temp_no = np.log(norm.pdf(a) - norm.pdf(b))
-        result = Mu+Sigma*np.exp(temp_no - temp_de)
+        temp_de = norm.cdf(b) - norm.cdf(a)+10**(-8)
+        temp_no = norm.pdf(a) - norm.pdf(b)
+        result = Mu+Sigma*(temp_no / temp_de)
 
 
         # if sum(upper == -1:

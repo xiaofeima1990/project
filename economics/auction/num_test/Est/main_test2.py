@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Created on 12-14-2018 
-This is used for testing the estimation program
-   """
+Created on Thu Dec 27 16:29:31 2018
+
+@author: mgxgl
+
+main test for data estimation 
+
+"""
 
 import os 
 import sys
@@ -27,6 +31,7 @@ data_path= os.path.dirname(PATH) + '/data/Simu/'
 
 
 import numpy as np
+import pandas as pd
 from simu import Simu
 from Update_rule import Update_rule
 from Util import *
@@ -91,45 +96,45 @@ def signal_DGP_parallel(public_info,para,rng,N,JJ=15):
     
     
     return [pub_mu,x_signal,w_x,info_index,r]
-
-# def signal_DGP(para,rng,N,JJ=400):
-
-
-    
-#     MU       =para.MU
-#     SIGMA2   =para.SIGMA2
-#     # common value in public
-# #    pub_mu = public_info[0]
-    
-#     # random reservation ratio
-# #    r =  public_info[1]
-    
-    
-#     # Cholesky Decomposition
-#     lambda_0,B=LA.eig(SIGMA2)
-#     lambda_12=lambda_0**(0.5)
-#     Sigma=B@np.diag(lambda_12)@LA.inv(B)
-    
-#     # lattices 
-#     [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)
-    
-#     a_n= norm.ppf(xi_n)
-    
-#     x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
-#     x_signal= x_signal.T
-
-# #    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
-# #    info_index=public_info[3]
-    
-    
-#     return [x_signal,w_n]
-
-
+#
+#def signal_DGP(para,res,rng,N,JJ=400):
+#
+#
+#    
+#    MU       =para.MU + res
+#    SIGMA2   =para.SIGMA2
+#    # common value in public
+##    pub_mu = public_info[0]
+#    
+#    # random reservation ratio
+##    r =  public_info[1]
+#    
+#    
+#    # Cholesky Decomposition
+#    lambda_0,B=LA.eig(SIGMA2)
+#    lambda_12=lambda_0**(0.5)
+#    Sigma=B@np.diag(lambda_12)@LA.inv(B)
+#    
+#    # lattices 
+#    [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)
+#    
+#    a_n= norm.ppf(xi_n)
+#    
+#    x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
+#    x_signal= x_signal.T
+#
+##    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
+##    info_index=public_info[3]
+#    
+#    
+#    return [x_signal,w_n]
 
 
 
 
-def GMM_Ineq(Theta0,DATA_STRUCT,d_struct):
+
+
+def GMM_Ineq(Theta0,Est_data,d_struct):
     Theta={
     "comm_mu":Theta0[0],
     "priv_mu":Theta0[1],
@@ -154,37 +159,39 @@ def GMM_Ineq(Theta0,DATA_STRUCT,d_struct):
     JJ    =d_struct["JJ"]
     Mom_v =0
     
-    nn=len(DATA_STRUCT)
+    nn=len(Est_data)
     
-    DATA_STRUCT_c = balance_data(DATA_STRUCT,4)
+    DATA_STRUCT_c = balance_data_est(Est_data,4)
     for Data_struct in DATA_STRUCT_c:
-        TT,T_end=Data_struct.data_act.shape
-        TT = int(TT)
-        T_end=int(T_end)
-    
-        # num of bidders in the auction
-        N=int(Data_struct.pub_info[1,2])
-        info_flag=Data_struct.pub_info[1,3]
-        # setup the env info structure
+        TT,_=Data_struct.shape
         
-        Env=ENV(N, Theta)
+        # TT,T_end=Data_struct.data_act.shape
+        # TT = int(TT)
+        # T_end=int(T_end)
     
-        if info_flag == 0 :
-            para=Env.Uninform()
-        else:
-            para=Env.Info_ID()
+        # # num of bidders in the auction
+        # N=int(Data_struct.pub_info[1,2])
+        # info_flag=Data_struct.pub_info[1,3]
+        # # setup the env info structure
+        
+        # Env=ENV(N, Theta)
+    
+        # if info_flag == 0 :
+        #     para=Env.Uninform()
+        # else:
+        #     para=Env.Info_ID()
         
         
-        [x_signal,w_x]=signal_DGP(para,rng,N,JJ)
-    
+        # [x_signal,w_x]=signal_DGP(para,res,rng,N,JJ)
         
         '''
         serial testing 
         '''
-        func=partial(para_fun,para,info_flag,rng,T_end,int(JJ*N),x_signal,w_x)
-        results=0
-        for arg_data_ele in zip(range(0,TT), Data_struct.data_act,Data_struct.data_state,Data_struct.pub_info):
-            results=results+func(arg_data_ele)
+        func=partial(para_fun_est,Theta,rng,JJ)
+        results=[]
+        pub_col=['ladder_norm', 'win_norm', 'num_bidder','priority_people', 'res_norm']
+        for arg_data_ele in zip(range(0,TT),Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[pub_col].values.tolist()):
+            results.append(func(arg_data_ele))
     
         MoM=results/TT
         
@@ -220,18 +227,48 @@ def GMM_Ineq(Theta0,DATA_STRUCT,d_struct):
     return auction_result
 
 
+def price_norm(arg):
+    return arg['bidder_price']/arg['evaluation_price']
 
+
+
+def pre_data(Est_data):
+    col_name=['ID', 'bidder_act', 'len_act', 'bidder_pos', 'bidder_state','bidder_price','ladder_norm',
+              'win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
+    # get rid of number of bidder = = 1
+    Est_data=Est_data[Est_data['num_bidder']>1]
+    Est_data=Est_data[Est_data['num_bidder']<=8]
+    Est_data=Est_data[Est_data['len_act']>2]
+
+    # double check
+    Est_data['len_state']= Est_data['bidder_state'].apply(lambda x: len(x))
+    Est_data=Est_data[Est_data['len_state']>1]
+    Est_data=Est_data[Est_data['len_state']<=8]
+    # get rid of priority people
+    Est_data=Est_data[Est_data['priority_people']==0]
+    
+    
+    # normalize reservation price
+    Est_data['res_norm']=Est_data['reserve_price']/Est_data['evaluation_price']
+    # normalize the win bid
+    Est_data['win_norm']=Est_data['win_bid']/Est_data['evaluation_price']
+    
+    # normalize bid ladder 
+    Est_data['ladder_norm']=Est_data['bid_ladder']/Est_data['evaluation_price']
+    
+    Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
+    Est_data['price_norm'] = Est_data.apply(price_norm,axis= 1 )
+    
+    
+    
+    return Est_data[col_name]
 
 
 if __name__ == '__main__':
     
-    
-    # load the data
-    with open( data_path + "simu_data_uninfo.pkl", "rb") as f :
-        simu_data=pk.load( f)
-#    simu_data = pk.load( open( "simu_data_est.pkl", "rb"))
-    print("the total chunk of the input data is {}".format(len(simu_data)))
-    
+    Est_data=pd.read_hdf('G:/auction/clean/est.h5',key='test_raw')
+
+    Est_data=pre_data(Est_data)
     # set up the hyper parameters
     rng_seed=789
     SS=25
@@ -245,7 +282,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[10,1,0,0.15,0.1,0.1]
+    Theta=[0.1,0.05,0,0.05,0.04,0.04]
     
     start = time.time()
     now = datetime.datetime.now()
@@ -253,7 +290,7 @@ if __name__ == '__main__':
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")
     
-    res = minimize(GMM_Ineq, Theta, method='nelder-mead',args=(simu_data[:2],d_struct)) 
+    res = minimize(GMM_Ineq, Theta, method='nelder-mead',args=(Est_data,d_struct)) 
     
     print("------------------------------------------------------------------")
     now = datetime.datetime.now()
@@ -269,21 +306,3 @@ if __name__ == '__main__':
 
 
 
-
-
-
-
-#‘Nelder-Mead’ 
-#‘Powell’
-#‘CG’
-#‘BFGS’
-#‘Newton-CG’ 
-#‘L-BFGS-B’ 
-#‘TNC’ 
-#‘COBYLA’ 
-#‘SLSQP’ )
-#‘trust-constr’
-#‘dogleg’ 
-#‘trust-ncg’ 
-#‘trust-exact’ 
-#‘trust-krylov’ 

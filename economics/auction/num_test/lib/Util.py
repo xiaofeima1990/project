@@ -32,7 +32,34 @@ import quantecon  as qe
 from numpy import linalg as LA
 
 
+def balance_data_est(Est_data,n_work):
+    pecentil_slice=1.0/n_work
+    Data_Struct_c=[]
+    # initialize
+    group_est=Est_data.groupby('num_bidder')
+    for i in range(n_work):
+        
+        temp_df=group_est.get_group(2)
+        T_len=len(temp_df)
+        start_point=i*int(np.floor(pecentil_slice*T_len)) 
+        end_point  =(i+1)*int(np.floor(pecentil_slice*T_len)) * 1*(i !=n_work) + T_len * 1*(i ==n_work)
 
+        Data_Struct_c.append(temp_df.iloc[start_point:end_point,])
+
+    # looping
+    for key in group_est.groups.keys():
+        if key >2: 
+
+            for i in range(n_work):
+                temp_df=group_est.get_group(key)
+                T_len=len(temp_df)
+                start_point=i*int(np.floor(pecentil_slice*T_len)) 
+                end_point  =(i+1)*int(np.floor(pecentil_slice*T_len)) * 1*(i !=n_work) + T_len * 1*(i ==n_work)
+
+                Data_Struct_c[i]=Data_Struct_c[i].append(temp_df.iloc[start_point:end_point,],ignore_index=True)
+
+
+    return Data_Struct_c
 
 
 
@@ -52,6 +79,7 @@ def balance_data(DATA_STRUCT,n_work):
     
 
         Data_Struct_c.append(temp_dict)
+        
 
     # looping 
     for i in range(n_work):
@@ -134,3 +162,35 @@ def signal_DGP(para,rng,N,JJ=400):
     return [x_signal,w_n]
 
 
+
+def signal_DGP_est(para,rng,N,JJ=400):
+
+
+    
+    MU       =para.MU
+    SIGMA2   =para.SIGMA2
+    # common value in public
+#    pub_mu = public_info[0]
+    
+    # random reservation ratio
+#    r =  public_info[1]
+    
+    
+    # Cholesky Decomposition
+    lambda_0,B=LA.eig(SIGMA2)
+    lambda_12=lambda_0**(0.5)
+    Sigma=B@np.diag(lambda_12)@LA.inv(B)
+    
+    # lattices 
+    [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)
+    
+    a_n= norm.ppf(xi_n)
+    
+    x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
+    x_signal= x_signal.T
+
+#    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
+#    info_index=public_info[3]
+    
+    
+    return [x_signal,w_n]
