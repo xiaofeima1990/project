@@ -97,8 +97,10 @@ class Update_rule:
         x_drop = AA_k[1:]*p_k - CC_k[1:]
         x_drop = x_drop.reshape(x_drop.size,1)
         try:
-            assert not math.isnan(x_drop) , 'nan occurs!'
-        except:
+            assert not np.prod(np.isnan(x_drop.flatten())) , 'nan occurs!'
+        except Exception as e:
+            print('------problem-----')
+            print(e)
             print(x_drop)
             print(info_struct)
             print('MU ', MU)
@@ -108,6 +110,8 @@ class Update_rule:
             print('Delta_k ',Delta_k)
             print('AA_k ', AA_k)
             print('CC_k ', CC_k)
+            print('------------------')
+            input('pause for check')
 
         return np.concatenate((x_drop,info_struct),axis=1)
 
@@ -148,7 +152,6 @@ class Update_rule:
 
 
             E_j=sum(AA_j*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
-            assert not math.isnan(E_j), 'nan occurs!'
         except Exception as e:
             print(e)            
             print(x_j_lower)
@@ -169,13 +172,95 @@ class Update_rule:
         # total expected value
         try:
             E_win_revenue=E_j+E_const  + AA_i*xi -self.T_p[bid]
+            assert not np.prod(np.iscomplex(E_win_revenue.flatten())), 'complex occurs!'
         except Exception as e:
+            print('find the complex')
+            print(E_win_revenue)
+            print(var_update)
+            print(x_j_lower)
+            print(x_j_upper)
             print(E_j,E_const)
+            print(AA_i,xi)
+            print(bid,self.T_p[bid])
+
+            input('wait')
         Pure_value = E_j+E_const + AA_i*xi 
         
         flag = int(1*(E_win_revenue>0))
         # return pure value E_win and flag
         return [Pure_value,E_win_revenue,flag]
+
+    def real_bid_calc(self,bid,state,price_v):
+        self.T_p = price_v
+        ladder=price_v[-1]-price_v[-2]
+        lower_b = self.l_bound(state)
+        
+        #  dropout x
+        x_j_lower = lower_b[:,0]
+
+
+        # Constat part 
+        Sigma_inv = inv(self.SIGMA2)
+
+        
+        COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var)
+
+        
+        CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
+        AA_coef =  Sigma_inv @ COV_xvi
+        
+        AA_i = AA_coef[0]
+        AA_j = AA_coef[1:]
+
+
+        # potential upper bound of the rivals
+        upper_b_j = self.u_bound_E(bid,state)
+
+
+        # prepare for the winning bid expectation : take expectation on x_j 
+        # up + lower of the rivals
+        try:
+            x_j_upper=upper_b_j[:,0]
+            x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder*2 )
+            
+
+            E_j=sum(AA_j*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
+        except Exception as e:
+            print(e)            
+            print(x_j_lower)
+            print(x_j_upper)
+            print(upper_b_j[:,0:2])
+            print('-------------------------')
+
+        # conditional variance var(v_i | x_i , x_j , x_q)
+        Si_va=Sigma_inv
+        part_mu=COV_xvi.T @ Si_va[1:,:].T @ self.MU[1:]
+        # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
+        var_update = self.vi_sigma2 -AA_i*self.vi_sigma2 + (E_j-part_mu )**2
+        
+        
+        # constant part 
+        E_const = CC_i+0.5*var_update
+        
+        # total expected value
+        
+        Pure_value=E_j+E_const
+        bid_price =self.T_p[bid]
+        
+
+
+
+
+        return [Pure_value,bid_price,AA_i]
+
+
+
+    def bid_vector(self,xi_v,bid,state,price_v):
+        [Pure_value,bid_price,AA_i]=self.real_bid_calc(bid,state,price_v)
+
+        return AA_i*xi_v+Pure_value
+
+
     
     
     def u_bound_E(self,bid,state):

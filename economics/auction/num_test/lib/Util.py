@@ -16,17 +16,9 @@ sys.path.append('/storage/work/g/gum27/system/pkg/')
 import numpy as np
 from simu import Simu,data_struct
 from Update_rule import Update_rule
-
-import copy ,time,datetime
-from collections import defaultdict,OrderedDict
+import scipy.linalg as LAA
 from functools import partial
 from scipy.stats import norm
-
-import multiprocessing
-from concurrent.futures import ThreadPoolExecutor,ProcessPoolExecutor
-import threading
-from functools import partial
-from contextlib import contextmanager
 import pickle as pk
 import quantecon  as qe
 from numpy import linalg as LA
@@ -37,9 +29,10 @@ def balance_data_est(Est_data,n_work):
     Data_Struct_c=[]
     # initialize
     group_est=Est_data.groupby('num_bidder')
+    min_key=min(list(group_est.groups.keys()))
     for i in range(n_work):
         
-        temp_df=group_est.get_group(2)
+        temp_df=group_est.get_group(min_key)
         T_len=len(temp_df)
         start_point=i*int(np.floor(pecentil_slice*T_len)) 
         end_point  =(i+1)*int(np.floor(pecentil_slice*T_len)) * 1*(i !=n_work) + T_len * 1*(i ==n_work)
@@ -155,8 +148,8 @@ def signal_DGP(para,rng,N,JJ=400):
     x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
     x_signal= x_signal.T
 
-#    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
-#    info_index=public_info[3]
+    # [x_signal,w_n]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
+
     
     
     return [x_signal,w_n]
@@ -169,28 +162,30 @@ def signal_DGP_est(para,res,rng,N,JJ=400):
     
     MU       =para.MU+res
     SIGMA2   =para.SIGMA2
-    # common value in public
-#    pub_mu = public_info[0]
-    
-    # random reservation ratio
-#    r =  public_info[1]
+
     
     
     # Cholesky Decomposition
-    lambda_0,B=LA.eig(SIGMA2)
-    lambda_12=lambda_0**(0.5)
-    Sigma=B@np.diag(lambda_12)@LA.inv(B)
+    Sigma=LAA.sqrtm(SIGMA2)
+    Sigma=Sigma.real
+    # lambda_0,B=LA.eig(SIGMA2)
+    # lambda_12=lambda_0**(0.5)
+    # Sigma=B@np.diag(lambda_12)@LA.inv(B)
     
     # lattices 
     [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)
     
     a_n= norm.ppf(xi_n)
-    
+
     x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
     x_signal= x_signal.T
-
-#    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
-#    info_index=public_info[3]
+ #    no it is too slowly and memory probelm
+ #   [x_signal,w_n]=qe.quad.qnwnorm(
+#         list(np.full(shape=N,fill_value=JJ,
+#     dtype=np.int)),
+#     list(MU.flatten()),
+#     SIGMA2)
+#     info_index=public_info[3]
     
     
     return [x_signal,w_n]
@@ -211,16 +206,16 @@ def price_norm(arg):
 
 def pre_data(Est_data):
     col_name=['ID', 'bidder_act', 'len_act', 'bidder_pos', 'bidder_state','bidder_price','ladder_norm',
-              'win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
+              'real_num_bidder','win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
     # get rid of number of bidder = = 1
     Est_data=Est_data[Est_data['num_bidder']>1]
     Est_data=Est_data[Est_data['num_bidder']<=8]
     Est_data=Est_data[Est_data['len_act']>2]
 
     # double check
-    Est_data['len_state']= Est_data['bidder_state'].apply(lambda x: len(x))
-    Est_data=Est_data[Est_data['len_state']>1]
-    Est_data=Est_data[Est_data['len_state']<=8]
+    Est_data['real_num_bidder']= Est_data['bidder_state'].apply(lambda x: len(x))
+    Est_data=Est_data[Est_data['real_num_bidder']>1]
+    Est_data=Est_data[Est_data['real_num_bidder']<=8]
     # get rid of priority people
     Est_data=Est_data[Est_data['priority_people']==0]
     
@@ -238,8 +233,19 @@ def pre_data(Est_data):
     Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
     Est_data['price_norm'] = Est_data.apply(price_norm,axis= 1 )
     
-    
-    
+    Est_data=Est_data[Est_data['real_num_bidder']<=5]
+    Est_data=Est_data[Est_data['real_num_bidder']>=4]
     return Est_data[col_name]
                 
-           
+
+
+def is_pos_def(Theta):
+    flag=True
+    for n in range(2,9):
+        temp_matrix= np.ones((n,n))*Theta['comm_var'] + np.eye(n)*(Theta['priv_var']+Theta['noise_var'])    
+        # check whether all the n are positive definite
+        if not np.all(LA.eigvals(temp_matrix) > 0):
+            flag=False
+
+
+    return flag

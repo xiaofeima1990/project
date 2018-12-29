@@ -65,7 +65,7 @@ Simu_para_dict={
         "epsilon_var":0.8,
         }
 
-Pub_col=['ladder_norm', 'win_norm', 'num_bidder','priority_people', 'res_norm']
+Pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
 
 def list_duplicates(seq):
     tally = defaultdict(list)

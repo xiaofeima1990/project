@@ -22,20 +22,38 @@ def list_duplicates(seq):
         tally[item].append(i)
     return ((key,locs) for key,locs in tally.items() if len(locs)>=1)
 
+# def map_integ(price_v,x_signal_i,s_state,Update_bid,arg_data):
+#     i,bid,low_bid,high_bid=arg_data
+#     state=s_state[i]
+#     fun_bid=lambda xi :Update_bid.real_bid(xi,bid,state,price_v)
+#     temp=list(map(fun_bid,x_signal_i[:,i]))
+#     temp=np.array([ele[0][0] for ele in temp])
+# #        temp=np.array([Update_bid.real_bid(xi,bid,ss_state,price_v)[0][0] for xi in x_signal[:,i]])
+#     exp_value=temp.flatten()
+
+#     low_case  = low_bid  - exp_value
+#     high_case = high_bid - exp_value
+
+#     low_sum = np.square((low_case>0)*1*low_case)
+#     high_sum = np.square((high_case<0)*1*high_case)
+#     return (low_sum,high_sum)
+
 def map_integ(price_v,x_signal_i,s_state,Update_bid,arg_data):
     i,bid,low_bid,high_bid=arg_data
     state=s_state[i]
-    fun_bid=lambda xi :Update_bid.real_bid(xi,bid,state,price_v)
-    temp=list(map(fun_bid,x_signal_i[:,i]))
-    temp=np.array([ele[0][0] for ele in temp])
-#        temp=np.array([Update_bid.real_bid(xi,bid,ss_state,price_v)[0][0] for xi in x_signal[:,i]])
-    exp_value=temp.flatten()
+
+    exp_value = Update_bid.bid_vector(x_signal_i[:,i],bid,state,price_v)
+
     low_case  = low_bid  - exp_value
     high_case = high_bid - exp_value
 
     low_sum = np.square((low_case>0)*1*low_case)
     high_sum = np.square((high_case<0)*1*high_case)
     return (low_sum,high_sum)
+
+
+
+
 
 def para_fun_est(Theta,rng,JJ,arg_data):
     tt,data_state,data_pos,price_v,pub_info=arg_data
@@ -75,10 +93,12 @@ def para_fun_est(Theta,rng,JJ,arg_data):
         for j in select_flag:
             try:
                 bid_post=data_pos[j][1]
-                if len(bid_post) == 1:
+                
+                
+                if bid_post[0] > data_state[i]:
                     temp_s.append(0)
-                else:
-                    temp_p=[x for x in bid_post if x < data_state[i] 
+                else: 
+                    temp_p=[x for x in bid_post if x < data_state[i] ]
                     temp_p.sort()
                     temp_s.append(temp_p[-1])
             except Exception as e:
@@ -87,6 +107,8 @@ def para_fun_est(Theta,rng,JJ,arg_data):
                 print(temp_p)
                 print(data_state[i])
                 temp_s.append(0)
+                print('this is number ',tt)
+                input('wait for check')
                 
         state_temp[i,1:] = temp_s
 

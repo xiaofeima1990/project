@@ -189,11 +189,12 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
         '''
         func=partial(para_fun_est,Theta,rng,JJ)
         results=[]
-        pub_col=['ladder_norm', 'win_norm', 'num_bidder','priority_people', 'res_norm']
+        Data_struct=Data_struct.ix[67:,]
+        pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
         for arg_data_ele in zip(range(0,TT),Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[pub_col].values.tolist()):
             results.append(func(arg_data_ele))
     
-        MoM=results/TT
+        MoM=np.nansum(results)/TT
         
         Mom_v=Mom_v+MoM
         
@@ -227,42 +228,6 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
     return auction_result
 
 
-# def price_norm(arg):
-#     return arg['bidder_price']/arg['evaluation_price']
-
-
-
-# def pre_data(Est_data):
-#     col_name=['ID', 'bidder_act', 'len_act', 'bidder_pos', 'bidder_state','bidder_price','ladder_norm',
-#               'win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
-#     # get rid of number of bidder = = 1
-#     Est_data=Est_data[Est_data['num_bidder']>1]
-#     Est_data=Est_data[Est_data['num_bidder']<=8]
-#     Est_data=Est_data[Est_data['len_act']>2]
-
-#     # double check
-#     Est_data['len_state']= Est_data['bidder_state'].apply(lambda x: len(x))
-#     Est_data=Est_data[Est_data['len_state']>1]
-#     Est_data=Est_data[Est_data['len_state']<=8]
-#     # get rid of priority people
-#     Est_data=Est_data[Est_data['priority_people']==0]
-    
-    
-#     # normalize reservation price
-#     Est_data['res_norm']=Est_data['reserve_price']/Est_data['evaluation_price']
-#     # normalize the win bid
-#     Est_data['win_norm']=Est_data['win_bid']/Est_data['evaluation_price']
-    
-#     # normalize bid ladder 
-#     Est_data['ladder_norm']=Est_data['bid_ladder']/Est_data['evaluation_price']
-    
-#     Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
-#     Est_data['price_norm'] = Est_data.apply(price_norm,axis= 1 )
-    
-    
-    
-#     return Est_data[col_name]
-
 
 if __name__ == '__main__':
     
@@ -272,7 +237,7 @@ if __name__ == '__main__':
     # set up the hyper parameters
     rng_seed=789
     SS=25
-    JJ=300
+    JJ=200
     
     
     d_struct={
@@ -282,7 +247,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[0.1,0.05,0,0.05,0.04,0.04]
+    Theta=[0.1,0.05,0,0.05,0.3,0.04]
     
     start = time.time()
     now = datetime.datetime.now()
@@ -290,7 +255,7 @@ if __name__ == '__main__':
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")
     
-    res = minimize(GMM_Ineq, Theta, method='nelder-mead',args=(est_data,d_struct)) 
+    res = minimize(GMM_Ineq, Theta, method='L-BFGS-B',args=(est_data,d_struct)) 
     
     print("------------------------------------------------------------------")
     now = datetime.datetime.now()
