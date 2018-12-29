@@ -194,3 +194,50 @@ def signal_DGP_est(para,rng,N,JJ=400):
     
     
     return [x_signal,w_n]
+
+
+
+
+'''
+Data preprocessing
+'''
+
+    
+
+def price_norm(arg):
+    return arg['bidder_price']/arg['evaluation_price']
+
+
+
+def pre_data(Est_data):
+    col_name=['ID', 'bidder_act', 'len_act', 'bidder_pos', 'bidder_state','bidder_price','ladder_norm',
+              'win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
+    # get rid of number of bidder = = 1
+    Est_data=Est_data[Est_data['num_bidder']>1]
+    Est_data=Est_data[Est_data['num_bidder']<=8]
+    Est_data=Est_data[Est_data['len_act']>2]
+
+    # double check
+    Est_data['len_state']= Est_data['bidder_state'].apply(lambda x: len(x))
+    Est_data=Est_data[Est_data['len_state']>1]
+    Est_data=Est_data[Est_data['len_state']<=8]
+    # get rid of priority people
+    Est_data=Est_data[Est_data['priority_people']==0]
+    
+    
+    # normalize reservation price
+    Est_data['res_norm']=Est_data['reserve_price']/Est_data['evaluation_price']
+    # normalize the win bid
+    Est_data['win_norm']=Est_data['win_bid']/Est_data['evaluation_price']
+    
+    # normalize bid ladder 
+    Est_data['ladder_norm']=Est_data['bid_ladder']/Est_data['evaluation_price']
+    
+    Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
+    Est_data['price_norm'] = Est_data.apply(price_norm,axis= 1 )
+    
+    
+    
+    return Est_data[col_name]
+                
+           
