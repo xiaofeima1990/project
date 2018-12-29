@@ -163,11 +163,11 @@ def signal_DGP(para,rng,N,JJ=400):
 
 
 
-def signal_DGP_est(para,rng,N,JJ=400):
+def signal_DGP_est(para,res,rng,N,JJ=400):
 
 
     
-    MU       =para.MU
+    MU       =para.MU+res
     SIGMA2   =para.SIGMA2
     # common value in public
 #    pub_mu = public_info[0]
@@ -227,6 +227,8 @@ def pre_data(Est_data):
     
     # normalize reservation price
     Est_data['res_norm']=Est_data['reserve_price']/Est_data['evaluation_price']
+    Est_data = Est_data[np.isfinite(Est_data['res_norm'])]
+    Est_data=Est_data.dropna(subset=['res_norm'])
     # normalize the win bid
     Est_data['win_norm']=Est_data['win_bid']/Est_data['evaluation_price']
     

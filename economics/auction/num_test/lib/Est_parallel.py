@@ -50,8 +50,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
 
     r     =pub_info[-1]
     ladder=pub_info[0]
-    para.MU = para.MU + r
-    Update_bid=Update_rule(para)
+    Update_bid=Update_rule(para,r)
 
     
 
@@ -76,11 +75,10 @@ def para_fun_est(Theta,rng,JJ,arg_data):
         for j in select_flag:
             try:
                 bid_post=data_pos[j][1]
-                if data_state[i]==0:
+                if len(bid_post) == 1:
                     temp_s.append(0)
                 else:
-                    temp_p=[x for x in bid_post if x < data_state[i] ]
-            
+                    temp_p=[x for x in bid_post if x < data_state[i] 
                     temp_p.sort()
                     temp_s.append(temp_p[-1])
             except Exception as e:
@@ -89,6 +87,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
                 print(temp_p)
                 print(data_state[i])
                 temp_s.append(0)
+                
         state_temp[i,1:] = temp_s
 
 
@@ -125,9 +124,9 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     high_part[index_win,:]=0
     
     # dimension problem
-    sum_value=np.nansum(low_part,axis=0)**0.5 + np.sum(high_part,axis=0)**0.5
+    sum_value=np.sum(low_part,axis=0)**0.5 + np.sum(high_part,axis=0)**0.5
     sum_value=sum_value * w_x
-    final_value=np.nansum(sum_value)/0.1
+    final_value=np.sum(sum_value)/(Theta['comm_var']**0.5)
     
     end = time.time()
     

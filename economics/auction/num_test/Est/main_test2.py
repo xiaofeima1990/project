@@ -227,48 +227,48 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
     return auction_result
 
 
-def price_norm(arg):
-    return arg['bidder_price']/arg['evaluation_price']
+# def price_norm(arg):
+#     return arg['bidder_price']/arg['evaluation_price']
 
 
 
-def pre_data(Est_data):
-    col_name=['ID', 'bidder_act', 'len_act', 'bidder_pos', 'bidder_state','bidder_price','ladder_norm',
-              'win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
-    # get rid of number of bidder = = 1
-    Est_data=Est_data[Est_data['num_bidder']>1]
-    Est_data=Est_data[Est_data['num_bidder']<=8]
-    Est_data=Est_data[Est_data['len_act']>2]
+# def pre_data(Est_data):
+#     col_name=['ID', 'bidder_act', 'len_act', 'bidder_pos', 'bidder_state','bidder_price','ladder_norm',
+#               'win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
+#     # get rid of number of bidder = = 1
+#     Est_data=Est_data[Est_data['num_bidder']>1]
+#     Est_data=Est_data[Est_data['num_bidder']<=8]
+#     Est_data=Est_data[Est_data['len_act']>2]
 
-    # double check
-    Est_data['len_state']= Est_data['bidder_state'].apply(lambda x: len(x))
-    Est_data=Est_data[Est_data['len_state']>1]
-    Est_data=Est_data[Est_data['len_state']<=8]
-    # get rid of priority people
-    Est_data=Est_data[Est_data['priority_people']==0]
+#     # double check
+#     Est_data['len_state']= Est_data['bidder_state'].apply(lambda x: len(x))
+#     Est_data=Est_data[Est_data['len_state']>1]
+#     Est_data=Est_data[Est_data['len_state']<=8]
+#     # get rid of priority people
+#     Est_data=Est_data[Est_data['priority_people']==0]
     
     
-    # normalize reservation price
-    Est_data['res_norm']=Est_data['reserve_price']/Est_data['evaluation_price']
-    # normalize the win bid
-    Est_data['win_norm']=Est_data['win_bid']/Est_data['evaluation_price']
+#     # normalize reservation price
+#     Est_data['res_norm']=Est_data['reserve_price']/Est_data['evaluation_price']
+#     # normalize the win bid
+#     Est_data['win_norm']=Est_data['win_bid']/Est_data['evaluation_price']
     
-    # normalize bid ladder 
-    Est_data['ladder_norm']=Est_data['bid_ladder']/Est_data['evaluation_price']
+#     # normalize bid ladder 
+#     Est_data['ladder_norm']=Est_data['bid_ladder']/Est_data['evaluation_price']
     
-    Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
-    Est_data['price_norm'] = Est_data.apply(price_norm,axis= 1 )
+#     Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
+#     Est_data['price_norm'] = Est_data.apply(price_norm,axis= 1 )
     
     
     
-    return Est_data[col_name]
+#     return Est_data[col_name]
 
 
 if __name__ == '__main__':
     
     Est_data=pd.read_hdf('G:/auction/clean/est.h5',key='test_raw')
 
-    Est_data=pre_data(Est_data)
+    est_data=pre_data(Est_data)
     # set up the hyper parameters
     rng_seed=789
     SS=25
@@ -290,7 +290,7 @@ if __name__ == '__main__':
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")
     
-    res = minimize(GMM_Ineq, Theta, method='nelder-mead',args=(Est_data,d_struct)) 
+    res = minimize(GMM_Ineq, Theta, method='nelder-mead',args=(est_data,d_struct)) 
     
     print("------------------------------------------------------------------")
     now = datetime.datetime.now()

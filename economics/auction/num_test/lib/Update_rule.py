@@ -13,27 +13,27 @@ import numpy as np
 from numpy.linalg import inv
 from scipy.stats import norm
 import warnings
-
+import math
 # warnings.filterwarnings('error')
 
 
 class Update_rule:
     
-    def __init__(self,para):
-        self.xi_mu=para.xi_mu
+    def __init__(self,para,res=0):
+        self.xi_mu=para.xi_mu + res
         self.xi_sigma2 = para.xi_sigma2 
-        self.vi_mu     = para.vi_mu
+        self.vi_mu     = para.vi_mu +res
         self.vi_sigma2 = para.vi_sigma2
-        self.MU        = para.MU
+        self.MU        = para.MU+res
         self.SIGMA2    = para.SIGMA2
-        self.xi_rival_mu = para.xi_rival_mu
+        self.xi_rival_mu = para.xi_rival_mu+res
         self.xi_rival_sigma2 = para.xi_rival_sigma2
-        self.vi_rival_mu = para.xi_rival_mu
+        self.vi_rival_mu = para.xi_rival_mu+res
         self.vi_rival_sigma2 = para.xi_rival_sigma2
         self.N         =  para.N
         self.comm_var  = para.comm_var
         self.comm_mu  = para.comm_mu
-        
+        self.res = res
     def l_bound(self,state):
         # uninformed lower bound 
         # get the info structure
@@ -62,6 +62,7 @@ class Update_rule:
         
     
         drop_info_v=drop_info_v[drop_info_v[:,1].argsort()[::-1]]
+
         return drop_info_v
         
     def HS_system(self,info_struct,MU,Sigma):
@@ -95,6 +96,19 @@ class Update_rule:
 
         x_drop = AA_k[1:]*p_k - CC_k[1:]
         x_drop = x_drop.reshape(x_drop.size,1)
+        try:
+            assert not math.isnan(x_drop) , 'nan occurs!'
+        except:
+            print(x_drop)
+            print(info_struct)
+            print('MU ', MU)
+            print('Sigma ', Sigma)
+            print('reserve ', self.res)
+            print('Gamma_k ',Gamma_k )
+            print('Delta_k ',Delta_k)
+            print('AA_k ', AA_k)
+            print('CC_k ', CC_k)
+
         return np.concatenate((x_drop,info_struct),axis=1)
 
     def real_bid(self,xi,bid,state,price_v):
@@ -126,15 +140,20 @@ class Update_rule:
 
         # prepare for the winning bid expectation : take expectation on x_j 
         # up + lower of the rivals
-        x_j_upper=upper_b_j[:,0]
-        x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder )
-
         try:
+            x_j_upper=upper_b_j[:,0]
+            x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder*2 )
+            
+
+
+
             E_j=sum(AA_j*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
+            assert not math.isnan(E_j), 'nan occurs!'
         except Exception as e:
             print(e)            
             print(x_j_lower)
-            print(upper_b_j)
+            print(x_j_upper)
+            print(upper_b_j[:,0:2])
             print('-------------------------')
 
         # conditional variance var(v_i | x_i , x_j , x_q)

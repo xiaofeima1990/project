@@ -104,9 +104,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     print('current parameter set are :')
     print(Theta)
 #    print('# of auctions: '+str(TT) )
-    
 
-    
     '''
     parallel programming with two levels
         data separating
@@ -114,13 +112,14 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     '''
     data_n=len(DATA_STRUCT)
     
-    num_works = 5
+    num_works = 2
     work_pool = ThreadPoolExecutor(max_workers=num_works)
     
     # reorganize the data
     DATA_STRUCT_c = balance_data_est(Est_data,num_works)
     
     cpu_num=multiprocessing.cpu_count()
+    cpu_num=6
     cpu_num_node=int((cpu_num-num_works)/num_works)
     
     auction_list=[]
@@ -156,7 +155,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
 
 def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
     time.sleep(1)
-    pub_part=Data_struct[Pub_col]
+    
     
     # print(" id: {} , is dealing the auction with {} bidder ".format(threading.get_ident(),pub[2]))
     
@@ -178,13 +177,13 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
     pool = ProcessPoolExecutor(max_workers=cpu_num)
     
     
-    results= pool.map(func, zip(range(0,TT), Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[pub_col].values.tolist()))
+    results= pool.map(func, zip(range(0,TT), Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[Pub_col].values.tolist()))
     
     
-    MoM=np.nansum(results)/TT
+    MoM=np.nansum(list(results))
     
     
-    return MoM
+    return MoM / TT
 
  
 
@@ -194,7 +193,7 @@ if __name__ == '__main__':
     
     # load the data
 
-    Est_data=pd.read_hdf('est.h5',key='test_raw')
+    Est_data=pd.read_hdf('G:/auction/clean/est.h5',key='test_raw')
 
     Est_data=pre_data(Est_data)
     # set up the hyper parameters
@@ -210,7 +209,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[10,1,0,0.8,1.2,0.8]
+    Theta=[0.1,0.05,0,0.05,0.04,0.04]
     
     start = time.time()
     now = datetime.datetime.now()

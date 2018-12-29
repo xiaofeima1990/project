@@ -111,7 +111,6 @@ class ENV:
     
     
     
-    
 class Info_result(object):
     def __init__(self,info_dict):
         '''
@@ -234,7 +233,5 @@ class Info_result(object):
         return self.info_dict['comm_mu']
 
     
-
-
 
     
