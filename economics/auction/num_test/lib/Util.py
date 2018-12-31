@@ -148,8 +148,12 @@ def signal_DGP(para,rng,N,JJ=400):
     x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
     x_signal= x_signal.T
 
-    # [x_signal,w_n]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
-
+    # # no it is too slowly and memory probelm
+    # [x_signal,w_n]=qe.quad.qnwnorm(
+    # list(np.full(shape=N,fill_value=JJ,
+    #     dtype=np.int)),
+    #     list(MU.flatten()),
+    #     SIGMA2)
     
     
     return [x_signal,w_n]
@@ -165,13 +169,10 @@ def signal_DGP_est(para,res,rng,N,JJ=400):
 
     
     
-    # Cholesky Decomposition
+    # use scipy to comput the square root of Sigma
     Sigma=LAA.sqrtm(SIGMA2)
     Sigma=Sigma.real
-    # lambda_0,B=LA.eig(SIGMA2)
-    # lambda_12=lambda_0**(0.5)
-    # Sigma=B@np.diag(lambda_12)@LA.inv(B)
-    
+
     # lattices 
     [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)
     
@@ -179,13 +180,7 @@ def signal_DGP_est(para,res,rng,N,JJ=400):
 
     x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
     x_signal= x_signal.T
- #    no it is too slowly and memory probelm
- #   [x_signal,w_n]=qe.quad.qnwnorm(
-#         list(np.full(shape=N,fill_value=JJ,
-#     dtype=np.int)),
-#     list(MU.flatten()),
-#     SIGMA2)
-#     info_index=public_info[3]
+
     
     
     return [x_signal,w_n]

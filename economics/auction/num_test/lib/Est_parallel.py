@@ -22,21 +22,6 @@ def list_duplicates(seq):
         tally[item].append(i)
     return ((key,locs) for key,locs in tally.items() if len(locs)>=1)
 
-# def map_integ(price_v,x_signal_i,s_state,Update_bid,arg_data):
-#     i,bid,low_bid,high_bid=arg_data
-#     state=s_state[i]
-#     fun_bid=lambda xi :Update_bid.real_bid(xi,bid,state,price_v)
-#     temp=list(map(fun_bid,x_signal_i[:,i]))
-#     temp=np.array([ele[0][0] for ele in temp])
-# #        temp=np.array([Update_bid.real_bid(xi,bid,ss_state,price_v)[0][0] for xi in x_signal[:,i]])
-#     exp_value=temp.flatten()
-
-#     low_case  = low_bid  - exp_value
-#     high_case = high_bid - exp_value
-
-#     low_sum = np.square((low_case>0)*1*low_case)
-#     high_sum = np.square((high_case<0)*1*high_case)
-#     return (low_sum,high_sum)
 
 def map_integ(price_v,x_signal_i,s_state,Update_bid,arg_data):
     i,bid,low_bid,high_bid=arg_data
