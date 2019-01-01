@@ -24,7 +24,7 @@ graph_path = "E:/Dropbox/academic/ideas/IO field/justice auction/draft/pic/"
 
 con = sqlite3.connect(store_path+"auction_info_house.sqlite")
 
-PATH_output="G:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code4\\analysis\\"
+PATH_output="E:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code4\\analysis\\"
 
 df_1_s = pd.read_csv(PATH_output+"sample1_df.csv", sep='\t', encoding='utf-8')
 df_2_s = pd.read_csv(PATH_output+"sample2_df.csv", sep='\t', encoding='utf-8')

@@ -209,6 +209,9 @@ def get_info(driver,link_url,status):
         WebDriverWait(driver, 30).until(element_present)
         time.sleep(2)
         flag=1
+        pri_flag=False
+        pri_ID=''
+        do_search=True
         while flag==1:
             df_temp=pd.DataFrame(columns=col_bid)
             table_content=driver.find_element_by_css_selector(bidding_table).text
@@ -222,6 +225,16 @@ def get_info(driver,link_url,status):
                 
             df_info2=df_info2.append(df_temp,ignore_index=True)
             driver.find_element_by_css_selector(bidding_table).click()
+            
+            # find the priority bidder
+            if pri_flag==True and do_search == True:
+                pri_icon = driver.find_elements_by_class_name('icon-user.icon-priority-1')
+                if len(pri_icon)>0:
+                    parent_el = pri_icon.find_element_by_xpath("..")
+                    parent_el=parent_el.find_element_by_xpath("..")
+                    pri_ID=parent_el.text
+                    do_search=False
+                    
             try:
                 driver.find_element_by_css_selector(bidding_next).click()
                 time.sleep(0.5)
