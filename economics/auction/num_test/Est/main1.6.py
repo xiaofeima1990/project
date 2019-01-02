@@ -208,8 +208,16 @@ if __name__ == '__main__':
             "JJ":JJ,
             }
     
+    # Theta={
+    #     "comm_mu":1, # comman value mu
+    #     "priv_mu":0, # private value mu
+    #     "beta":0,   # for coefficient in front of the reservation price 
+    #     "comm_var":0.1,
+    #     "priv_var":0.3,
+    #     "epsilon_var":0.4,
+    #     }
 
-    Theta=[0.1,0.05,0,0.05,0.04,0.04]
+    Theta=[1,0.05,1,0.5,0.3,0.4]
     
     start = time.time()
     now = datetime.datetime.now()

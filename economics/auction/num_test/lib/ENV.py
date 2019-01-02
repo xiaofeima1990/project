@@ -16,9 +16,9 @@ import numpy as np
 
 
 para_dict={
-        "comm_mu":10,
-        "priv_mu":1,
-        "epsilon_mu":0,
+        "comm_mu":1,
+        "priv_mu":0,
+        "beta":0,   # for coefficient in front of the reservation price 
         "comm_var":0.8,
         "priv_var":1.2,
         "epsilon_var":0.8,
@@ -32,7 +32,8 @@ class ENV:
     def __init__(self, N, dict_para=para_dict):
         self.comm_mu  =dict_para['comm_mu']
         self.priv_mu  =dict_para['priv_mu']
-        self.noise_mu =dict_para['epsilon_mu']
+        self.beta     =dict_para['beta']
+        self.noise_mu = 0  # set epsilon mu always zero
         self.comm_var =dict_para['comm_var']
         self.priv_var =dict_para['priv_var']
         self.noise_var=dict_para['epsilon_var']
@@ -67,6 +68,7 @@ class ENV:
         self.uninfo['vi_rival_mu'] = self.uninfo['vi_rival_mu']*0.8
         self.uninfo['MU'] = self.uninfo['MU']*0.8
         self.uninfo['comm_mu']    = self.uninfo['comm_mu']*0.8
+        self.uninfo['beta']=self.beta
         return Info_result(self.uninfo)
         
     def Info_ID(self):
@@ -105,7 +107,7 @@ class ENV:
         self.info_Id['xi_rival_mu'][0,0]=self.info_Id['x_info_mu']
         self.info_Id['vi_rival_mu'][0,0]=self.info_Id['x_info_mu']
         self.info_Id['comm_mu'] = self.info_Id['comm_mu']*0.8
-        
+        self.info_Id['beta']=self.beta
         return Info_result(self.info_Id)
     
     
@@ -232,6 +234,11 @@ class Info_result(object):
         '''
         return self.info_dict['comm_mu']
 
-    
+    @property 
+    def beta(self):
+        '''
+        return mu for 
+        '''
+        return self.info_dict['beta'] 
 
     

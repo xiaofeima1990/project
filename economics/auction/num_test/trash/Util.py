@@ -98,6 +98,29 @@ def balance_data(DATA_STRUCT,n_work):
     return [data_struct(ele) for ele in Data_Struct_c ]
 
 
+def signal_DGP_parallel(public_info,para,rng,N,JJ=15):
+    
+
+    
+    MU       =para.MU
+    SIGMA2   =para.SIGMA2
+    # common value in public
+    pub_mu = public_info[0]
+    
+    # random reservation ratio
+    r =  public_info[1]
+    
+    
+
+#    x_signal=rng.multivariate_normal(MU.flatten(),SIGMA2,JJ)
+    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
+    info_index=public_info[3]
+    
+#    prob_x_signal=multivariate_normal.pdf(x_signal,MU.flatten(),SIGMA2)
+    
+    
+    
+    return [pub_mu,x_signal,w_x,info_index,r]
 
 def signal_DGP(para,rng,N,JJ=400):
 
@@ -141,7 +164,7 @@ def signal_DGP_est(para,res,rng,N,JJ=400):
 
 
     
-    MU       =para.MU+res*para.beta
+    MU       =para.MU+res
     SIGMA2   =para.SIGMA2
 
     
@@ -149,7 +172,6 @@ def signal_DGP_est(para,res,rng,N,JJ=400):
     # use scipy to comput the square root of Sigma
     Sigma=LAA.sqrtm(SIGMA2)
     Sigma=Sigma.real
-
 
     # lattices 
     [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)

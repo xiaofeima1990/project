@@ -73,29 +73,7 @@ def list_duplicates(seq):
    
 
 
-def signal_DGP_parallel(public_info,para,rng,N,JJ=15):
-    
 
-    
-    MU       =para.MU
-    SIGMA2   =para.SIGMA2
-    # common value in public
-    pub_mu = public_info[0]
-    
-    # random reservation ratio
-    # r =  0.8 + 0.1*self.rng.rand() 
-    r =  public_info[1]
-    
- 
-#    x_signal=rng.multivariate_normal(MU.flatten(),SIGMA2,JJ)
-    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
-    info_index=public_info[3]
-    
-#    prob_x_signal=multivariate_normal.pdf(x_signal,MU.flatten(),SIGMA2)
-    
-    
-    
-    return [pub_mu,x_signal,w_x,info_index,r]
 #
 #def signal_DGP(para,res,rng,N,JJ=400):
 #
