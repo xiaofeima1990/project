@@ -20,20 +20,27 @@ import math
 class Update_rule:
     
     def __init__(self,para,res=0):
-        self.xi_mu=para.xi_mu + res
-        self.xi_sigma2 = para.xi_sigma2 
-        self.vi_mu     = para.vi_mu +res
-        self.vi_sigma2 = para.vi_sigma2
-        self.MU        = para.MU+res
-        self.SIGMA2    = para.SIGMA2
-        self.xi_rival_mu = para.xi_rival_mu+res
-        self.xi_rival_sigma2 = para.xi_rival_sigma2
-        self.vi_rival_mu = para.xi_rival_mu+res
-        self.vi_rival_sigma2 = para.xi_rival_sigma2
+        self.para=para
         self.N         =  para.N
+        self.res = res
         self.comm_var  = para.comm_var
         self.comm_mu  = para.comm_mu
-        self.res = res
+
+
+
+        self.xi_mu=para.xi_mu
+        self.xi_sigma2 = para.xi_sigma2 
+        self.vi_mu     = para.vi_mu
+        self.vi_sigma2 = para.vi_sigma2
+        self.MU        = para.MU
+        self.SIGMA2    = para.SIGMA2
+        self.xi_rival_mu = para.xi_rival_mu
+        self.xi_rival_sigma2 = para.xi_rival_sigma2
+        self.vi_rival_mu = para.vi_rival_mu
+        self.vi_rival_sigma2 = para.vi_rival_sigma2
+        
+
+        
     def l_bound(self,state):
         # uninformed lower bound 
         # get the info structure
@@ -52,6 +59,7 @@ class Update_rule:
         price_v = price_v.reshape(price_v.size,1)
 
         info_struct=np.concatenate((pos,price_v,self.xi_rival_mu,self.xi_rival_sigma2,self.vi_rival_mu,self.vi_rival_sigma2),axis=1)
+
         # temp[::-1].sort() sorts the array in place
         info_struct=info_struct[info_struct[:,0].argsort()[::-1]]
         
@@ -72,6 +80,7 @@ class Update_rule:
         p_k=info_struct[:, 1]
         p_k=p_k.reshape(p_k.size,1)
         # mu_k
+        
         mu_k = np.append(self.vi_mu, info_struct[:n_r+1,4])
         mu_k=mu_k.reshape(mu_k.size,1)
         
@@ -190,7 +199,7 @@ class Update_rule:
         # return pure value E_win and flag
         return [Pure_value,E_win_revenue,flag]
 
-    def real_bid_calc(self,bid,state,price_v):
+    def real_bid_calc(self,bid,state,price_v,i_id):
         self.T_p = price_v
         ladder=price_v[-1]-price_v[-2]
         lower_b = self.l_bound(state)
@@ -255,8 +264,28 @@ class Update_rule:
 
 
 
-    def bid_vector(self,xi_v,bid,state,price_v):
-        [Pure_value,bid_price,AA_i]=self.real_bid_calc(bid,state,price_v)
+    def bid_vector(self,xi_v,bid,state,price_v,i_id):
+        self.xi_mu        =self.para.xi_mu[i_id]
+        self.xi_sigma2    = self.para.xi_sigma2[i_id] 
+        self.vi_mu        = self.para.vi_mu[i_id]
+        self.vi_sigma2    = self.para.vi_sigma2[i_id]
+        self.MU           = self.para.MU[i_id]
+        self.SIGMA2       = self.para.SIGMA2[i_id]
+        self.xi_rival_mu  = self.para.xi_rival_mu[i_id]
+        self.xi_rival_sigma2 = self.para.xi_rival_sigma2[i_id]
+        self.vi_rival_mu     = self.para.vi_rival_mu[i_id]
+        self.vi_rival_sigma2 = self.para.vi_rival_sigma2[i_id]   
+
+
+        # dimension
+        #             
+        self.MU              = self.MU.reshape(self.N,1)
+        self.xi_rival_mu     = self.xi_rival_mu.reshape(self.N-1,1)
+        self.xi_rival_sigma2 = self.xi_rival_sigma2.reshape(self.N-1,1)
+        self.vi_rival_mu     = self.vi_rival_mu.reshape(self.N-1,1)
+        self.vi_rival_sigma2 = self.vi_rival_sigma2.reshape(self.N-1,1)
+
+        [Pure_value,bid_price,AA_i]=self.real_bid_calc(bid,state,price_v,i_id)
 
         return AA_i*xi_v+Pure_value
 

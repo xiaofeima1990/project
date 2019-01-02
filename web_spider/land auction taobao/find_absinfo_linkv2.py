@@ -35,7 +35,7 @@ key parameters
 
 list_link_path="/html/body/div[3]/div[3]/div[3]/ul/li"
 next_page_css="body > div.sf-wrap > div.pagination.J_Pagination > a.next"
-page_load_flag="J_SiteFooter > div > div.tb-footer-bd > p:nth-child(1) > span:nth-child(1) > a"
+page_load_flag="body > div.sf-wrap > div.pagination.J_Pagination > span.page-skip > em" # bottom page number 
 page_sum_class_name="page-total"
 select_page_css = "body > div.sf-wrap > div.pagination.J_Pagination > span.page-skip > label > input"
 select_page_sure = "body > div.sf-wrap > div.pagination.J_Pagination > span.page-skip > button"
@@ -52,7 +52,7 @@ def open_page(driver,url):
     # driver.implicitly_wait(5)
     # WebDriverWait(driver,60).until(EC.presence_of_element_located((By.XPATH,"/html/body/div[3]/div[4]/a[7]")))
     try:
-        driver.set_page_load_timeout(5)
+        driver.set_page_load_timeout(10)
         driver.get(url)
     except TimeoutException as ex:
         check=driver.find_element_by_css_selector(page_load_flag)
@@ -68,8 +68,14 @@ col_name_abs=['ID','url','num_bids','status','win_bid','eval_price','n_watch','n
 
 def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
     # get whole link page number 
-    summary_link=int(driver.find_element_by_class_name(page_sum_class_name).text)
-    df_link=pd.DataFrame(columns=col_name_abs)
+    try:
+        summary_link=int(driver.find_element_by_class_name(page_sum_class_name).text)
+    
+        df_link=pd.DataFrame(columns=col_name_abs)
+        
+    except Exception as e:
+        print('No data move to the next period')
+        return None
 #    if write_flag==1:
 #        df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',mode='a',index=False)
 #        
@@ -204,7 +210,7 @@ if __name__ == '__main__':
 #     this even requires gbk decoding encoding!!! to convert str to url
 #    city_name=["广州","郑州","厦门","福州","常州","南京","盐城","泰州","扬州","镇江","南通"]
     # '温州','绍兴', "湖州", 
-    city_name=["佛山","东莞","中山","珠海","江门","肇庆","惠州","汕头","潮州","揭阳","汕尾","湛江","茂名","阳江","韶关","清远","云浮","梅州","河源"]
+    city_name=["中山","珠海","江门","肇庆","惠州","汕头","潮州","揭阳","汕尾","湛江","茂名","阳江","韶关","清远","云浮","梅州","河源"]
     
 #    ele=input("input city name: ")
     flag_auction_time=input("input auction time choice: 1- first time, 2- second time, 3- 1+2, : ")

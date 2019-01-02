@@ -15,7 +15,6 @@ from ENV import ENV
 from Util import *
 
 
-
 def list_duplicates(seq):
     tally = defaultdict(list)
     for i,item in enumerate(seq):
@@ -27,7 +26,7 @@ def map_integ(price_v,x_signal_i,s_state,Update_bid,arg_data):
     i,bid,low_bid,high_bid=arg_data
     state=s_state[i]
 
-    exp_value = Update_bid.bid_vector(x_signal_i[:,i],bid,state,price_v)
+    exp_value = Update_bid.bid_vector(x_signal_i[:,i],bid,state,price_v,i)
 
     low_case  = low_bid  - exp_value
     high_case = high_bid - exp_value
@@ -44,11 +43,20 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     tt,data_state,data_pos,price_v,pub_info=arg_data
     info_flag=pub_info[3]
     N        =int(pub_info[2])
-    Env=ENV(N, Theta)
-    if info_flag == 0 :
-       para=Env.Uninform()
-    else:
-       para=Env.Info_ID()
+
+    ord_index=np.argsort(data_state)[::-1]
+    info_v=np.ones(N)
+    if info_flag-1 >=0:
+        info_v[info_flag] = 0
+
+
+    Env=ENV(N, Theta,ord_index,info_v)
+    para=Env.info_struct()
+
+    # if info_flag == 0 :
+    #    para=Env.Uninform()
+    # else:
+    #    para=Env.Info_ID()
 
 
     r     =pub_info[-1]
@@ -58,7 +66,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     
 
     
-    [x_signal,w_x]=signal_DGP_est(para,r,rng,N,JJ)
+    [x_signal,w_x]=signal_DGP_est(para,r,rng,N,0,JJ)
 
 
     data_pos.sort()

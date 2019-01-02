@@ -137,12 +137,13 @@ def signal_DGP(para,rng,N,JJ=400):
 
 
 
-def signal_DGP_est(para,res,rng,N,JJ=400):
+def signal_DGP_est(para,res,rng,N,i_id,JJ=400):
 
 
     
-    MU       =para.MU+res*para.beta
-    SIGMA2   =para.SIGMA2
+    MU       =para.MU[i_id] + res * para.beta
+    MU       =MU.reshape(N,1)
+    SIGMA2   =para.SIGMA2[i_id]
 
     
     
@@ -171,9 +172,6 @@ Data preprocessing
 '''
 
     
-
-def price_norm(arg):
-    return arg['bidder_price']/arg['evaluation_price']
 
 
 
@@ -204,21 +202,19 @@ def pre_data(Est_data):
     Est_data['ladder_norm']=Est_data['bid_ladder']/Est_data['evaluation_price']
     
     Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
-    Est_data['price_norm'] = Est_data.apply(price_norm,axis= 1 )
-    
-    Est_data=Est_data[Est_data['real_num_bidder']<=5]
-    Est_data=Est_data[Est_data['real_num_bidder']>=4]
+    Est_data['price_norm'] = Est_data['bidder_price']/Est_data['evaluation_price']
+    Est_data=Est_data[Est_data['num_bidder']>=4]
     return Est_data[col_name]
                 
 
 
-def is_pos_def(Theta):
-    flag=True
-    for n in range(2,9):
-        temp_matrix= np.ones((n,n))*Theta['comm_var'] + np.eye(n)*(Theta['priv_var']+Theta['noise_var'])    
-        # check whether all the n are positive definite
-        if not np.all(LA.eigvals(temp_matrix) > 0):
-            flag=False
+# def is_pos_def(Theta):
+#     flag=True
+#     for n in range(2,9):
+#         temp_matrix= np.ones((n,n))*Theta['comm_var'] + np.eye(n)*(Theta['priv_var']+Theta['noise_var'])    
+#         # check whether all the n are positive definite
+#         if not np.all(LA.eigvals(temp_matrix) > 0):
+#             flag=False
 
 
-    return flag
+#     return flag

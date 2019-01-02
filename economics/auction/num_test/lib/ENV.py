@@ -6,30 +6,31 @@ Created on Sat Nov 10 12:34:00 2018
 Numerical Test 
 
 This script is about Environemnt Setup:
-1. info structure
-2. Number of Bidders
+ - info structure
+new:
+ - ENV deals with the common value and nosiy part 
+   the private part need to combine the rank order of bidders
 
 """
 
 import numpy as np
-
+import copy
 
 
 para_dict={
+
         "comm_mu":1,
         "priv_mu":0,
-        "beta":0,   # for coefficient in front of the reservation price 
-        "comm_var":0.8,
-        "priv_var":1.2,
-        "epsilon_var":0.8,
+        "beta":1,
+        "comm_var":0.5,
+        "priv_var":0.3,
+        "epsilon_var":0.4,
         }
 
 
 
-
-
 class ENV:
-    def __init__(self, N, dict_para=para_dict):
+    def __init__(self, N, dict_para=para_dict,ord_index=None,info_flag=np.zeros(3)):
         self.comm_mu  =dict_para['comm_mu']
         self.priv_mu  =dict_para['priv_mu']
         self.beta     =dict_para['beta']
@@ -38,10 +39,58 @@ class ENV:
         self.priv_var =dict_para['priv_var']
         self.noise_var=dict_para['epsilon_var']
         self.N=N
-        self.uninfo={}
+        self.order=ord_index
+        self.info_flag=info_flag
+        self.info_st={}
         self.info_Id={}
+        self.uninfo={}
         
-        
+
+
+    def info_struct(self):
+        self.info_st['N']=self.N
+        self.info_st['comm_var'] =self.comm_var 
+        self.info_st['comm_mu']  =self.comm_mu
+        self.info_st['beta']  =self.beta
+        # xi_mu and xi_sigma2 this is a list for each possible i 
+        self.info_st['xi_mu'] = self.comm_mu+self.priv_mu*self.order + self.noise_mu*self.info_flag
+        self.info_st['xi_sigma2'] =  self.comm_var+self.priv_var*self.order + self.noise_var*self.info_flag
+
+        # vi_mu and vi_sigma2 
+        self.info_st['vi_mu']    =  self.comm_mu+self.priv_mu*self.order 
+        self.info_st['vi_sigma2'] =  self.comm_var+self.priv_var*self.order
+
+        # rivals's xi
+        self.info_st['xi_rival_mu']=[]
+        self.info_st['vi_rival_mu']=[]
+        self.info_st['xi_rival_sigma2']=[]
+        self.info_st['vi_rival_sigma2']=[]
+        self.info_st['MU']=[]
+        self.info_st['SIGMA2']=[]
+        for i in range(len(self.order)):
+            temp_order=copy.deepcopy(self.order)
+            temp_order=np.delete(temp_order,i)
+
+            temp_info_v=copy.deepcopy(self.info_flag)
+            temp_info_v=np.delete(temp_info_v,i)
+
+            self.info_st['xi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order+ self.noise_mu*temp_info_v )
+            self.info_st['vi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order )
+
+            self.info_st['xi_rival_sigma2'].append( self.comm_var + self.priv_var*temp_order + self.noise_var*temp_info_v )
+            self.info_st['vi_rival_sigma2'].append( self.comm_var + self.priv_var*temp_order  )
+
+            new_order  = np.append(self.order[i], temp_order)
+            new_info_v = np.append(self.info_flag[i],temp_info_v)
+            self.info_st['MU'].append( self.comm_mu+self.priv_mu*new_order + self.noise_mu*new_info_v )
+            temp_sigma2=self.priv_var*new_order + self.noise_var*new_info_v
+            self.info_st['SIGMA2'].append( np.diag(temp_sigma2) + np.ones([self.N,self.N]) )
+            
+        return Info_result(self.info_st)
+
+
+
+
     def Uninform(self):
         
         
@@ -50,24 +99,19 @@ class ENV:
         self.uninfo['xi_sigma2'] =  self.comm_var+self.priv_var + self.noise_var
         self.uninfo['vi_mu']     =  self.comm_mu+self.priv_mu 
         self.uninfo['vi_sigma2'] =  self.comm_var+self.priv_var
-        self.uninfo['N']         =  self.N
+        
         self.uninfo['xi_rival_mu'] = (self.comm_mu+self.priv_mu + self.noise_mu) * np.ones((self.N-1,1))
         self.uninfo['xi_rival_sigma2'] = (self.comm_var+self.priv_var + self.noise_var) * np.ones((self.N-1,1))
         self.uninfo['vi_rival_mu'] = (self.comm_mu+self.priv_mu) * np.ones((self.N-1,1))
         self.uninfo['vi_rival_sigma2'] = (self.comm_var+self.priv_var ) * np.ones((self.N-1,1))
-        temp_matrix= np.ones((self.N,self.N))*self.comm_var - np.eye(self.N)*self.comm_var              
-        self.uninfo['COV_i']       = np.diag(self.uninfo['vi_sigma2']*np.ones(self.N)) + temp_matrix 
+        temp_matrix= np.ones((self.N,self.N))*self.comm_var - np.eye(self.N)*self.comm_var               
         self.uninfo['SIGMA2']      = np.diag(self.uninfo['xi_sigma2']*np.ones(self.N)) + temp_matrix
         self.uninfo['MU']          = (self.comm_mu+self.priv_mu + self.noise_mu)*np.ones((self.N,1))
+
         self.uninfo['comm_var']    = self.comm_var
         self.uninfo['comm_mu']    = self.comm_mu
-        
-        self.uninfo['xi_rival_mu']=self.uninfo['xi_rival_mu']*0.8
-        self.uninfo['vi_mu']    = self.uninfo['vi_mu'] *0.8
-        self.uninfo['xi_mu']    = self.uninfo['xi_mu'] *0.8
-        self.uninfo['vi_rival_mu'] = self.uninfo['vi_rival_mu']*0.8
-        self.uninfo['MU'] = self.uninfo['MU']*0.8
-        self.uninfo['comm_mu']    = self.uninfo['comm_mu']*0.8
+        self.uninfo['N']         =  self.N
+
         self.uninfo['beta']=self.beta
         return Info_result(self.uninfo)
         
@@ -96,17 +140,9 @@ class ENV:
         self.info_Id['comm_var']    = self.comm_var
         self.info_Id['comm_mu']    = self.comm_mu
         
-        self.info_Id['xi_rival_mu']=self.info_Id['xi_rival_mu']*0.8
-        self.info_Id['vi_rival_mu']=self.info_Id['vi_rival_mu']*0.8
-        self.info_Id['vi_mu']    = self.info_Id['vi_mu'] *0.8
-        self.info_Id['xi_mu']    = self.info_Id['xi_mu'] *0.8
-        self.info_Id['MU'] = self.info_Id['MU']*0.8
-        self.info_Id['x_info_mu'] = self.info_Id['x_info_mu']*0.8 
-        
         self.info_Id['MU'][1,0]=self.info_Id['x_info_mu']
         self.info_Id['xi_rival_mu'][0,0]=self.info_Id['x_info_mu']
         self.info_Id['vi_rival_mu'][0,0]=self.info_Id['x_info_mu']
-        self.info_Id['comm_mu'] = self.info_Id['comm_mu']*0.8
         self.info_Id['beta']=self.beta
         return Info_result(self.info_Id)
     
@@ -116,18 +152,6 @@ class ENV:
 class Info_result(object):
     def __init__(self,info_dict):
         '''
-        mesure the distance include
-        1. miles
-        2. kilometers
-        3. meters
-        4. feet
-        distance_measure={
-          'miles':, 
-          'kilometers':,
-          'meters':,
-          'feet',
-        
-        }
         
         '''
         self.info_dict=info_dict
@@ -191,20 +215,22 @@ class Info_result(object):
         return  x i's  rival sigma square 
         '''
         return self.info_dict['xi_rival_sigma2']
+
+
+    @property 
+    def vi_rival_mu(self):
+        '''
+        return  v i's  rival mu
+        '''
+        return self.info_dict['vi_rival_mu']
     
     @property 
     def vi_rival_sigma2(self):
         '''
-        return  x i's  rival sigma square 
+        return  v i's  rival sigma square 
         '''
         return self.info_dict['vi_rival_sigma2']
 
-    @property 
-    def COV_i(self):
-        '''
-        return Sigma i 
-        '''
-        return self.info_dict['COV_i']
 
     @property 
     def SIGMA2(self):

@@ -32,7 +32,6 @@ data_path= os.path.dirname(PATH) + '/data/Simu/'
 
 import numpy as np
 import pandas as pd
-from simu import Simu
 from Update_rule import Update_rule
 from Util import *
 from Est_parallel import *
@@ -116,7 +115,7 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
     Theta={
     "comm_mu":Theta0[0],
     "priv_mu":Theta0[1],
-    "epsilon_mu":Theta0[2],
+    "beta":Theta0[2],
     "comm_var":Theta0[3],
     "priv_var":Theta0[4],
     "epsilon_var":Theta0[5],
@@ -209,7 +208,7 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
 
 if __name__ == '__main__':
     
-    Est_data=pd.read_hdf('G:/auction/clean/est.h5',key='test_raw')
+    Est_data=pd.read_hdf('E:/auction/clean/est.h5',key='test_raw')
 
     est_data=pre_data(Est_data)
     # set up the hyper parameters
@@ -225,7 +224,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[0.1,0.05,0,0.05,0.3,0.04]
+    Theta=[0.1,0.05,0.5,0.05,0.3,0.04]
     
     start = time.time()
     now = datetime.datetime.now()

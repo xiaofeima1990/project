@@ -57,12 +57,12 @@ from numpy import linalg as LA
 
 Simu_para_dict={
 
-        "comm_mu":10,
-        "priv_mu":1,
-        "epsilon_mu":0,
-        "comm_var":0.8,
-        "priv_var":1.2,
-        "epsilon_var":0.8,
+        "comm_mu":1,
+        "priv_mu":0,
+        "beta":1,
+        "comm_var":0.5,
+        "priv_var":0.3,
+        "epsilon_var":0.4,
         }
 
 Pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
