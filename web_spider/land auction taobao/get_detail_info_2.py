@@ -233,6 +233,7 @@ def get_info(driver,link_url,status):
                     parent_el = pri_icon.find_element_by_xpath("..")
                     parent_el=parent_el.find_element_by_xpath("..")
                     pri_ID=parent_el.text
+                    df_info1.loc[0,'pri_ID']=pri_ID
                     do_search=False
                     
             try:

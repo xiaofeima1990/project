@@ -35,7 +35,7 @@ key parameters
 
 list_link_path="/html/body/div[3]/div[3]/div[3]/ul/li"
 next_page_css="body > div.sf-wrap > div.pagination.J_Pagination > a.next"
-page_load_flag="body > div.sf-wrap > div.pagination.J_Pagination > span.page-skip > em"
+page_load_flag="J_SiteFooter > div > div.tb-footer-bd > p:nth-child(1) > span:nth-child(1) > a"
 page_sum_class_name="page-total"
 select_page_css = "body > div.sf-wrap > div.pagination.J_Pagination > span.page-skip > label > input"
 select_page_sure = "body > div.sf-wrap > div.pagination.J_Pagination > span.page-skip > button"
@@ -50,7 +50,7 @@ select_page_sure = "body > div.sf-wrap > div.pagination.J_Pagination > span.page
 def open_page(driver,url):
     # only firefox is OK !!! 
     # driver.implicitly_wait(5)
-#    WebDriverWait(driver,60).until(EC.presence_of_element_located((By.XPATH,"/html/body/div[3]/div[4]/a[7]")))
+    # WebDriverWait(driver,60).until(EC.presence_of_element_located((By.XPATH,"/html/body/div[3]/div[4]/a[7]")))
     try:
         driver.set_page_load_timeout(5)
         driver.get(url)
