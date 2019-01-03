@@ -5,6 +5,10 @@ Created on Sun Nov 25 18:35:22 2018
 @author: mgxgl
 save the parallel running function
 
+modify the private part
+where mu_ai = a_1*i  ; var_ai = a_2*i 
+
+
 """
 from functools import partial
 from collections import defaultdict,OrderedDict
@@ -49,8 +53,8 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     if info_flag-1 >=0:
         info_v[info_flag] = 0
 
-
-    Env=ENV(N, Theta,ord_index,info_v)
+    r     =pub_info[-1]
+    Env=ENV(N, Theta,r,ord_index,info_v)
     para=Env.info_struct()
 
     # if info_flag == 0 :
@@ -59,14 +63,14 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     #    para=Env.Info_ID()
 
 
-    r     =pub_info[-1]
+    
     ladder=pub_info[0]
     Update_bid=Update_rule(para,r)
 
     
 
     
-    [x_signal,w_x]=signal_DGP_est(para,r,rng,N,0,JJ)
+    [x_signal,w_x]=signal_DGP_est(para,rng,N,0,JJ)
 
 
     data_pos.sort()

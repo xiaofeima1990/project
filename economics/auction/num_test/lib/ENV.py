@@ -10,6 +10,10 @@ This script is about Environemnt Setup:
 new:
  - ENV deals with the common value and nosiy part 
    the private part need to combine the rank order of bidders
+modify the private part
+where mu_ai = a_1*i  ; var_ai = a_2*i 
+add rank order to 'info_struct' so that I change the structure of the xi, vi, MU and SIGMA2 a little bit. 
+Different bidders have different xi, vi, MU and SIGMA2 
 
 """
 
@@ -30,7 +34,7 @@ para_dict={
 
 
 class ENV:
-    def __init__(self, N, dict_para=para_dict,ord_index=None,info_flag=np.zeros(3)):
+    def __init__(self, N, dict_para=para_dict,res=0,ord_index=None,info_flag=np.zeros(3)):
         self.comm_mu  =dict_para['comm_mu']
         self.priv_mu  =dict_para['priv_mu']
         self.beta     =dict_para['beta']
@@ -41,6 +45,7 @@ class ENV:
         self.N=N
         self.order=ord_index
         self.info_flag=info_flag
+        self.res=res
         self.info_st={}
         self.info_Id={}
         self.uninfo={}
@@ -53,11 +58,11 @@ class ENV:
         self.info_st['comm_mu']  =self.comm_mu
         self.info_st['beta']  =self.beta
         # xi_mu and xi_sigma2 this is a list for each possible i 
-        self.info_st['xi_mu'] = self.comm_mu+self.priv_mu*self.order + self.noise_mu*self.info_flag
+        self.info_st['xi_mu'] = self.comm_mu+self.priv_mu*self.order + self.noise_mu*self.info_flag +self.beta*self.res
         self.info_st['xi_sigma2'] =  self.comm_var+self.priv_var*self.order + self.noise_var*self.info_flag
 
         # vi_mu and vi_sigma2 
-        self.info_st['vi_mu']    =  self.comm_mu+self.priv_mu*self.order 
+        self.info_st['vi_mu']    =  self.comm_mu+self.priv_mu*self.order +self.beta*self.res
         self.info_st['vi_sigma2'] =  self.comm_var+self.priv_var*self.order
 
         # rivals's xi
@@ -74,17 +79,17 @@ class ENV:
             temp_info_v=copy.deepcopy(self.info_flag)
             temp_info_v=np.delete(temp_info_v,i)
 
-            self.info_st['xi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order+ self.noise_mu*temp_info_v )
-            self.info_st['vi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order )
+            self.info_st['xi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order+ self.noise_mu*temp_info_v + self.beta*self.res )
+            self.info_st['vi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order +self.beta*self.res )
 
             self.info_st['xi_rival_sigma2'].append( self.comm_var + self.priv_var*temp_order + self.noise_var*temp_info_v )
             self.info_st['vi_rival_sigma2'].append( self.comm_var + self.priv_var*temp_order  )
 
             new_order  = np.append(self.order[i], temp_order)
             new_info_v = np.append(self.info_flag[i],temp_info_v)
-            self.info_st['MU'].append( self.comm_mu+self.priv_mu*new_order + self.noise_mu*new_info_v )
+            self.info_st['MU'].append( self.comm_mu+self.priv_mu*new_order + self.noise_mu*new_info_v +self.beta*self.res )
             temp_sigma2=self.priv_var*new_order + self.noise_var*new_info_v
-            self.info_st['SIGMA2'].append( np.diag(temp_sigma2) + np.ones([self.N,self.N]) )
+            self.info_st['SIGMA2'].append( np.diag(temp_sigma2) + np.ones([self.N,self.N])*self.comm_var )
             
         return Info_result(self.info_st)
 

@@ -137,11 +137,11 @@ def signal_DGP(para,rng,N,JJ=400):
 
 
 
-def signal_DGP_est(para,res,rng,N,i_id,JJ=400):
+def signal_DGP_est(para,rng,N,i_id,JJ=400):
 
 
     
-    MU       =para.MU[i_id] + res * para.beta
+    MU       =para.MU[i_id] 
     MU       =MU.reshape(N,1)
     SIGMA2   =para.SIGMA2[i_id]
 
@@ -203,7 +203,6 @@ def pre_data(Est_data):
     
     Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
     Est_data['price_norm'] = Est_data['bidder_price']/Est_data['evaluation_price']
-    Est_data=Est_data[Est_data['num_bidder']>=4]
     return Est_data[col_name]
                 
 

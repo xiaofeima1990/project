@@ -73,41 +73,6 @@ def list_duplicates(seq):
 
 
 
-#
-#def signal_DGP(para,res,rng,N,JJ=400):
-#
-#
-#    
-#    MU       =para.MU + res
-#    SIGMA2   =para.SIGMA2
-#    # common value in public
-##    pub_mu = public_info[0]
-#    
-#    # random reservation ratio
-##    r =  public_info[1]
-#    
-#    
-#    # Cholesky Decomposition
-#    lambda_0,B=LA.eig(SIGMA2)
-#    lambda_12=lambda_0**(0.5)
-#    Sigma=B@np.diag(lambda_12)@LA.inv(B)
-#    
-#    # lattices 
-#    [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)
-#    
-#    a_n= norm.ppf(xi_n)
-#    
-#    x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
-#    x_signal= x_signal.T
-#
-##    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
-##    info_index=public_info[3]
-#    
-#    
-#    return [x_signal,w_n]
-
-
-
 
 
 
@@ -208,7 +173,7 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
 
 if __name__ == '__main__':
     
-    Est_data=pd.read_hdf('E:/auction/clean/est.h5',key='test_raw')
+    Est_data=pd.read_hdf('G:/auction/clean/est.h5',key='test_raw')
 
     est_data=pre_data(Est_data)
     # set up the hyper parameters
@@ -224,7 +189,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[0.1,0.05,0.5,0.05,0.3,0.04]
+    Theta=[0.1,0.05,0.5,0.5,0.1,0.2]
     
     start = time.time()
     now = datetime.datetime.now()
@@ -232,7 +197,7 @@ if __name__ == '__main__':
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")
     
-    res = minimize(GMM_Ineq, Theta, method='L-BFGS-B',args=(est_data,d_struct)) 
+    res = minimize(GMM_Ineq, Theta, method='Nelder-Mead',args=(est_data,d_struct)) 
     
     print("------------------------------------------------------------------")
     now = datetime.datetime.now()

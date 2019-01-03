@@ -7,6 +7,10 @@ Created on Sat Nov 10 16:28:00 2018
 bidding functions or updating rules  
 Now this is used for estimation. I can simultaneously estimation all the lower bounds
 
+A little modification for the private part
+I need to cite the bidder identity (rank identity)
+in real_bid_calc(...,i_id)
+
 """
 
 import numpy as np
@@ -90,16 +94,16 @@ class Update_rule:
         Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
         
         
-        Delta_k =self.vi_sigma2*np.eye(self.N)+np.ones((self.N,self.N))*self.comm_var - np.eye(self.N)*self.comm_var  
+        Delta_k =np.diag(np.append(self.vi_sigma2, info_struct[:n_r+1,5])-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
 
         
         Sigma_inv = inv(Sigma)
-        Sigma_inv_k1 = Sigma_inv[0:self.N,:] # N-1+1 all the rest of the 
+        # Sigma_inv_k1 = Sigma_inv[0:self.N,:] # N-1+1 all the rest of the 
 
-        AA_k = inv(Delta_k @ Sigma_inv_k1.T) @ l_k
+        AA_k = inv(Delta_k @ Sigma_inv.T) @ l_k
         temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
         temp_diag=temp_diag.reshape(temp_diag.size,1)
-        CC_k = 0.5*inv(Delta_k @ (Sigma_inv_k1.T)) @ (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@MU)
+        CC_k = 0.5*inv(Delta_k @ (Sigma_inv.T)) @ (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@MU)
 
         
 
