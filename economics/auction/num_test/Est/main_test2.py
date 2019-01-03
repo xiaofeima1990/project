@@ -26,7 +26,7 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 lib_path= os.path.dirname(PATH) + '/lib/'
 sys.path.append(lib_path)
 
-data_path= os.path.dirname(PATH) + '/data/Simu/'
+data_path= os.path.dirname(PATH) + '/data/Est/'
 
 
 
@@ -173,8 +173,8 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
 
 if __name__ == '__main__':
     
-    Est_data=pd.read_hdf('G:/auction/clean/est.h5',key='test_raw')
-
+    # Est_data=pd.read_hdf('G:/auction/clean/est.h5',key='test_raw')
+    Est_data=pd.read_hdf(data_path+'est.h5',key='test_raw')
     est_data=pre_data(Est_data)
     # set up the hyper parameters
     rng_seed=789

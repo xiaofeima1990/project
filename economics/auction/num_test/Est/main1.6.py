@@ -25,7 +25,7 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 lib_path= os.path.dirname(PATH) + '/lib/'
 sys.path.append(lib_path)
 
-data_path= os.path.dirname(PATH) + '/data/Simu/'
+data_path= os.path.dirname(PATH) + '/data/Est/'
 
 
 import numpy as np
@@ -87,7 +87,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     Theta={
     "comm_mu":Theta0[0],
     "priv_mu":Theta0[1],
-    "epsilon_mu":Theta0[2],
+    "beta":Theta0[2],
     "comm_var":Theta0[3],
     "priv_var":Theta0[4],
     "epsilon_var":Theta0[5],
@@ -193,7 +193,8 @@ if __name__ == '__main__':
     
     # load the data
 
-    Est_data=pd.read_hdf('G:/auction/clean/est.h5',key='test_raw')
+    # Est_data=pd.read_hdf('G:/auction/clean/est.h5',key='test_raw')
+    Est_data=pd.read_hdf(data_path+'est.h5',key='test_raw')
 
     Est_data=pre_data(Est_data)
     # set up the hyper parameters
