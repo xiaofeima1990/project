@@ -242,6 +242,7 @@ def get_info(driver,link_url,status,auction_time_flag):
                     parent_el=parent_el.find_element_by_xpath("..")
                     pri_ID=parent_el.text
                     df_pri.loc[0,'pri_ID']=pri_ID
+                    print('priority bidder! in {} : bidder ID is {}'.format(id_info,pri_ID))
                     con1 = sqlite3.connect(store_path+"auction_pri_house.sqlite")
                     df_pri.to_sql(auction_time_flag, con1, if_exists="append")
                     con.close()
@@ -353,7 +354,7 @@ if __name__ == '__main__':
                 df_INFO1=pd.DataFrame(columns=col_name)
             
             print("第-"+str(index)+"-拍卖, 第-"+auction_time_flag+"-次,"+"状态: "+status+" ,"+"id: "+str(id_info))
-        
+            
         
         
     except Exception as ex:
