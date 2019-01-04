@@ -112,14 +112,13 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     '''
     data_n=len(DATA_STRUCT)
     
-    num_works = 2
+    num_works = 4
     work_pool = ThreadPoolExecutor(max_workers=num_works)
     
     # reorganize the data
     DATA_STRUCT_c = balance_data_est(Est_data,num_works)
     
     cpu_num=multiprocessing.cpu_count()
-    cpu_num=6
     cpu_num_node=int((cpu_num-num_works)/num_works)
     
     auction_list=[]
@@ -144,11 +143,11 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     
     ## save the parameters and objective value 
     
-    with open('para1.txt', 'a+') as f:
+    with open('para_est2.txt', 'a+') as f:
         for item in Theta0:
             f.write("%f\t" % item)
             
-        f.write("%f\n" % auction_result)
+        f.write("{0:.12f}\n".format(auction_result))
     
     return auction_result
 
@@ -170,17 +169,24 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
     
     
     results=[]
+    try:
     
-    
-    func=partial(para_fun_est,Theta,rng,JJ)
+        func=partial(para_fun_est,Theta,rng,JJ)
 
-    pool = ProcessPoolExecutor(max_workers=cpu_num)
-    
-    
-    results= pool.map(func, zip(range(0,TT), Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[Pub_col].values.tolist()))
-    
-    
-    MoM=np.nansum(list(results))
+        pool = ProcessPoolExecutor(max_workers=cpu_num)
+        
+        
+        results= pool.map(func, zip(range(0,TT), Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[Pub_col].values.tolist()))
+        
+        
+        MoM=np.nansum(list(results))
+
+    except np.linalg.LinAlgError as err:
+        if 'Singular matrix' in str(err):
+            return 10**5
+        else:
+            print(err)
+            exit(1)
     
     
     return MoM / TT
@@ -198,9 +204,9 @@ if __name__ == '__main__':
 
     Est_data=pre_data(Est_data)
     # set up the hyper parameters
-    rng_seed=789
+    rng_seed=12342
     SS=25
-    JJ=300
+    JJ=400
     
     
     d_struct={
@@ -218,15 +224,17 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[1,0.05,1,0.5,0.3,0.4]
+    Theta=[0,0.02,1,0.5,0.15,0.23522]
     
     start = time.time()
     now = datetime.datetime.now()
+    bnds = ((-2, 2), (-1, 1), (0,3), (0,2), (0,2), (0,2))
+
     print("------------------------------------------------------------------")
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")
     
-    res = minimize(GMM_Ineq_parall, Theta, method='nelder-mead',args=(Est_data,d_struct)) 
+    res = minimize(GMM_Ineq_parall, Theta, method='SLSQP',args=(Est_data,d_struct),bounds=bnds) 
     
     print("------------------------------------------------------------------")
     now = datetime.datetime.now()

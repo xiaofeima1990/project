@@ -180,13 +180,13 @@ def pre_data(Est_data):
               'real_num_bidder','win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
     # get rid of number of bidder = = 1
     Est_data=Est_data[Est_data['num_bidder']>1]
-    Est_data=Est_data[Est_data['num_bidder']<=8]
+    Est_data=Est_data[Est_data['num_bidder']<=10]
     Est_data=Est_data[Est_data['len_act']>2]
 
     # double check
     Est_data['real_num_bidder']= Est_data['bidder_state'].apply(lambda x: len(x))
     Est_data=Est_data[Est_data['real_num_bidder']>1]
-    Est_data=Est_data[Est_data['real_num_bidder']<=8]
+    Est_data=Est_data[Est_data['real_num_bidder']<=10]
     # get rid of priority people
     Est_data=Est_data[Est_data['priority_people']==0]
     

@@ -71,7 +71,7 @@ AUCTION_INFO2={
         }
 
 priority_info="td.prior-td"
-col_name=['ID']+list(AUCTION_INFO1.keys())+['incharge_court','lat','lgt','property_name','win_bidder','announce','status']
+col_name=['ID']+list(AUCTION_INFO1.keys())+list(PRICE_INFO_dict.keys())+['incharge_court','lat','lgt','property_name','win_bidder','announce','status']
 col_bid =['status','bidder_id','price','date','time']
 col_bid2=["ID_info",'status','bidder_id','price','date','time']
 location_nav1='#J_DetailTabMenu > li.first > a'
@@ -108,7 +108,7 @@ def open_page(driver,url):
 
 
 
-def get_info(driver,link_url,status):
+def get_info(driver,link_url,status,auction_time_flag):
     '''
     df_info1 : auction info ingeneral
     df_info2 : bidding table
@@ -118,6 +118,9 @@ def get_info(driver,link_url,status):
     df_info2=pd.DataFrame(columns=col_bid)
     driver=open_page(driver,link_url)
     # df1 for basic infomation
+    
+    ## get id infomation
+    id_info=re.findall(r'\d+',link_url)[0]
     
     # column 1
     candi_info=driver.find_element_by_css_selector(Price_info).text
@@ -209,7 +212,12 @@ def get_info(driver,link_url,status):
         WebDriverWait(driver, 30).until(element_present)
         time.sleep(2)
         flag=1
-        pri_flag=False
+        if df_info1.loc[0,'priority_people']==1:
+            pri_flag=True
+            df_pri=pd.Dataframe(columns=['ID','pri_ID'])
+            df_pri.loc[0,'ID']=id_info
+        else:
+            pri_flag=False
         pri_ID=''
         do_search=True
         while flag==1:
@@ -233,7 +241,10 @@ def get_info(driver,link_url,status):
                     parent_el = pri_icon.find_element_by_xpath("..")
                     parent_el=parent_el.find_element_by_xpath("..")
                     pri_ID=parent_el.text
-                    df_info1.loc[0,'pri_ID']=pri_ID
+                    df_pri.loc[0,'pri_ID']=pri_ID
+                    con1 = sqlite3.connect(store_path+"auction_pri_house.sqlite")
+                    df_pri.to_sql(auction_time_flag, con1, if_exists="append")
+                    con.close()
                     do_search=False
                     
             try:
@@ -267,7 +278,6 @@ def get_info(driver,link_url,status):
                 
         
     ## get id infomation
-    id_info=re.findall(r'\d+',link_url)[0]
     df_info1.loc[0,'ID']=id_info
     df_info1.loc[0,'status']=status
     # add id info on auction detail
@@ -315,10 +325,11 @@ if __name__ == '__main__':
         for index, row in df_link.iterrows():
             base_url = row["url"]
             status   = row["status"]
-        
-            
-            (df_info1,df_info2,id_info)=get_info(driver,base_url,status)
-                
+            # all I care about is the successful auction
+            if status == "done":
+                (df_info1,df_info2,id_info)=get_info(driver,base_url,status,auction_time_flag)
+            else:
+                continue
     
             time.sleep(1)    
             driver.execute_script('window.localStorage.clear();')
@@ -328,7 +339,7 @@ if __name__ == '__main__':
     ## how to save for the data especially for the auction data 
     # http://www.datacarpentry.org/python-ecology-lesson/08-working-with-sql/
             
-            if (index)% 50 ==0:
+            if (index+1)% 50 ==0:
                     # output 
                     
                 df_INFO1.to_sql(city+"_"+auction_time_flag, con, if_exists="append")

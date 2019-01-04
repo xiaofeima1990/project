@@ -124,18 +124,23 @@ def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
             
                     href=content_list[i].find_element_by_tag_name('a').get_attribute('href')
                     title=content_list[i].find_element_by_css_selector("p.title").text
-                    win_bid=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[3]/span[2]/em[2]").text
-                    win_bid=re.findall(r'\d*',win_bid)[0]
-                    n_watch=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[3]/p/em").text
-                    n_resigter=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[3]/p[2]/em").text
+                    try:
+                        win_bid=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[3]/span[2]/em[2]").text
+                        win_bid=re.findall(r'\d*',win_bid)[0]
+                        n_watch=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[3]/p/em").text
+                        n_resigter=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[3]/p[2]/em").text
+                    except:
+                        continue
                     
-                    if date_flag==1:
+                    try:
+                        
                         date_all=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[6]/span[2]").text
                         (date1,time1)=date_all.split(" ")
-                        date_flag=0
-                    else:
-                        date_all=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[7]/span[2]").text
-                        (date1,time1)=date_all.split(" ")
+                    except Exception as e:
+                        if 'not enough values to unpack' in str(e):
+                            date_all=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[7]/span[2]").text
+                            (date1,time1)=date_all.split(" ")
+
                 
     
                     df_temp.loc[i]=[id_info,href,bid_tips,status,win_bid,eval_price,n_watch,n_resigter,title,date1,time1,Year,flag_time]
