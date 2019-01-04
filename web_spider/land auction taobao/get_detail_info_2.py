@@ -214,7 +214,7 @@ def get_info(driver,link_url,status,auction_time_flag):
         flag=1
         if df_info1.loc[0,'priority_people']==1:
             pri_flag=True
-            df_pri=pd.Dataframe(columns=['ID','pri_ID'])
+            df_pri=pd.DataFrame(columns=['ID','pri_ID'])
             df_pri.loc[0,'ID']=id_info
         else:
             pri_flag=False
@@ -339,14 +339,14 @@ if __name__ == '__main__':
     ## how to save for the data especially for the auction data 
     # http://www.datacarpentry.org/python-ecology-lesson/08-working-with-sql/
             
-            if (index+1)% 50 ==0:
+            if (index+1)% 25 ==0:
                     # output 
                     
                 df_INFO1.to_sql(city+"_"+auction_time_flag, con, if_exists="append")
                 df_INFO1=pd.DataFrame(columns=col_name)
                 df_INFO2.to_sql(city+"_"+auction_time_flag, con2, if_exists="append")
                 df_INFO2=pd.DataFrame(columns=col_bid2)
-            if (index==total_len-1) and index % 50 !=0:
+            if (index==total_len-1) and index % 25 !=0:
                 df_INFO1.to_sql(city+"_"+auction_time_flag, con, if_exists="append")
                 df_INFO2.to_sql(city+"_"+auction_time_flag, con2, if_exists="append")
                 df_INFO2=pd.DataFrame(columns=col_bid2)
@@ -366,7 +366,7 @@ if __name__ == '__main__':
         # Be sure to close the connection
         con.close()
         con2.close()
-        driver.save_screenshot(link_path+city+"_"+auction_time_flag+"error.png")
-        driver.quit()
+#        driver.save_screenshot(link_path+city+"_"+auction_time_flag+"error.png")
+#        driver.quit()
 
 
