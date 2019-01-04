@@ -59,11 +59,13 @@ class ENV:
         self.info_st['beta']  =self.beta
         # xi_mu and xi_sigma2 this is a list for each possible i 
         self.info_st['xi_mu'] = self.comm_mu+self.priv_mu*self.order + self.noise_mu*self.info_flag +self.beta*self.res
-        self.info_st['xi_sigma2'] =  self.comm_var+self.priv_var*self.order + self.noise_var*self.info_flag
+        # self.info_st['xi_sigma2'] =  self.comm_var+self.priv_var*self.order + self.noise_var*self.info_flag
+        self.info_st['xi_sigma2'] =  self.comm_var+self.priv_var*np.ones(self.N) + self.noise_var*self.info_flag
 
         # vi_mu and vi_sigma2 
         self.info_st['vi_mu']    =  self.comm_mu+self.priv_mu*self.order +self.beta*self.res
-        self.info_st['vi_sigma2'] =  self.comm_var+self.priv_var*self.order
+        # self.info_st['vi_sigma2'] =  self.comm_var+self.priv_var*self.order
+        self.info_st['vi_sigma2'] =  self.comm_var+self.priv_var*np.ones(self.N)
 
         # rivals's xi
         self.info_st['xi_rival_mu']=[]
@@ -82,13 +84,16 @@ class ENV:
             self.info_st['xi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order+ self.noise_mu*temp_info_v + self.beta*self.res )
             self.info_st['vi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order +self.beta*self.res )
 
-            self.info_st['xi_rival_sigma2'].append( self.comm_var + self.priv_var*temp_order + self.noise_var*temp_info_v )
-            self.info_st['vi_rival_sigma2'].append( self.comm_var + self.priv_var*temp_order  )
+            # self.info_st['xi_rival_sigma2'].append( self.comm_var + self.priv_var*temp_order + self.noise_var*temp_info_v )
+            # self.info_st['vi_rival_sigma2'].append( self.comm_var + self.priv_var*temp_order  )
+            self.info_st['xi_rival_sigma2'].append( self.comm_var + self.priv_var*np.ones(self.N-1) + self.noise_var*temp_info_v )
+            self.info_st['vi_rival_sigma2'].append( self.comm_var + self.priv_var*np.ones(self.N-1)  )
 
             new_order  = np.append(self.order[i], temp_order)
             new_info_v = np.append(self.info_flag[i],temp_info_v)
             self.info_st['MU'].append( self.comm_mu+self.priv_mu*new_order + self.noise_mu*new_info_v +self.beta*self.res )
-            temp_sigma2=self.priv_var*new_order + self.noise_var*new_info_v
+            # temp_sigma2=self.priv_var*new_order + self.noise_var*new_info_v
+            temp_sigma2=self.priv_var*np.ones(self.N) + self.noise_var*new_info_v
             self.info_st['SIGMA2'].append( np.diag(temp_sigma2) + np.ones([self.N,self.N])*self.comm_var )
             
         return Info_result(self.info_st)
