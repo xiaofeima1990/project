@@ -149,10 +149,8 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     
     end = time.time()
     
-    print('return auction {} with # of bidder {} and result final_value {} '.format(tt,N,final_value))    
-    
-    print('time expenditure')
-    print(end - start)
+    # print('return auction {} with # of bidder {} and result final_value {} '.format(tt,N,final_value))    
+    # print('time expenditure: {}'.format(end - start))
     return final_value    
 
 
