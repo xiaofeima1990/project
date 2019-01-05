@@ -25,7 +25,7 @@ para_dict={
 
         "comm_mu":1,
         "priv_mu":0,
-        "beta":1,
+        # "beta":1,
         "comm_var":0.5,
         "priv_var":0.3,
         "epsilon_var":0.4,
@@ -37,7 +37,7 @@ class ENV:
     def __init__(self, N, dict_para=para_dict,res=0,ord_index=None,info_flag=np.zeros(3)):
         self.comm_mu  =dict_para['comm_mu']
         self.priv_mu  =dict_para['priv_mu']
-        self.beta     =dict_para['beta']
+        # self.beta     =dict_para['beta']
         self.noise_mu = 0  # set epsilon mu always zero
         self.comm_var =dict_para['comm_var']
         self.priv_var =dict_para['priv_var']
@@ -56,14 +56,14 @@ class ENV:
         self.info_st['N']=self.N
         self.info_st['comm_var'] =self.comm_var 
         self.info_st['comm_mu']  =self.comm_mu
-        self.info_st['beta']  =self.beta
+        # self.info_st['beta']  =self.beta
         # xi_mu and xi_sigma2 this is a list for each possible i 
-        self.info_st['xi_mu'] = self.comm_mu+self.priv_mu*self.order + self.noise_mu*self.info_flag +self.beta*self.res
+        self.info_st['xi_mu'] = self.comm_mu+self.priv_mu*self.order + self.noise_mu*self.info_flag 
         # self.info_st['xi_sigma2'] =  self.comm_var+self.priv_var*self.order + self.noise_var*self.info_flag
         self.info_st['xi_sigma2'] =  self.comm_var+self.priv_var*np.ones(self.N) + self.noise_var*self.info_flag
 
         # vi_mu and vi_sigma2 
-        self.info_st['vi_mu']    =  self.comm_mu+self.priv_mu*self.order +self.beta*self.res
+        self.info_st['vi_mu']    =  self.comm_mu+self.priv_mu*self.order 
         # self.info_st['vi_sigma2'] =  self.comm_var+self.priv_var*self.order
         self.info_st['vi_sigma2'] =  self.comm_var+self.priv_var*np.ones(self.N)
 
@@ -81,8 +81,8 @@ class ENV:
             temp_info_v=copy.deepcopy(self.info_flag)
             temp_info_v=np.delete(temp_info_v,i)
             # this rival means the rival's mu and variance, i.e. vj and xj, still we have to count for private and nosiy part  
-            self.info_st['xi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order+ self.noise_mu*temp_info_v + self.beta*self.res )
-            self.info_st['vi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order +self.beta*self.res )
+            self.info_st['xi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order+ self.noise_mu*temp_info_v  )
+            self.info_st['vi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order )
 
             # self.info_st['xi_rival_sigma2'].append( self.comm_var + self.priv_var*temp_order + self.noise_var*temp_info_v )
             # self.info_st['vi_rival_sigma2'].append( self.comm_var + self.priv_var*temp_order  )
@@ -91,7 +91,7 @@ class ENV:
 
             new_order  = np.append(self.order[i], temp_order)
             new_info_v = np.append(self.info_flag[i],temp_info_v)
-            self.info_st['MU'].append( self.comm_mu+self.priv_mu*new_order + self.noise_mu*new_info_v +self.beta*self.res )
+            self.info_st['MU'].append( self.comm_mu+self.priv_mu*new_order + self.noise_mu*new_info_v  )
             # temp_sigma2=self.priv_var*new_order + self.noise_var*new_info_v
             temp_sigma2=self.priv_var*np.ones(self.N) + self.noise_var*new_info_v
             self.info_st['SIGMA2'].append( np.diag(temp_sigma2) + np.ones([self.N,self.N])*self.comm_var )
@@ -122,7 +122,7 @@ class ENV:
         self.uninfo['comm_mu']    = self.comm_mu
         self.uninfo['N']         =  self.N
 
-        self.uninfo['beta']=self.beta
+        # self.uninfo['beta']=self.beta
         return Info_result(self.uninfo)
         
     def Info_ID(self):
@@ -153,7 +153,7 @@ class ENV:
         self.info_Id['MU'][1,0]=self.info_Id['x_info_mu']
         self.info_Id['xi_rival_mu'][0,0]=self.info_Id['x_info_mu']
         self.info_Id['vi_rival_mu'][0,0]=self.info_Id['x_info_mu']
-        self.info_Id['beta']=self.beta
+        # self.info_Id['beta']=self.beta
         return Info_result(self.info_Id)
     
     
@@ -270,11 +270,11 @@ class Info_result(object):
         '''
         return self.info_dict['comm_mu']
 
-    @property 
-    def beta(self):
-        '''
-        return mu for 
-        '''
-        return self.info_dict['beta'] 
+    # @property 
+    # def beta(self):
+    #     '''
+    #     return mu for 
+    #     '''
+    #     return self.info_dict['beta'] 
 
     

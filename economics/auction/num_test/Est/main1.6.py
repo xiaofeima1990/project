@@ -59,7 +59,7 @@ Simu_para_dict={
 
         "comm_mu":1,
         "priv_mu":0,
-        "beta":1,
+        # "beta":1,
         "comm_var":0.5,
         "priv_var":0.3,
         "epsilon_var":0.4,
@@ -87,10 +87,10 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     Theta={
     "comm_mu":Theta0[0],
     "priv_mu":Theta0[1],
-    "beta":Theta0[2],
-    "comm_var":Theta0[3],
-    "priv_var":Theta0[4],
-    "epsilon_var":Theta0[5],
+    # "beta":Theta0[2],
+    "comm_var":Theta0[2],
+    "priv_var":Theta0[3],
+    "epsilon_var":Theta0[4],
     }
     
 
@@ -110,7 +110,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
         data separating
         runing the estimation
     '''
-    if Theta['priv_var'] <=0 or Theta['epsilon_var']<=0 or Theta['comm_var']<=0 :
+    if Theta['priv_var'] <=0 or Theta['epsilon_var']<=0 or Theta['comm_var']<=0 or Theta['comm_mu']<=0 :
     	print('variance can not be negative')
     	return 10000
 
@@ -228,11 +228,11 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[0.1,0.05,1,0.5,0.15,0.23522]
+    Theta=[0.1,0.05,0.5,0.15,0.23522]
     
     start = time.time()
     now = datetime.datetime.now()
-    bnds = ((-2, 2), (-1, 1), (0,3), (0,2), (0,2), (0,2))
+    bnds = ((0, 2), (-1, 1), (0,2), (0,2), (0,2))
 
     print("------------------------------------------------------------------")
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
