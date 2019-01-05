@@ -2,7 +2,7 @@
 """
 Created on 12-14-2018 
 This is used for testing the estimation program
-"""
+   """
 
 import os 
 import sys
@@ -17,13 +17,20 @@ install the package :
 
 '''
 
+PATH = os.path.dirname(os.path.realpath(__file__))
+
+lib_path= os.path.dirname(PATH) + '/lib/'
+sys.path.append(lib_path)
+
+data_path= os.path.dirname(PATH) + '/data/Simu/'
 
 
 
 import numpy as np
 from simu import Simu
-from Update_rulev1 import Update_rule
-from est import Est
+from Update_rule import Update_rule
+from Util import *
+from Est_parallel import *
 from ENV import ENV
 from scipy.optimize import minimize
 import copy ,time,datetime
@@ -32,7 +39,7 @@ from functools import partial
 from scipy.stats import norm
 #from scipy.stats import multivariate_normal
 import multiprocessing
-from concurrent.futures import ThreadPoolExecutor,ProcessPoolExecutor
+
 from functools import partial
 from contextlib import contextmanager
 import pickle as pk
@@ -48,9 +55,9 @@ Simu_para_dict={
         "comm_mu":10,
         "priv_mu":1,
         "epsilon_mu":0,
-        "comm_var":0.8,
-        "priv_var":1.2,
-        "epsilon_var":0.8,
+        "comm_var":0.15,
+        "priv_var":0.1,
+        "epsilon_var":0.1, 
         }
 
 def list_duplicates(seq):
@@ -59,13 +66,6 @@ def list_duplicates(seq):
         tally[item].append(i)
     return ((key,locs) for key,locs in tally.items() if len(locs)>=1)
    
-@contextmanager
-def poolcontext(*args, **kwargs):
-    pool = multiprocessing.Pool(*args, **kwargs)
-    yield pool
-    pool.terminate()
-
-
 
 
 def signal_DGP_parallel(public_info,para,rng,N,JJ=15):
@@ -81,8 +81,7 @@ def signal_DGP_parallel(public_info,para,rng,N,JJ=15):
     # r =  0.8 + 0.1*self.rng.rand() 
     r =  public_info[1]
     
-    
-
+ 
 #    x_signal=rng.multivariate_normal(MU.flatten(),SIGMA2,JJ)
     [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
     info_index=public_info[3]
@@ -93,37 +92,37 @@ def signal_DGP_parallel(public_info,para,rng,N,JJ=15):
     
     return [pub_mu,x_signal,w_x,info_index,r]
 
-def signal_DGP(para,rng,N,JJ=400):
+# def signal_DGP(para,rng,N,JJ=400):
 
 
     
-    MU       =para.MU
-    SIGMA2   =para.SIGMA2
-    # common value in public
-#    pub_mu = public_info[0]
+#     MU       =para.MU
+#     SIGMA2   =para.SIGMA2
+#     # common value in public
+# #    pub_mu = public_info[0]
     
-    # random reservation ratio
-#    r =  public_info[1]
+#     # random reservation ratio
+# #    r =  public_info[1]
     
     
-    # Cholesky Decomposition
-    lambda_0,B=LA.eig(SIGMA2)
-    lambda_12=lambda_0**(0.5)
-    Sigma=B@np.diag(lambda_12)@LA.inv(B)
+#     # Cholesky Decomposition
+#     lambda_0,B=LA.eig(SIGMA2)
+#     lambda_12=lambda_0**(0.5)
+#     Sigma=B@np.diag(lambda_12)@LA.inv(B)
     
-    # lattices 
-    [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)
+#     # lattices 
+#     [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)
     
-    a_n= norm.ppf(xi_n)
+#     a_n= norm.ppf(xi_n)
     
-    x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
-    x_signal= x_signal.T
+#     x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
+#     x_signal= x_signal.T
 
-#    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
-#    info_index=public_info[3]
+# #    [x_signal,w_x]=qe.quad.qnwnorm(JJ*np.ones(N),MU.flatten(),SIGMA2)
+# #    info_index=public_info[3]
     
     
-    return [x_signal,w_n]
+#     return [x_signal,w_n]
 
 
 
@@ -156,14 +155,16 @@ def GMM_Ineq(Theta0,DATA_STRUCT,d_struct):
     Mom_v =0
     
     nn=len(DATA_STRUCT)
-    for Data_struct in DATA_STRUCT:
+    
+    DATA_STRUCT_c = balance_data(DATA_STRUCT,4)
+    for Data_struct in DATA_STRUCT_c:
         TT,T_end=Data_struct.data_act.shape
         TT = int(TT)
         T_end=int(T_end)
     
         # num of bidders in the auction
         N=int(Data_struct.pub_info[1,2])
-        info_flag=Data_struct.pub_info[1,2]
+        info_flag=Data_struct.pub_info[1,3]
         # setup the env info structure
         
         Env=ENV(N, Theta)
@@ -220,142 +221,15 @@ def GMM_Ineq(Theta0,DATA_STRUCT,d_struct):
 
 
 
-def para_fun(para,info_flag,rng,T_end,JJ,x_signal,w_x, arg_data):
-    
-    tt,data_act,data_state,pub_info=arg_data
-    
-   # print('start calculating auction {} with # of bidder {}'.format(tt,N))
-    
-    # info_flag=pub_info[3]
-    
-#    Env=ENV(N, Theta)
-#
-#    if info_flag == 0 :
-#        para=Env.Uninform()
-#    else:
-#        para=Env.Info_ID()
-
-    Update_bid=Update_rule(para)
-    
-#        [pub_mu,x_signal,w_x,info_index,r] = signal_DGP_parallel(pub_info,para,rng,J)
-    
-    pub_mu=pub_info[0]
-    r     =pub_info[1]
-    N     =int(pub_info[2])
-    
-            
-    print('start calculating auction {} with # of bidder {}'.format(tt,N))
-    
- 
-    can_bidder_lists=list(list_duplicates(data_act))
-    can_bidder_lists=[x for x in can_bidder_lists if x[0] != -1 ]
-    can_bidder_lists.sort()
-
-
-   
-    # clean the data
-    cc_bidder_list=[]
-    for i in range(0,N):
-        try:
-            if can_bidder_lists[i][0]==i:
-                can_temp=[x+1 for x in can_bidder_lists[i][1]]
-                can_temp.append(0)
-                can_temp.sort()
-                cc_bidder_list.append((i,can_temp))
-            else:
-                cc_bidder_list.insert(i,(i,[0]))
-                can_bidder_lists.insert(i,(i,[0]))
-        except Exception as e:
-            print(e)
-            print("tt={} and N = {} ".format(tt,N))
-            return np.nan
-    
-    
-    state_temp=np.zeros((N,N))
-    
-    price_v = np.linspace(r*pub_mu,pub_mu*1.2, T_end-10)
-    price_v=np.append(price_v,np.linspace(1.24*pub_mu,pub_mu*1.8, 5))
-    price_v=np.append(price_v,np.linspace(1.85*pub_mu,pub_mu*2.5,5))
-        
-    # get the bidders state for claculation
-    for i in range(0,len(data_state)):
-        flag_select=np.ones(N)
-        flag_select[i]=0
-        select_flag=np.nonzero(flag_select)[0].tolist()
-
-        state_temp[i,0]=data_state[i]
-        
-        temp_s=[]
-        for j in select_flag:
-            bid_post=cc_bidder_list[j][1]
-            
-            temp_p=[x for x in bid_post if x < data_state[i] ]
-            temp_p.sort()
-            temp_s.append(temp_p[-1])
-        
-        state_temp[i,1:] = temp_s
-        
-        
-    # for the expected value of each bidders
-    
-    
-    bid_low=[]
-    
-    for ele in data_state:
-        bid_low.append(price_v[int(ele)])
-
-    bid_up =price_v[int(max(data_state)+1)]*np.ones(N)
-    
-    
-    
-    sum_value=0
-    # now I need to calculate empirical int 
-    start = time.time()
-    exp_value=np.zeros([JJ,N])
-    low_case =np.zeros([JJ,N])
-    up_case  =np.zeros([JJ,N])
-    for i in range(0,N):
-        bid=int(max(state_temp[i,:]))+1
-        ss_state=[int(x) for x in state_temp[i,:].tolist()]
-#        for j in range(0,JJ):
-#            exp_value[j,i] =Update_bid.real_bid(x_signal[j,i],bid,ss_state,price_v)[0][0]
-        fun_bid=lambda xi :Update_bid.real_bid(xi,bid,ss_state,price_v)
-        temp=list(map(fun_bid,x_signal[:,i]))
-        temp=np.array([ele[0][0] for ele in temp])
-#        temp=np.array([Update_bid.real_bid(xi,bid,ss_state,price_v)[0][0] for xi in x_signal[:,i]])
-        exp_value[:,i]=temp.flatten()
-            
-        low_case[:,i]=bid_low[i]-exp_value[:,i]
-        up_case[:,i] =bid_up[i] -exp_value[:,i]
-    
-    
-    index_win=np.argmax(data_state)
-    up_case[index_win]=0
-    
-    
-    sum_value=np.sum(np.square((low_case>0)*1*low_case),axis=1)**0.5 + np.sum(np.square((up_case<0)*1*up_case),axis=1)**0.5
-    sum_value=sum_value * w_x
-    final_value=np.sum(sum_value)
-    end = time.time()
-    
-    print('return auction {} with # of bidder {} and result final_value {} '.format(tt,N,final_value))    
-    
-    print('time expenditure')
-    print(end - start)
-    return final_value
-                
-                
-           
-                
-           
 
 
 if __name__ == '__main__':
     
     
     # load the data
-
-    simu_data = pk.load( open( "simu_data_est.pkl", "rb"))
+    with open( data_path + "simu_data_uninfo.pkl", "rb") as f :
+        simu_data=pk.load( f)
+#    simu_data = pk.load( open( "simu_data_est.pkl", "rb"))
     print("the total chunk of the input data is {}".format(len(simu_data)))
     
     # set up the hyper parameters
@@ -371,7 +245,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[10,1,0,0.8,1.2,0.8]
+    Theta=[10,1,0,0.15,0.1,0.1]
     
     start = time.time()
     now = datetime.datetime.now()

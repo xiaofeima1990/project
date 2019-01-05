@@ -69,8 +69,8 @@ def para_fun_est(Theta,rng,JJ,arg_data):
 
     
 
-    
-    [x_signal,w_x]=signal_DGP_est(para,rng,N,0,JJ)
+    JJ=JJ+50*N
+    [x_signal,w_x]=signal_DGP_est(para,rng,N,0,r,JJ)
 
 
     data_pos.sort()
@@ -122,7 +122,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
 
     sum_value=0
     # now I need to calculate empirical int 
-    start = time.time()
+    # start = time.time()
     
     price_v=np.append(price_v,np.linspace(1,4,4)*ladder+price_v[-1])
 
@@ -145,14 +145,12 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     # dimension problem
     sum_value=np.sum(low_part,axis=0)**0.5 + np.sum(high_part,axis=0)**0.5
     sum_value=sum_value * w_x
-    final_value=np.sum(sum_value)/(Theta['comm_var']**0.5)
+    norm_var=Theta['comm_var']+Theta['priv_var']+Theta['epsilon_var']
+    final_value=np.sum(sum_value)/(norm_var**0.5)
     
-    end = time.time()
-    
-    print('return auction {} with # of bidder {} and result final_value {} '.format(tt,N,final_value))    
-    
-    print('time expenditure')
-    print(end - start)
+    # end = time.time()
+    # print('return auction {} with # of bidder {} and result final_value {} '.format(tt,N,final_value))    
+    # print('time expenditure: {}'.format(end - start))
     return final_value    
 
 
