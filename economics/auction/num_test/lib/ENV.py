@@ -80,7 +80,7 @@ class ENV:
 
             temp_info_v=copy.deepcopy(self.info_flag)
             temp_info_v=np.delete(temp_info_v,i)
-
+            # this rival means the rival's mu and variance, i.e. vj and xj, still we have to count for private and nosiy part  
             self.info_st['xi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order+ self.noise_mu*temp_info_v + self.beta*self.res )
             self.info_st['vi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order +self.beta*self.res )
 

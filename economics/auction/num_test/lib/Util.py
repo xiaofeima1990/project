@@ -137,7 +137,7 @@ def signal_DGP(para,rng,N,JJ=400):
 
 
 
-def signal_DGP_est(para,rng,N,i_id,JJ=400):
+def signal_DGP_est(para,rng,N,i_id,res,JJ=400):
 
 
     
@@ -160,9 +160,16 @@ def signal_DGP_est(para,rng,N,i_id,JJ=400):
     x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
     x_signal= x_signal.T
 
-    
-    
-    return [x_signal,w_n]
+
+    # entry selection 
+    X_bar = para.xi_sigma2[i_id] /para.vi_sigma2[i_id] *(res - para.vi_mu) +para.xi_mu
+    X_bar_max=max(X_bar)
+    check_flag=np.apply_along_axis(lambda x : x > X_bar_max, 1, x_signal)
+    check_flag_v=np.prod(check_flag, axis=1)
+    check_flag_v=check_flag_v.astype(bool)
+
+
+    return [x_signal[check_flag_v,],w_n[check_flag_v,]]
 
 
 

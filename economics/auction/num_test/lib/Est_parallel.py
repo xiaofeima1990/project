@@ -69,8 +69,8 @@ def para_fun_est(Theta,rng,JJ,arg_data):
 
     
 
-    
-    [x_signal,w_x]=signal_DGP_est(para,rng,N,0,JJ)
+    JJ=JJ+50*N
+    [x_signal,w_x]=signal_DGP_est(para,rng,N,0,r,JJ)
 
 
     data_pos.sort()
