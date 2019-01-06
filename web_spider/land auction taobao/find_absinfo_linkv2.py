@@ -215,7 +215,9 @@ if __name__ == '__main__':
 #     this even requires gbk decoding encoding!!! to convert str to url
 #    city_name=["广州","郑州","厦门","福州","常州","南京","盐城","泰州","扬州","镇江","南通"]
     # '温州','绍兴', "湖州", 
-    city_name=["肇庆","惠州","汕头","潮州","揭阳","汕尾","湛江","茂名","阳江","韶关","清远","云浮","梅州","河源"]
+#    city_name=["肇庆","惠州","汕头","潮州","揭阳","汕尾","湛江","茂名","阳江","韶关","清远","云浮","梅州","河源"]# 广东is down 
+#    city_name=['宜昌','武汉','十堰','襄阳','鄂州','荆门','黄石','孝感','黄冈','荆州','咸宁','随州','恩施','潜江','仙桃','天门','神农架']# 湖北
+    city_name=['天津']
     
 #    ele=input("input city name: ")
     flag_auction_time=input("input auction time choice: 1- first time, 2- second time, 3- 1+2, : ")

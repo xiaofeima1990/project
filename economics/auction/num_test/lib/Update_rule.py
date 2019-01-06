@@ -30,19 +30,26 @@ class Update_rule:
         self.comm_var  = para.comm_var
         self.comm_mu  = para.comm_mu
 
+    def setup_para(self,i_id):
+        self.xi_mu        =self.para.xi_mu[i_id]
+        self.xi_sigma2    = self.para.xi_sigma2[i_id] 
+        self.vi_mu        = self.para.vi_mu[i_id]
+        self.vi_sigma2    = self.para.vi_sigma2[i_id]
+        self.MU           = self.para.MU[i_id]
+        self.SIGMA2       = self.para.SIGMA2[i_id]
+        self.xi_rival_mu  = self.para.xi_rival_mu[i_id]
+        self.xi_rival_sigma2 = self.para.xi_rival_sigma2[i_id]
+        self.vi_rival_mu     = self.para.vi_rival_mu[i_id]
+        self.vi_rival_sigma2 = self.para.vi_rival_sigma2[i_id]   
 
 
-        self.xi_mu=para.xi_mu
-        self.xi_sigma2 = para.xi_sigma2 
-        self.vi_mu     = para.vi_mu
-        self.vi_sigma2 = para.vi_sigma2
-        self.MU        = para.MU
-        self.SIGMA2    = para.SIGMA2
-        self.xi_rival_mu = para.xi_rival_mu
-        self.xi_rival_sigma2 = para.xi_rival_sigma2
-        self.vi_rival_mu = para.vi_rival_mu
-        self.vi_rival_sigma2 = para.vi_rival_sigma2
-        
+        # dimension
+        #             
+        self.MU              = self.MU.reshape(self.N,1)
+        self.xi_rival_mu     = self.xi_rival_mu.reshape(self.N-1,1)
+        self.xi_rival_sigma2 = self.xi_rival_sigma2.reshape(self.N-1,1)
+        self.vi_rival_mu     = self.vi_rival_mu.reshape(self.N-1,1)
+        self.vi_rival_sigma2 = self.vi_rival_sigma2.reshape(self.N-1,1)
 
         
     def l_bound(self,state):
@@ -64,7 +71,7 @@ class Update_rule:
 
         info_struct=np.concatenate((pos,price_v,self.xi_rival_mu,self.xi_rival_sigma2,self.vi_rival_mu,self.vi_rival_sigma2),axis=1)
 
-        # temp[::-1].sort() sorts the array in place
+        # temp[::-1].sort() sorts the array in place decesdening order
         info_struct=info_struct[info_struct[:,0].argsort()[::-1]]
         
         drop_info_v=np.zeros([self.N-1,7])

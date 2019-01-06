@@ -47,15 +47,19 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     tt,data_state,data_pos,price_v,pub_info=arg_data
     info_flag=pub_info[3]
     N        =int(pub_info[2])
-
-    ord_index=np.argsort(data_state)[::-1]
+    # bug bug we should use np.argsort(data_state) not np.argsort(data_state)[::-1]
+    ord_index=np.argsort(data_state)    # order the bidder's bidding value, highest has high order index! 
+                                        # ord_index=np.argsort(data_state)[::-1] 
     info_v=np.ones(N)
     if info_flag-1 >=0:
         info_v[info_flag] = 0
 
     r     =pub_info[-1]
-    Env=ENV(N, Theta,r,ord_index,info_v)
-    para=Env.info_struct()
+
+    
+    Env=ENV(N, Theta)
+    # argument for info_struct info_flag,ord_index,res
+    para=Env.info_struct(info_v,ord_index,r)
 
     # if info_flag == 0 :
     #    para=Env.Uninform()
@@ -70,7 +74,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     
 
     JJ=JJ+50*N
-    [x_signal,w_x]=signal_DGP_est(para,rng,N,0,r,JJ)
+    [x_signal,w_x]=signal_DGP_est(para,rng,N,ord_index,r,JJ)
 
 
     data_pos.sort()
@@ -79,9 +83,9 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     state_temp=np.zeros((N,N))
 
      # get the bidders state for calculation
-    for i in range(0,len(data_state)):
+    for i in range(0,N):
         flag_select=np.ones(N)
-        flag_select[i]=0
+        flag_select[ord_index[i]]=0
         select_flag=np.nonzero(flag_select)[0].tolist()
 
         state_temp[i,0]=data_state[i]
@@ -162,12 +166,12 @@ def para_fun(para,info_flag,rng,T_end,JJ,x_signal,w_x, arg_data):
     
     # info_flag=pub_info[3]
     
-#    Env=ENV(N, Theta)
-#
-#    if info_flag == 0 :
-#        para=Env.Uninform()
-#    else:
-#        para=Env.Info_ID()
+    #    Env=ENV(N, Theta)
+    #
+    #    if info_flag == 0 :
+    #        para=Env.Uninform()
+    #    else:
+    #        para=Env.Info_ID()
 
     Update_bid=Update_rule(para)
     
@@ -178,7 +182,7 @@ def para_fun(para,info_flag,rng,T_end,JJ,x_signal,w_x, arg_data):
     ladder=pub_info[4]
     
             
-#    print('start calculating auction {} with # of bidder {}'.format(tt,N))
+    #print('start calculating auction {} with # of bidder {}'.format(tt,N))
     
  
     can_bidder_lists=list(list_duplicates(data_act))
@@ -286,16 +290,16 @@ def para_fun_old(para,info_flag,rng,T_end,JJ,x_signal,w_x, arg_data):
     
     # info_flag=pub_info[3]
     
-#    Env=ENV(N, Theta)
-#
-#    if info_flag == 0 :
-#        para=Env.Uninform()
-#    else:
-#        para=Env.Info_ID()
+    #    Env=ENV(N, Theta)
+    #
+    #    if info_flag == 0 :
+    #        para=Env.Uninform()
+    #    else:
+    #        para=Env.Info_ID()
 
     Update_bid=Update_rule(para)
     
-#        [pub_mu,x_signal,w_x,info_index,r] = signal_DGP_parallel(pub_info,para,rng,J)
+    #        [pub_mu,x_signal,w_x,info_index,r] = signal_DGP_parallel(pub_info,para,rng,J)
     
     pub_mu=pub_info[0]
     r     =pub_info[1]
@@ -373,12 +377,12 @@ def para_fun_old(para,info_flag,rng,T_end,JJ,x_signal,w_x, arg_data):
     for i in range(0,N):
         bid=int(max(state_temp[i,:]))+1
         ss_state=[int(x) for x in state_temp[i,:].tolist()]
-#        for j in range(0,JJ):
-#            exp_value[j,i] =Update_bid.real_bid(x_signal[j,i],bid,ss_state,price_v)[0][0]
+    #        for j in range(0,JJ):
+    #            exp_value[j,i] =Update_bid.real_bid(x_signal[j,i],bid,ss_state,price_v)[0][0]
         fun_bid=lambda xi :Update_bid.real_bid(xi,bid,ss_state,price_v)
         temp=list(map(fun_bid,x_signal[:,i]))
         temp=np.array([ele[0][0] for ele in temp])
-#        temp=np.array([Update_bid.real_bid(xi,bid,ss_state,price_v)[0][0] for xi in x_signal[:,i]])
+    #        temp=np.array([Update_bid.real_bid(xi,bid,ss_state,price_v)[0][0] for xi in x_signal[:,i]])
         exp_value[:,i]=temp.flatten()
             
         low_case[:,i]=bid_low[i]-exp_value[:,i]

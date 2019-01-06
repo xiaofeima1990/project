@@ -21,7 +21,7 @@ from functools import partial
 from scipy.stats import norm
 import pickle as pk
 import quantecon  as qe
-from numpy import linalg as LA
+# from numpy import linalg as LA
 
 
 def balance_data_est(Est_data,n_work):
@@ -99,23 +99,25 @@ def balance_data(DATA_STRUCT,n_work):
 
 
 
-def signal_DGP(para,rng,N,JJ=400):
+def signal_DGP_simu(para,rng,N,i_id,res,JJ=20):
 
 
     
-    MU       =para.MU
-    SIGMA2   =para.SIGMA2
-    # common value in public
-#    pub_mu = public_info[0]
-    
-    # random reservation ratio
-#    r =  public_info[1]
+    MU       =para.MU[i_id] 
+    MU       =MU.reshape(N,1)
+    SIGMA2   =para.SIGMA2[i_id]
+
     
     
-    # Cholesky Decomposition
-    lambda_0,B=LA.eig(SIGMA2)
-    lambda_12=lambda_0**(0.5)
-    Sigma=B@np.diag(lambda_12)@LA.inv(B)
+    # # Cholesky Decomposition
+    # lambda_0,B=LA.eig(SIGMA2)
+    # lambda_12=lambda_0**(0.5)
+    # Sigma=B@np.diag(lambda_12)@LA.inv(B)
+
+    # use scipy to comput the square root of Sigma
+    Sigma=LAA.sqrtm(SIGMA2)
+    Sigma=Sigma.real
+
     
     # lattices 
     [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)
@@ -124,6 +126,15 @@ def signal_DGP(para,rng,N,JJ=400):
     
     x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
     x_signal= x_signal.T
+
+    # entry selection 
+    X_bar = para.xi_sigma2/para.vi_sigma2 *(res - para.vi_mu) +para.xi_mu
+    X_bar = X_bar.reshape(1,N)
+    x_signal_big=np.append(x_signal,X_bar,axis=0)
+    check_flag=np.apply_along_axis(lambda x : x >= x[-1], 1, x_signal_big)
+    check_flag=check_flag[0:-1]
+    check_flag_v=np.prod(check_flag, axis=1)
+    check_flag_v=check_flag_v.astype(bool)
 
     # # no it is too slowly and memory probelm
     # [x_signal,w_n]=qe.quad.qnwnorm(
@@ -138,12 +149,12 @@ def signal_DGP(para,rng,N,JJ=400):
 
 
 def signal_DGP_est(para,rng,N,i_id,res,JJ=400):
-
+    # this part should follow the ascending order 
 
     
-    MU       =para.MU[i_id] 
+    MU       =para.MU[-1] 
     MU       =MU.reshape(N,1)
-    SIGMA2   =para.SIGMA2[i_id]
+    SIGMA2   =para.SIGMA2[-1]
 
     
     
@@ -162,9 +173,11 @@ def signal_DGP_est(para,rng,N,i_id,res,JJ=400):
 
 
     # entry selection 
-    X_bar = para.xi_sigma2[i_id] /para.vi_sigma2[i_id] *(res - para.vi_mu) +para.xi_mu
-    X_bar_max=max(X_bar)
-    check_flag=np.apply_along_axis(lambda x : x > X_bar_max, 1, x_signal)
+    X_bar = para.xi_sigma2[i_id] /para.vi_sigma2[i_id] *(res - para.vi_mu[i_id] ) + para.xi_mu[i_id]
+    X_bar = X_bar.reshape(1,N)
+    x_signal_big=np.append(x_signal,X_bar,axis=0)
+    check_flag=np.apply_along_axis(lambda x : x >= x[-1], 1, x_signal_big)
+    check_flag=check_flag[0:-1]
     check_flag_v=np.prod(check_flag, axis=1)
     check_flag_v=check_flag_v.astype(bool)
 

@@ -55,14 +55,13 @@ from numpy import linalg as LA
 
 
 
-Simu_para_dict={
+Est_para_dict={
 
-        "comm_mu":1,
-        "priv_mu":0,
-        # "beta":1,
-        "comm_var":0.5,
-        "priv_var":0.3,
-        "epsilon_var":0.4,
+        "comm_mu":0.1,
+        "priv_mu":0.2,
+        "comm_var":0.05,
+        "priv_var":0.1,
+        "epsilon_var":0.3,
         }
 
 Pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
@@ -228,7 +227,7 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[0.1,0.05,0.5,0.15,0.23522]
+    Theta=[0.1,0.1,0.5,0.15,0.2]
     
     start = time.time()
     now = datetime.datetime.now()

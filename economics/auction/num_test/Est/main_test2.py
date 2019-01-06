@@ -80,10 +80,9 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
     Theta={
     "comm_mu":Theta0[0],
     "priv_mu":Theta0[1],
-    "beta":Theta0[2],
-    "comm_var":Theta0[3],
-    "priv_var":Theta0[4],
-    "epsilon_var":Theta0[5],
+    "comm_var":Theta0[2],
+    "priv_var":Theta0[3],
+    "epsilon_var":Theta0[4],
     }
     
 
@@ -188,7 +187,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[1,0.1,0.5,0.5,0.1,0.2]
+    Theta=[1,0.1,0.5,0.1,0.2]
     
     start = time.time()
     now = datetime.datetime.now()

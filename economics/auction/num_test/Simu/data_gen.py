@@ -5,6 +5,25 @@ Created on Sun Nov 25 23:34:16 2018
 @author: mgxgl
 generate the data
 
+new modification: 
+now we have five parameters for value distribution, in the data generation script, our object is to generate the simulated data preparing for the simulation tests.
+The general guideness for the data generating process. 
+1. randomize the number of bidders at the very beginning
+2. of course, we can also do the fixed number of bidders
+3. the reservation price and evaluation price
+4. most importantly, the bidding ladder!
+5. randomize the private signal xi and include the entry threshold
+6. bidding path needs to be calculated one by one
+----
+In the data generating process, we will generate a couple of simulated data set for :
+1. equilibrium bidding price comparison (Dionne et al 2009)
+2. moment sensitivity test
+3. estimation procedure test
+4. pi justicification test
+
+
+
+
 """
 
 
@@ -26,18 +45,17 @@ from scipy import stats
 
 Simu_para_dict={
 
-        "comm_mu":10,
-        "priv_mu":1,
-        "epsilon_mu":0,
-        "comm_var":0.15, 
+        "comm_mu":0.1,
+        "priv_mu":0.2,
+        "comm_var":0.05,
         "priv_var":0.1,
-        "epsilon_var":0.1,
+        "epsilon_var":0.3,
         }
 
 
 
 ## generate simulation data for testing 
-def Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_mode=0,flag_mode=0,rng_seed=123):
+def Gen_Simu_data2(start_n,end_n,T,T_end,Simu_para_dict,info_mode=0,flag_mode=0,rng_seed=123):
     '''
     start_n : start number of bidders 
     end_n   : end number of bidders 
@@ -74,68 +92,88 @@ def Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_mode=0,flag_mode=0,rng_se
 
     return simu_data
 
+## generate the simulated data for equilibrium bidding premium
+def Gen_Simu_data1(N,T,Simu_para_dict,rng_seed=123):
+    SIMU=Simu(rng_seed,Simu_para_dict)
+    simu_data=[SIMU.Data_simu_1(N,T,info_flag) for info_flag in range(0,2)]
+    return simu_data
+
+
 
 
 
 if __name__ == '__main__':
     
-    start_n=3
-    end_n=7
-    T=100
-    T_end=100
-    
-    Rng_seed=123
+
     
     mode_flag=1 # 1 -> run the simulation ; 0 -> read the data
     
+    '''
+    case 1 : fix the number of bidders and calculate the equiblirum bidding premium:
+    bid price difference with and without the informed bidder 
+
+    '''
+
+    ## parameters
+    N= 12
+    T= 2000
+    Rng_seed= 1245
+    simu_data_1= Gen_Simu_data1(N,T,Simu_para_dict,Rng_seed)
+
+    with open( data_path + "simu_data_1.pkl", "wb") as f : 
+        pk.dump(simu_data_1, f)
+
+
     
     
     '''
-    the case for uninformed 
+    case 2: moment sensitivity test
+    1. loop the number of bidders from 2 to 10, and generate the data set
+    2. with or without the informed bidders 
     
     '''
-    if mode_flag ==1:
-        info_flag=0
-        flag_mode=2
-        simu_data_0= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
-        with open( data_path + "simu_data_uninfo.pkl", "wb") as f : 
-            pk.dump(simu_data_0, f)
-    else:
-    # load the uninformed case 
-        with open( data_path + "simu_data_uninfo.pkl", "rb") as f :
-            simu_data_0=pk.load( f)
-    #    
-    '''
-    the case for informed
+    # setup the environment paramers
+    start_n=2
+    end_n=10
+    T=150
+    
+    Rng_seed=123
+    info_flag=0 # has the informed bidder (1) or not (0)
+    simu_data_2= Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,info_flag)
+    with open( data_path + "simu_data_2_uninfo.pkl", "wb") as f : 
+        pk.dump(simu_data_2, f)
+
+
+    info_flag=1 # has the informed bidder (1) or not (0)
+    simu_data_2= Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,info_flag)
+    with open( data_path + "simu_data_2_info.pkl", "wb") as f : 
+        pk.dump(simu_data_2, f)
+
+    # # load the uninformed case 
+    # with open( data_path + "simu_data_uninfo.pkl", "rb") as f :
+    #     simu_data_0=pk.load( f)
+ 
     
     '''
-    if mode_flag ==1:
-        info_flag=1
-        flag_mode=2
-        simu_data_1= Gen_Simu(start_n,end_n,T,T_end,Simu_para_dict,info_flag,flag_mode)
-        with open( data_path + "simu_data_info.pkl", "wb") as f:
-            pk.dump(simu_data_1, f)
-    else:
-    # load the uninformed case
-        with open( data_path + "simu_data_info.pkl", "rb") as f: 
-            simu_data_1=pk.load(f)
-        
-    
-    '''
+------------------------------------------------------------------------------------
     calculate the moments for 
     1 winning bid 
     2 bidding frequency
     3 bidding distance
-    
+------------------------------------------------------------------------------------
     '''
     N_chunk=len(simu_data_1)
     
     # check the moments
     cmp_list=['data_win','sec_diff_i1','sec_freq_i1','low_freq_ratio_i','freq_i1']
+    with open( data_path + "simu_data_2_uninfo.pkl", "rb") as f :
+        simu_data_21=pk.load( f)
+    with open( data_path + "simu_data_2_info.pkl", "rb") as f :
+        simu_data_22=pk.load( f)
 
     for i in range(0,N_chunk):
-        temp_sim_0=simu_data_0[i]
-        temp_sim_1=simu_data_1[i]
+        temp_sim_0=simu_data_21[i]
+        temp_sim_1=simu_data_22[i]
         sim_0_list=[]
         sim_1_list=[]
         print('for N = {} auctions'.format(temp_sim_1.pub_info[6,2]))

@@ -34,7 +34,7 @@ para_dict={
 
 
 class ENV:
-    def __init__(self, N, dict_para=para_dict,res=0,ord_index=None,info_flag=np.zeros(3)):
+    def __init__(self, N, dict_para=para_dict):
         self.comm_mu  =dict_para['comm_mu']
         self.priv_mu  =dict_para['priv_mu']
         # self.beta     =dict_para['beta']
@@ -43,28 +43,26 @@ class ENV:
         self.priv_var =dict_para['priv_var']
         self.noise_var=dict_para['epsilon_var']
         self.N=N
-        self.order=ord_index
-        self.info_flag=info_flag
-        self.res=res
+        # self.res=res
         self.info_st={}
         self.info_Id={}
         self.uninfo={}
         
 
 
-    def info_struct(self):
+    def info_struct(self,info_flag,ord_index=None,res=0):
         self.info_st['N']=self.N
         self.info_st['comm_var'] =self.comm_var 
         self.info_st['comm_mu']  =self.comm_mu
         # self.info_st['beta']  =self.beta
         # xi_mu and xi_sigma2 this is a list for each possible i 
-        self.info_st['xi_mu'] = self.comm_mu+self.priv_mu*self.order + self.noise_mu*self.info_flag 
-        # self.info_st['xi_sigma2'] =  self.comm_var+self.priv_var*self.order + self.noise_var*self.info_flag
-        self.info_st['xi_sigma2'] =  self.comm_var+self.priv_var*np.ones(self.N) + self.noise_var*self.info_flag
+        self.info_st['xi_mu'] = self.comm_mu+self.priv_mu*ord_index + self.noise_mu*info_flag 
+        # self.info_st['xi_sigma2'] =  self.comm_var+self.priv_var*ord_index + self.noise_var*info_flag
+        self.info_st['xi_sigma2'] =  self.comm_var+self.priv_var*np.ones(self.N) + self.noise_var*info_flag
 
         # vi_mu and vi_sigma2 
-        self.info_st['vi_mu']    =  self.comm_mu+self.priv_mu*self.order 
-        # self.info_st['vi_sigma2'] =  self.comm_var+self.priv_var*self.order
+        self.info_st['vi_mu']    =  self.comm_mu+self.priv_mu*ord_index 
+        # self.info_st['vi_sigma2'] =  self.comm_var+self.priv_var*ord_index
         self.info_st['vi_sigma2'] =  self.comm_var+self.priv_var*np.ones(self.N)
 
         # rivals's xi
@@ -74,11 +72,11 @@ class ENV:
         self.info_st['vi_rival_sigma2']=[]
         self.info_st['MU']=[]
         self.info_st['SIGMA2']=[]
-        for i in range(len(self.order)):
-            temp_order=copy.deepcopy(self.order)
+        for i in range(self.N):
+            temp_order=copy.deepcopy(ord_index)
             temp_order=np.delete(temp_order,i)
 
-            temp_info_v=copy.deepcopy(self.info_flag)
+            temp_info_v=copy.deepcopy(info_flag)
             temp_info_v=np.delete(temp_info_v,i)
             # this rival means the rival's mu and variance, i.e. vj and xj, still we have to count for private and nosiy part  
             self.info_st['xi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order+ self.noise_mu*temp_info_v  )
@@ -89,13 +87,19 @@ class ENV:
             self.info_st['xi_rival_sigma2'].append( self.comm_var + self.priv_var*np.ones(self.N-1) + self.noise_var*temp_info_v )
             self.info_st['vi_rival_sigma2'].append( self.comm_var + self.priv_var*np.ones(self.N-1)  )
 
-            new_order  = np.append(self.order[i], temp_order)
-            new_info_v = np.append(self.info_flag[i],temp_info_v)
+            new_order  = np.append(ord_index[i], temp_order)
+            new_info_v = np.append(info_flag[i],temp_info_v)
             self.info_st['MU'].append( self.comm_mu+self.priv_mu*new_order + self.noise_mu*new_info_v  )
             # temp_sigma2=self.priv_var*new_order + self.noise_var*new_info_v
             temp_sigma2=self.priv_var*np.ones(self.N) + self.noise_var*new_info_v
             self.info_st['SIGMA2'].append( np.diag(temp_sigma2) + np.ones([self.N,self.N])*self.comm_var )
-            
+
+        # add extra ascending order for the MU and SIGMA2 
+        temp_order=np.array(range(0,self.N))
+        self.info_st['MU'].append( self.comm_mu+self.priv_mu*temp_order + self.noise_mu*info_flag  )
+        temp_sigma2=self.priv_var*np.ones(self.N) + self.noise_var*info_flag
+        self.info_st['SIGMA2'].append( np.diag(temp_sigma2) + np.ones([self.N,self.N])*self.comm_var )
+        ## remember that MU and SIGMA2 have extra item that is used for generating R.V.
         return Info_result(self.info_st)
 
 
