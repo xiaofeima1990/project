@@ -85,10 +85,11 @@ def para_fun_est(Theta,rng,JJ,arg_data):
      # get the bidders state for calculation
     for i in range(0,N):
         flag_select=np.ones(N)
-        flag_select[ord_index[i]]=0
+        ii=ord_index[i]
+        flag_select[ii]=0
         select_flag=np.nonzero(flag_select)[0].tolist()
 
-        state_temp[i,0]=data_state[i]
+        state_temp[ii,0]=data_state[ii]
         
         temp_s=[]
         for j in select_flag:
@@ -96,22 +97,22 @@ def para_fun_est(Theta,rng,JJ,arg_data):
                 bid_post=data_pos[j][1]
                 
                 
-                if bid_post[0] > data_state[i]:
+                if bid_post[0] > data_state[ii]:
                     temp_s.append(0)
                 else: 
-                    temp_p=[x for x in bid_post if x < data_state[i] ]
+                    temp_p=[x for x in bid_post if x < data_state[ii] ]
                     temp_p.sort()
                     temp_s.append(temp_p[-1])
             except Exception as e:
                 print(e)
                 print(data_pos)
                 print(temp_p)
-                print(data_state[i])
+                print(data_state[ii])
                 temp_s.append(0)
                 print('this is number ',tt)
                 input('wait for check')
                 
-        state_temp[i,1:] = temp_s
+        state_temp[ii,1:] = temp_s
 
 
     # for the expected value of each bidders
