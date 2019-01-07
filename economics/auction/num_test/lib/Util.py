@@ -152,9 +152,9 @@ def signal_DGP_est(para,rng,N,i_id,res,JJ=400):
     # this part should follow the ascending order 
 
     
-    MU       =para.MU[-1] 
+    MU       =para.MU[i_id] 
     MU       =MU.reshape(N,1)
-    SIGMA2   =para.SIGMA2[-1]
+    SIGMA2   =para.SIGMA2[i_id]
 
     
     
@@ -173,11 +173,9 @@ def signal_DGP_est(para,rng,N,i_id,res,JJ=400):
 
 
     # entry selection 
-    X_bar = para.xi_sigma2[i_id] /para.vi_sigma2[i_id] *(res - para.vi_mu[i_id] ) + para.xi_mu[i_id]
+    X_bar = para.xi_sigma2 /para.vi_sigma2 *(res - para.vi_mu ) + para.xi_mu
     X_bar = X_bar.reshape(1,N)
-    x_signal_big=np.append(x_signal,X_bar,axis=0)
-    check_flag=np.apply_along_axis(lambda x : x >= x[-1], 1, x_signal_big)
-    check_flag=check_flag[0:-1]
+    check_flag = x_signal > X_bar
     check_flag_v=np.prod(check_flag, axis=1)
     check_flag_v=check_flag_v.astype(bool)
 

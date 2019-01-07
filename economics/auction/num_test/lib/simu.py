@@ -32,7 +32,7 @@ para_dict={
         }
 
 
-Col_name=['ID', 'bidder_act', 'len_act','info_bidder_ID', 'bidder_pos', 'bidder_state','bidder_price','ladder_norm',
+Col_name=['ID', 'bidder_act', 'len_act','info_bidder_ID', 'bidder_state','bidder_price','ladder_norm',
               'real_num_bidder','win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
 
 class Simu:
@@ -52,11 +52,11 @@ class Simu:
         
 
         
-    def signal_DGP_simu(self, para,rng,N,i_id,res,JJ=10):
+    def signal_DGP_simu(self, para,rng,N,i_id,res,JJ=20):
 
-
+        is_sorted = lambda a: np.all(a[:-1] <= a[1:])
         MU       =para.MU[-1] 
-        MU       =MU.reshape(N,1)
+        MU       =MU.flatten()
         SIGMA2   =para.SIGMA2[-1]
 
 
@@ -68,17 +68,18 @@ class Simu:
             # entry selection 
             X_bar = para.xi_sigma2[i_id] /para.vi_sigma2[i_id] *(res - para.vi_mu[i_id]) +para.xi_mu[i_id]
             X_bar = X_bar.reshape(1,N)
-            x_signal_big=np.append(x_signal,X_bar,axis=0)
-            check_flag=np.apply_along_axis(lambda x : x >= x[-1], 1, x_signal_big)
-            check_flag=check_flag[0:-1]
+            check_flag = x_signal > X_bar
             check_flag_v=np.prod(check_flag, axis=1)
             check_flag_v=check_flag_v.astype(bool)
             if len(x_signal[check_flag_v,]) >0:
                 x_signal=x_signal[check_flag_v,]
-                flag=False
-                break
+                x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
+                if len(x_signal[x_check_f,])>0:
+                    x_signal=x_signal[x_check_f,]
+                    flag=False
+                    break
 
-
+            
 
         # # no it is too slowly and memory probelm
         # [x_signal,w_n]=qe.quad.qnwnorm(
@@ -196,7 +197,7 @@ class Simu:
         return interpn((xi_v_old,T_p_old,T_p_old,T_p_old), E_update_rule, interp_points)
     
     
-    def Data_simu(self,N,SS,T_end,info_flag=0,flag_mode=0):
+    def Data_simu(self,N,SS,info_flag=0,T_end=70):
         # functions for simulating the bidding path given the numebr of simualted times
         
  
@@ -210,8 +211,7 @@ class Simu:
         Sim_df=pd.DataFrame(columns=Col_name)
 
         data_act=np.ones((SS,T_end),dtype=int)*(-1)  # bidding path 
-        pub_info=np.zeros((SS,5))
-        data_state=np.zeros((SS,N),dtype=int)  # current posting bid position for each bidder
+        
         data_bid_freq=np.zeros((SS,N)) # each bidders bidding times 
         data_win=np.zeros((SS,1))
 
@@ -229,14 +229,21 @@ class Simu:
 
         # start the simulation
         for s in range(0,SS):
-            # informed or not informed
-            info_index_v= np.ones(N)
-            if info_flag==1:            
-                info_index  = np.random.randint(0,N,size=1)
-                info_index_v[info_index]=0
 
             # ordered index for the bidders
             ord_index=np.array(random.sample(range(0, N), N))
+
+            # informed or not informed
+            info_index_v= np.ones(N)
+            if info_flag==1:            
+                info_index  = ord_index[np.random.randint(0,N,size=1)]
+                info_index_v[info_index]=0
+            else:
+                info_index = -1
+
+
+
+
             # argument for info_struct info_index,ord_index,res
             para=Env.info_struct(info_index_v,ord_index)
 
@@ -246,6 +253,7 @@ class Simu:
             res =  0.75 + 0.25*self.rng.rand() 
             
             [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N, ord_index,res)
+            x_signal=x_signal[ord_index]
             pub_info=[res,N,info_index,ladder]
             
 
@@ -270,16 +278,16 @@ class Simu:
                     for i in range(0,N):
                         temp_state=copy.deepcopy(State)
                         
-                        ii = int(temp_state[ord_index[i]])
-                        temp_state=np.delete(temp_state,ord_index[i])
+                        ii = int(temp_state[i])
+                        temp_state=np.delete(temp_state,i)
 
                         ss_state = [ii]
                         ss_state = ss_state + temp_state.tolist()
                
                         bid = max(ss_state)+1
                         # change
-                        Update_bid.setup_para(ord_index[i])
-                        result = Update_bid.real_bid(x_signal[ord_index[i]],bid,ss_state,price_v)
+                        Update_bid.setup_para(i)
+                        result = Update_bid.real_bid(x_signal[i],bid,ss_state,price_v)
                         
                         Active[i] = result[2]
                         
@@ -311,7 +319,7 @@ class Simu:
                 # add t
                 t += 1
                 # check whether the price path is enough 
-                if t>95+extend_i*T_end:
+                if t>T_end-5+extend_i*T_end:
                     temp_p = np.array(range((extend_i+1)*T_end+1,(extend_i+2)*T_end+1))*ladder + res
                     price_v = np.append(price_v,temp_p)
                     extend_i+=1
@@ -329,7 +337,7 @@ class Simu:
 
                 # check the whether the order keeps the same
                 order_ind=np.argsort(State)
-                if order_ind != ord_index:
+                if not np.array_equal(order_ind, np.argsort(ord_index)):
                     # abandon the current simulation
                     continue
 
@@ -391,8 +399,7 @@ class Simu:
                 print('s:{},State:{},act:{}'.format(s,State,data_act[s,]))
             # Col_name=['ID', 'bidder_act', 'len_act','info_bidder_ID', 'bidder_state','bidder_price','ladder_norm',
             #   'real_num_bidder','win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
-            temp_series=pd.Series([s,Data_act,len(Data_act),info_index,State,price_v[State],ladder,\
-                                    int(sum((State>0)*1)),price_v[int(max(State))],N,info_flag,price_v,res], index=Col_name )
+            temp_series=pd.Series([s,Data_act,len(Data_act),info_index,State,price_v[State],ladder,int(sum((State>0)*1)),price_v[int(max(State))],N,info_flag,price_v,res], index=Col_name )
             Sim_df=Sim_df.append(temp_series, ignore_index=True)
 
         data_dict={
