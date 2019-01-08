@@ -116,16 +116,16 @@ def signal_DGP_est(para,rng,N,i_id,res,JJ=400):
 
 
     # lattices 
-    [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N),np.zeros(N),np.ones(N),kind='R',random_state=rng)
+    [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='R',random_state=rng)
     
     a_n= norm.ppf(xi_n)
 
-    x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ*N)])
+    x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ)])
     x_signal= x_signal.T
 
 
     # entry selection 
-    con_var = para.vi_sigma2 - para.vi_sigma2**2/para.xi_sigma2
+    con_var = para.vi_sigma2 - para.vi_sigma2**2 / para.xi_sigma2
     X_bar = para.xi_sigma2 /para.vi_sigma2 *(np.log(res) - para.vi_mu - 0.5*con_var ) + para.xi_mu
     X_bar = X_bar.reshape(1,N)
     check_flag = x_signal >= X_bar
@@ -174,6 +174,8 @@ def pre_data(Est_data):
     
     Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
     Est_data['price_norm'] = Est_data['bidder_price']/Est_data['evaluation_price']
+
+    Est_data=Est_data[Est_data['real_num_bidder']>4]
     return Est_data[col_name]
                 
 

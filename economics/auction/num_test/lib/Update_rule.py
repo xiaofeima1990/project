@@ -215,7 +215,6 @@ class Update_rule:
 
         # Constat part 
         Sigma_inv = inv(self.SIGMA2)
-
         
         COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var)
 
@@ -236,7 +235,6 @@ class Update_rule:
         try:
             x_j_upper=upper_b_j[:,0]
             x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder )
-            
 
             E_j=sum(AA_j*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
         except Exception as e:
@@ -250,6 +248,7 @@ class Update_rule:
         Si_va=Sigma_inv
         part_mu=COV_xvi.T @ Si_va[1:,:].T @ self.MU[1:]
         # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
+        # 
         var_update = self.vi_sigma2 -AA_i*self.vi_sigma2 + (E_j-part_mu )**2
         
         
@@ -267,10 +266,11 @@ class Update_rule:
 
     def bid_vector(self,xi_v,bid,state,price_v,i_id):
         self.setup_para(i_id)
-
+        # Pure_value, bid_price, AA_i -> only in log form
+        # I have to go back to normal price
         [Pure_value,bid_price,AA_i]=self.real_bid_calc(bid,state,price_v,i_id)
 
-        return AA_i*xi_v+Pure_value
+        return np.exp(AA_i*xi_v+Pure_value)
 
 
     

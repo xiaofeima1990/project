@@ -397,8 +397,8 @@ class Simu:
                 
                 ## find real bidding bidders
                 # pub_info[1]=int(sum((State>0)*1))
-
                 # third highest winning price (relative)
+                
                 if N>=3:
                     third_win_i[s] = price_v[State[order_ind[-3]]]
                 else:

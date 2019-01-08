@@ -72,7 +72,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
 
     
 
-    JJ=JJ+75*N
+    JJ=JJ+100*N
     [x_signal,w_x]=signal_DGP_est(para,rng,N,0,r,JJ)
 
 
