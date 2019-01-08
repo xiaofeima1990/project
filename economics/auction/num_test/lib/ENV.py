@@ -12,8 +12,10 @@ new:
    the private part need to combine the rank order of bidders
 modify the private part
 where mu_ai = a_1*i  ; var_ai = a_2*i 
-add rank order to 'info_struct' so that I change the structure of the xi, vi, MU and SIGMA2 a little bit. 
+No--add rank order to 'info_struct' so that I change the structure of the xi, vi, MU and SIGMA2 a little bit. 
 Different bidders have different xi, vi, MU and SIGMA2 
+After discussing with professor, keep mu_a the same across all bidders 
+
 
 """
 
