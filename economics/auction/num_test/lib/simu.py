@@ -21,7 +21,7 @@ from ENV import ENV
 import scipy.linalg as LAA
 import copy
 import random
-
+import scipy.stats as ss
 
 para_dict={
         "comm_mu":0.1,
@@ -66,7 +66,8 @@ class Simu:
             x_signal=self.rng.multivariate_normal(MU,SIGMA2,JJ)
 
             # entry selection 
-            X_bar = para.xi_sigma2[i_id] /para.vi_sigma2[i_id] *(res - para.vi_mu[i_id]) +para.xi_mu[i_id]
+            con_var = para.vi_sigma2[i_id] - para.vi_sigma2[i_id]**2/para.xi_sigma2[i_id]
+            X_bar = para.xi_sigma2[i_id] /para.vi_sigma2[i_id] *(np.log(res) - para.vi_mu[i_id] - 0.5*con_var ) +para.xi_mu[i_id]
             X_bar = X_bar.reshape(1,N)
             check_flag = x_signal > X_bar
             check_flag_v=np.prod(check_flag, axis=1)
@@ -212,7 +213,7 @@ class Simu:
 
         data_act=np.ones((SS,T_end),dtype=int)*(-1)  # bidding path 
         
-        data_bid_freq=np.zeros((SS,N)) # each bidders bidding times 
+        data_bid_freq=[] # each bidders bidding times 
         data_win=np.zeros((SS,1))
 
         freq_i1 = np.zeros((SS,1))
@@ -231,12 +232,12 @@ class Simu:
         for s in range(0,SS):
 
             # ordered index for the bidders
-            ord_index=np.array(random.sample(range(0, N), N))
-
+            rank_index=np.array(random.sample(range(0, N), N))
+            ord_index =np.argsort(rank_index)
             # informed or not informed
             info_index_v= np.ones(N)
             if info_flag==1:            
-                info_index  = ord_index[np.random.randint(0,N,size=1)]
+                info_index  = rank_index[np.random.randint(0,N,size=1)][0]
                 info_index_v[info_index]=0
             else:
                 info_index = -1
@@ -245,7 +246,7 @@ class Simu:
 
 
             # argument for info_struct info_index,ord_index,res
-            para=Env.info_struct(info_index_v,ord_index)
+            para=Env.info_struct(info_index_v,rank_index)
 
             # initialize updating rule
             Update_bid=Update_rule(para)
@@ -253,7 +254,7 @@ class Simu:
             res =  0.75 + 0.25*self.rng.rand() 
             
             [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N, ord_index,res)
-            x_signal=x_signal[ord_index]
+            x_signal=x_signal[rank_index]
             pub_info=[res,N,info_index,ladder]
             
 
@@ -287,7 +288,10 @@ class Simu:
                         bid = max(ss_state)+1
                         # change
                         Update_bid.setup_para(i)
-                        result = Update_bid.real_bid(x_signal[i],bid,ss_state,price_v)
+                        if i != info_index:
+                            result = Update_bid.real_bid(x_signal[i],bid,ss_state,price_v)
+                        else:
+                            result = Update_bid.real_info_bid(x_signal[i],bid,price_v)
                         
                         Active[i] = result[2]
                         
@@ -336,21 +340,24 @@ class Simu:
             try:
 
                 # check the whether the order keeps the same
-                order_ind=np.argsort(State)
-                if not np.array_equal(order_ind, np.argsort(ord_index)):
-                    # abandon the current simulation
-                    continue
+                
+                # state_ind=ss.rankdata(State)-1
+                # if not np.array_equal(state_ind, rank_index):
+                #     # abandon the current simulation
+                #     continue
 
-                data_bid_freq=np.zeros(N)
+                
                 # calculate the bidding frequency for each bidders 
                 unique, counts = np.unique(Data_act, return_counts=True)
                 
-                a=zip(unique,counts) 
+                a=zip(unique,counts)
+                temp_bid_freq=np.zeros(N) 
                 for ele in a:
-                    data_bid_freq[int(ele[0])]=ele[1]
-
+                    temp_bid_freq[int(ele[0])]=ele[1]
+                
+                data_bid_freq.append(temp_bid_freq)
                 # calculate the real bidding number 
-                temp_freq=[x for x in data_bid_freq if x > 0]
+                temp_freq=[x for x in temp_bid_freq if x > 0]
                 freq_i2[s]=np.std(temp_freq)
                 freq_i1[s]=np.mean(temp_freq)
                 # winning bid
@@ -359,7 +366,7 @@ class Simu:
 
                 
                 # second higest bidder to the difference
-                
+                order_ind=np.argsort(State)
                 i_ed = order_ind[-2]
                 i_rest =order_ind[:-2]
                 temp_pos=(State[i_ed] - np.array(State[i_rest]))
@@ -367,6 +374,8 @@ class Simu:
                 sec_diff_i1[s]= np.mean(temp_pos)
                 sec_diff_i2[s]= np.std(temp_pos)
                 
+                # real number of bidders
+                num_i[s]=int(sum((State>0)*1))
                 # lower rank freq 
                 low_freq_list=[]
                 
@@ -404,20 +413,20 @@ class Simu:
 
         data_dict={
                 'data_bid_freq':data_bid_freq,
-                'data_win':data_win,
-                'num_i':num_i,
+                'data_win':data_win.flatten(),
+                'num_i':num_i.flatten(),
 
-                'freq_i1':freq_i1,
-                'freq_i2':freq_i2,
+                'freq_i1':freq_i1.flatten(),
+                'freq_i2':freq_i2.flatten(),
                 
-                'sec_diff_i1':sec_diff_i1,
-                'sec_diff_i2':sec_diff_i2,
-                'sec_freq_i1':sec_freq_i1,
-                'sec_freq_i2':sec_freq_i2,
-                'low_freq_ratio_i' :low_freq_ratio_i,
-                'third_win_i':third_win_i,
-                
+                'sec_diff_i1':sec_diff_i1.flatten(),
+                'sec_diff_i2':sec_diff_i2.flatten(),
+                'sec_freq_i1':sec_freq_i1.flatten(),
+                'sec_freq_i2':sec_freq_i2.flatten(),
+                'low_freq_ratio_i' :low_freq_ratio_i.flatten(),
+                'third_win_i':third_win_i.flatten(),
                 }
+
         Sim_MoM_df=pd.DataFrame.from_dict(data_dict)
 
         return [Sim_df,Sim_MoM_df]

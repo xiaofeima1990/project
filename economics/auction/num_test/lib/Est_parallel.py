@@ -8,6 +8,7 @@ save the parallel running function
 modify the private part
 where mu_ai = a_1*i  ; var_ai = a_2*i 
 
+remember the price should take log form
 
 """
 from functools import partial
@@ -17,6 +18,7 @@ import numpy as np
 from Update_rule import Update_rule
 from ENV import ENV
 from Util import *
+import scipy.stats as ss
 
 
 def list_duplicates(seq):
@@ -47,9 +49,12 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     tt,data_state,data_pos,price_v,pub_info=arg_data
     info_flag=pub_info[3]
     N        =int(pub_info[2])
+    # finally I realized that my previous thought has big problem, what I want is actually the rank sequence not the sorted order. 
     # bug bug we should use np.argsort(data_state) not np.argsort(data_state)[::-1]
-    ord_index=np.argsort(data_state)    # order the bidder's bidding value, highest has high order index! 
-                                        # ord_index=np.argsort(data_state)[::-1] 
+    # ord_index=np.argsort(data_state)    # order the bidder's bidding value, highest has high order index! 
+    #                                     # ord_index=np.argsort(data_state)[::-1] descedning order
+    rank_index=ss.rankdata(data_state)-1
+
     info_v=np.ones(N)
     if info_flag-1 >=0:
         info_v[info_flag] = 0
@@ -59,13 +64,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     
     Env=ENV(N, Theta)
     # argument for info_struct info_flag,ord_index,res
-    para=Env.info_struct(info_v,ord_index,r)
-
-    # if info_flag == 0 :
-    #    para=Env.Uninform()
-    # else:
-    #    para=Env.Info_ID()
-
+    para=Env.info_struct(info_v,rank_index,r)
 
     
     ladder=pub_info[0]
@@ -73,7 +72,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
 
     
 
-    JJ=JJ+50*N
+    JJ=JJ+75*N
     [x_signal,w_x]=signal_DGP_est(para,rng,N,0,r,JJ)
 
 
@@ -85,7 +84,6 @@ def para_fun_est(Theta,rng,JJ,arg_data):
      # get the bidders state for calculation
     for i in range(0,N):
         flag_select=np.ones(N)
-        # ii=ord_index[i]
         flag_select[i]=0
         select_flag=np.nonzero(flag_select)[0].tolist()
 
@@ -140,7 +138,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     map_func=partial(map_integ,price_v,x_signal,ss_state_v,Update_bid)
     # ss_state_v how to load the right part 
     exp_value=list(map(map_func,zip(range(0,N),bid_v,bid_up,bid_low))) 
-    low_part=np.array([x[0] for x in exp_value])
+    low_part =np.array([x[0] for x in exp_value])
     high_part=np.array([x[1] for x in exp_value])
     # I believe there exist some problem for 
     # the winning bidder upper case Need more time to debug

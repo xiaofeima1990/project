@@ -109,9 +109,12 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
         data separating
         runing the estimation
     '''
-    if Theta['priv_var'] <=0 or Theta['epsilon_var']<=0 or Theta['comm_var']<=0 or Theta['comm_mu']<=0 :
+    if Theta['priv_var'] <=0 or Theta['epsilon_var']<=0 or Theta['comm_var']<=0 :
     	print('variance can not be negative')
     	return 10000
+    if Theta['comm_mu'] <=-3 or Theta['priv_mu']<= -3 :
+        print('mean can not be so negative')
+        return 10000
 
     data_n=len(DATA_STRUCT)
     
@@ -146,7 +149,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     
     ## save the parameters and objective value 
     
-    with open('para_est-nead.txt', 'a+') as f:
+    with open('para_est-Nelder.txt', 'a+') as f:
         for item in Theta0:
             f.write("%f\t" % item)
             
@@ -227,7 +230,7 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[0.1,0.1,0.5,0.15,0.2]
+    Theta=[0,0.1,0.3,0.2,0.1]
     
     start = time.time()
     now = datetime.datetime.now()

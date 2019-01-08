@@ -45,11 +45,11 @@ from scipy import stats
 
 Simu_para_dict={
 
-        "comm_mu":1,
-        "priv_mu":0.1,
-        "comm_var":0.5,
+        "comm_mu":0,
+        "priv_mu":0.05,
+        "comm_var":0.4,
         "priv_var":0.15,
-        "epsilon_var":0.3,
+        "epsilon_var":0.2,
         }
 
 
@@ -93,10 +93,10 @@ def Gen_Simu_data2(start_n,end_n,T,T_end,Simu_para_dict,info_mode=0,rng_seed=123
     return simu_data
 
 ## generate the simulated data for equilibrium bidding premium
-def Gen_Simu_data1(N,T,Simu_para_dict,rng_seed=123):
+def Gen_Simu_data1(N,T,Simu_para_dict,info_flag=0,rng_seed=123):
     SIMU=Simu(rng_seed,Simu_para_dict)
     # simu_data=[SIMU.Data_simu(N,T,info_flag) for info_flag in range(0,2)]
-    info_flag=0
+    
     [simu_data,simu_mom]=SIMU.Data_simu(N,T,info_flag)
     return [simu_data,simu_mom]
 
@@ -117,12 +117,18 @@ if __name__ == '__main__':
     '''
     if mode_flag == 1 :
     ## parameters
-        N= 5
-        SS= 200
+        N= 8
+        SS= 1000
         Rng_seed= 1245
-        simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,Rng_seed)
+        info_flag=0
+        simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
 
-        with open( data_path + "simu_data_1.pkl", "wb") as f : 
+        with open( data_path + "simu_data_10.pkl", "wb") as f : 
+            pk.dump(simu_data_1, f)
+
+        info_flag=1
+        simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
+        with open( data_path + "simu_data_11.pkl", "wb") as f : 
             pk.dump(simu_data_1, f)
 
     elif mode_flag==2:

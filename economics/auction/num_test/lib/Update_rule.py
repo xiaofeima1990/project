@@ -10,6 +10,7 @@ Now this is used for estimation. I can simultaneously estimation all the lower b
 A little modification for the private part
 I need to cite the bidder identity (rank identity)
 in real_bid_calc(...,i_id)
+remember the price needs to take log form
 
 """
 
@@ -62,9 +63,6 @@ class Update_rule:
 
         pos     = np.asarray(pos)
         pos     = pos.reshape(pos.size,1)
-        
-
-        
 
         price_v = np.asarray(price_v)
         price_v = price_v.reshape(price_v.size,1)
@@ -73,13 +71,9 @@ class Update_rule:
 
         # temp[::-1].sort() sorts the array in place decesdening order
         info_struct=info_struct[info_struct[:,0].argsort()[::-1]]
-        
-        drop_info_v=np.zeros([self.N-1,7])
-        
-        
+        # get the dropout price and lower bound for private xj
         drop_info_v=self.HS_system(info_struct,self.MU,self.SIGMA2)
         
-    
         drop_info_v=drop_info_v[drop_info_v[:,1].argsort()[::-1]]
 
         return drop_info_v
@@ -135,32 +129,35 @@ class Update_rule:
 
         return np.concatenate((x_drop,info_struct),axis=1)
 
+    def real_info_bid(self,xi,bid,price_v):
+        E_win_revenue = xi - np.log(price_v[bid])
+        Pure_value    = xi
+        flag = 1*(E_win_revenue>0)
+
+        return [Pure_value,E_win_revenue,flag]
+
+
     def real_bid(self,xi,bid,state,price_v):
-        self.T_p = price_v
-        ladder=price_v[-1]-price_v[-2]
+        self.T_p = np.log(price_v)
+        ladder=np.log(price_v[-1])-np.log(price_v[-2])
         lower_b = self.l_bound(state)
         
         #  dropout x
         x_j_lower = lower_b[:,0]
 
-
         # Constat part 
         Sigma_inv = inv(self.SIGMA2)
 
-        
         COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var)
 
-        
         CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
         AA_coef =  Sigma_inv @ COV_xvi
         
         AA_i = AA_coef[0]
         AA_j = AA_coef[1:]
 
-
         # potential upper bound of the rivals
         upper_b_j = self.u_bound_E(bid,state)
-
 
         # prepare for the winning bid expectation : take expectation on x_j 
         # up + lower of the rivals
@@ -168,9 +165,6 @@ class Update_rule:
             x_j_upper=upper_b_j[:,0]
             x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder*2 )
             
-
-
-
             E_j=sum(AA_j*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
         except Exception as e:
             print(e)            
@@ -211,8 +205,8 @@ class Update_rule:
         return [Pure_value,E_win_revenue,flag]
 
     def real_bid_calc(self,bid,state,price_v,i_id):
-        self.T_p = price_v
-        ladder=price_v[-1]-price_v[-2]
+        self.T_p = np.log(price_v)
+        ladder=np.log(price_v[-1]) - np.log(price_v[-2])
         lower_b = self.l_bound(state)
         
         #  dropout x
@@ -266,35 +260,13 @@ class Update_rule:
         
         Pure_value=E_j+E_const
         bid_price =self.T_p[bid]
-        
-
-
-
 
         return [Pure_value,bid_price,AA_i]
 
 
 
     def bid_vector(self,xi_v,bid,state,price_v,i_id):
-        self.xi_mu        =self.para.xi_mu[i_id]
-        self.xi_sigma2    = self.para.xi_sigma2[i_id] 
-        self.vi_mu        = self.para.vi_mu[i_id]
-        self.vi_sigma2    = self.para.vi_sigma2[i_id]
-        self.MU           = self.para.MU[i_id]
-        self.SIGMA2       = self.para.SIGMA2[i_id]
-        self.xi_rival_mu  = self.para.xi_rival_mu[i_id]
-        self.xi_rival_sigma2 = self.para.xi_rival_sigma2[i_id]
-        self.vi_rival_mu     = self.para.vi_rival_mu[i_id]
-        self.vi_rival_sigma2 = self.para.vi_rival_sigma2[i_id]   
-
-
-        # dimension
-        #             
-        self.MU              = self.MU.reshape(self.N,1)
-        self.xi_rival_mu     = self.xi_rival_mu.reshape(self.N-1,1)
-        self.xi_rival_sigma2 = self.xi_rival_sigma2.reshape(self.N-1,1)
-        self.vi_rival_mu     = self.vi_rival_mu.reshape(self.N-1,1)
-        self.vi_rival_sigma2 = self.vi_rival_sigma2.reshape(self.N-1,1)
+        self.setup_para(i_id)
 
         [Pure_value,bid_price,AA_i]=self.real_bid_calc(bid,state,price_v,i_id)
 
