@@ -114,23 +114,32 @@ def signal_DGP_est(para,rng,N,i_id,res,JJ=400):
     Sigma=LAA.sqrtm(SIGMA2)
     Sigma=Sigma.real
 
+    repeat_flag=3
+    test_flag=True
+    while repeat_flag>0 and test_flag :
 
-    # lattices 
-    [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='R',random_state=rng)
-    
-    a_n= norm.ppf(xi_n)
+        # lattices 
+        [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='R',random_state=rng)
+        
+        a_n= norm.ppf(xi_n)
 
-    x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ)])
-    x_signal= x_signal.T
+        x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ)])
+        x_signal= x_signal.T
 
 
-    # entry selection 
-    con_var = para.vi_sigma2 - para.vi_sigma2**2 / para.xi_sigma2
-    X_bar = para.xi_sigma2 /para.vi_sigma2 *(np.log(res) - para.vi_mu - 0.5*con_var ) + para.xi_mu
-    X_bar = X_bar.reshape(1,N)
-    check_flag = x_signal >= X_bar
-    check_flag_v=np.prod(check_flag, axis=1)
-    check_flag_v=check_flag_v.astype(bool)
+        # entry selection 
+        con_var = para.vi_sigma2 - para.vi_sigma2**2 / para.xi_sigma2
+        X_bar = para.xi_sigma2 /para.vi_sigma2 *(np.log(res) - para.vi_mu - 0.5*con_var ) + para.xi_mu
+        X_bar = X_bar.reshape(1,N)
+        check_flag = x_signal >= X_bar
+        check_flag_v=np.prod(check_flag, axis=1)
+        check_flag_v=check_flag_v.astype(bool)
+        if x_signal[check_flag_v,].shape[0]>25:
+            test_flag=False
+        else:
+            repeat_flag -= 1
+            JJ = JJ * 2 
+
 
 
     return [x_signal[check_flag_v,],w_n[check_flag_v,]]
