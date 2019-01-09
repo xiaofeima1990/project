@@ -74,12 +74,19 @@ class ENV:
         self.info_st['vi_rival_sigma2']=[]
         self.info_st['MU']=[]
         self.info_st['SIGMA2']=[]
+        self.info_st['cov_istar']=[] # covariance between vi and x 
         for i in range(self.N):
             temp_order=copy.deepcopy(ord_index)
             temp_order=np.delete(temp_order,i)
 
             temp_info_v=copy.deepcopy(info_flag)
             temp_info_v=np.delete(temp_info_v,i)
+            # covariance vi and x 
+            temp_oo = np.zeros(self.N)
+            temp_oo[i] = 1 
+            self.info_st['cov_istar'].append( self.comm_mu * np.ones(self.N) + self.priv_mu * temp_oo )
+
+
             # this rival means the rival's mu and variance, i.e. vj and xj, still we have to count for private and nosiy part  
             self.info_st['xi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order+ self.noise_mu*temp_info_v  )
             self.info_st['vi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order )

@@ -1,9 +1,5 @@
 {
     // "python.pythonPath": "/Users/xiaofeima/anaconda3/bin/python",
-<<<<<<< HEAD
     "python.pythonPath": "D:\\system\\anaconda3\\python.exe",
-=======
-    "python.pythonPath": "H:\\System\\Anaconda\\python.exe",
->>>>>>> 9da0602df82c9598358072d639d9e21576cf6322
     "python.linting.enabled": true,
 }

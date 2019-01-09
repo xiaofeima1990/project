@@ -11,6 +11,9 @@ A little modification for the private part
 I need to cite the bidder identity (rank identity)
 in real_bid_calc(...,i_id)
 remember the price needs to take log form
+Order still Matters! At least in the final bidding value calculation 
+E[v_i | X] here i is the order, I should not treat all the bidder as "1"
+
 
 """
 
