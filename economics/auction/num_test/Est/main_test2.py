@@ -177,7 +177,7 @@ if __name__ == '__main__':
     # set up the hyper parameters
     rng_seed=789
     SS=25
-    JJ=400
+    JJ=600
     
     
     d_struct={
@@ -187,7 +187,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[0.1,0.05,0.3,0.1,0.2]
+    Theta=[-0.5,0.05,0.3,0.1,0.2]
     
     start = time.time()
     now = datetime.datetime.now()
