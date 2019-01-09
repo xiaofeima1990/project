@@ -10,7 +10,7 @@ new updated version:
     - modify the info structure
     - simplify the code
  
-
+delete the rank order assumption
 """
 
 import numpy as np
@@ -24,11 +24,11 @@ import random
 import scipy.stats as ss
 
 para_dict={
-        "comm_mu":0.1,
-        "priv_mu":0.2,
-        "comm_var":0.05,
-        "priv_var":0.1,
-        "epsilon_var":0.3,
+        "comm_mu":-2,
+        "priv_mu":0,
+        "comm_var":0.16,
+        "priv_var":0.14,
+        "epsilon_var":0.38,
         }
 
 
@@ -52,9 +52,9 @@ class Simu:
         
 
         
-    def signal_DGP_simu(self, para,rng,N,i_id,res,JJ=20):
+    def signal_DGP_simu(self, para,rng,N,res,JJ=20):
 
-        is_sorted = lambda a: np.all(a[:-1] <= a[1:])
+        # is_sorted = lambda a: np.all(a[:-1] <= a[1:])
         MU       =para.MU[-1] 
         MU       =MU.flatten()
         SIGMA2   =para.SIGMA2[-1]
@@ -66,19 +66,20 @@ class Simu:
             x_signal=self.rng.multivariate_normal(MU,SIGMA2,JJ)
 
             # entry selection 
-            con_var = para.vi_sigma2[i_id] - para.vi_sigma2[i_id]**2/para.xi_sigma2[i_id]
-            X_bar = para.xi_sigma2[i_id] /para.vi_sigma2[i_id] *(np.log(res) - para.vi_mu[i_id] - 0.5*con_var ) +para.xi_mu[i_id]
+            con_var = para.vi_sigma2 - para.vi_sigma2**2/para.xi_sigma2
+            X_bar = para.xi_sigma2 /para.vi_sigma2 *(np.log(res) - para.vi_mu - 0.5*con_var ) +para.xi_mu
             X_bar = X_bar.reshape(1,N)
             check_flag = x_signal > X_bar
             check_flag_v=np.prod(check_flag, axis=1)
             check_flag_v=check_flag_v.astype(bool)
             if len(x_signal[check_flag_v,]) >0:
                 x_signal=x_signal[check_flag_v,]
-                x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
-                if len(x_signal[x_check_f,])>0:
-                    x_signal=x_signal[x_check_f,]
-                    flag=False
-                    break
+                flag=False
+                # x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
+                # if len(x_signal[x_check_f,])>0:
+                #     x_signal=x_signal[x_check_f,]
+                #     flag=False
+                #     break
 
             
 
@@ -231,9 +232,10 @@ class Simu:
         # start the simulation
         for s in range(0,SS):
 
-            # ordered index for the bidders
-            rank_index=np.array(random.sample(range(0, N), N))
-            ord_index =np.argsort(rank_index)
+            # ordered index for the bidders remove
+            # rank_index=np.array(random.sample(range(0, N), N))
+            # ord_index =np.argsort(rank_index)
+            rank_index=np.ones(N)
             # informed or not informed
             info_index_v= np.ones(N)
             if info_flag==1:            
@@ -253,8 +255,7 @@ class Simu:
 
             res =  0.75 + 0.25*self.rng.rand() 
             
-            [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N, ord_index,res)
-            x_signal=x_signal[rank_index]
+            [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,res)
             pub_info=[res,N,info_index,ladder]
             
 
