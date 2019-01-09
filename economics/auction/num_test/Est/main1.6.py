@@ -58,7 +58,8 @@ from numpy import linalg as LA
 Est_para_dict={
 
         "comm_mu":0.1,
-        "priv_mu":0.2,
+        "priv_mu":0,
+        'epsilon_mu':0.1,
         "comm_var":0.05,
         "priv_var":0.1,
         "epsilon_var":0.3,
@@ -85,7 +86,7 @@ def poolcontext(*args, **kwargs):
 def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     Theta={
     "comm_mu":Theta0[0],
-    "priv_mu":Theta0[1],
+    "epsilon_mu":Theta0[1], # change from private mu to epsilon_mu
     # "beta":Theta0[2],
     "comm_var":Theta0[2],
     "priv_var":Theta0[3],

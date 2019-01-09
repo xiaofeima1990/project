@@ -24,11 +24,12 @@ import random
 import scipy.stats as ss
 
 para_dict={
-        "comm_mu":-2,
-        "priv_mu":0,
-        "comm_var":0.16,
-        "priv_var":0.14,
-        "epsilon_var":0.38,
+        "comm_mu":0.2,
+        "priv_mu":0,  # fix
+        "epsilon_mu":0.1,
+        "comm_var":0.3,
+        "priv_var":0.15,
+        "epsilon_var":0.2,
         }
 
 

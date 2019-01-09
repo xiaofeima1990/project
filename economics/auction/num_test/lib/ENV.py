@@ -16,6 +16,9 @@ No--add rank order to 'info_struct' so that I change the structure of the xi, vi
 Different bidders have different xi, vi, MU and SIGMA2 
 After discussing with professor, keep mu_a the same across all bidders 
 
+----- 01-09-2019 -------
+make private mu as 0 and let noisy mu random
+make covi based on order not just identical for all i = 1  
 
 """
 
@@ -26,8 +29,8 @@ import copy
 para_dict={
 
         "comm_mu":1,
-        "priv_mu":0,
-        # "beta":1,
+        "priv_mu":0, # fix
+        'epsilon_mu': 0.1,
         "comm_var":0.5,
         "priv_var":0.3,
         "epsilon_var":0.4,
@@ -37,10 +40,10 @@ para_dict={
 
 class ENV:
     def __init__(self, N, dict_para=para_dict):
-        self.comm_mu  =dict_para['comm_mu']
-        self.priv_mu  =dict_para['priv_mu']
+        self.comm_mu  = dict_para['comm_mu']
+        self.priv_mu  = 0
         # self.beta     =dict_para['beta']
-        self.noise_mu = 0  # set epsilon mu always zero
+        self.noise_mu = dict_para['epsilon_mu']  # set epsilon mu always zero
         self.comm_var =dict_para['comm_var']
         self.priv_var =dict_para['priv_var']
         self.noise_var=dict_para['epsilon_var']
@@ -84,7 +87,7 @@ class ENV:
             # covariance vi and x 
             temp_oo = np.zeros(self.N)
             temp_oo[i] = 1 
-            self.info_st['cov_istar'].append( self.comm_mu * np.ones(self.N) + self.priv_mu * temp_oo )
+            self.info_st['cov_istar'].append( self.comm_var * np.ones(self.N) + self.priv_var * temp_oo )
 
 
             # this rival means the rival's mu and variance, i.e. vj and xj, still we have to count for private and nosiy part  
@@ -148,13 +151,6 @@ class Info_result(object):
         return self.info_dict['vi_sigma2']
     
     @property 
-    def x_info_mu(self):
-        '''
-        return x i mu
-        '''
-        return self.info_dict['x_info_mu']
-    
-    @property 
     def x_info_sigma2(self):
         '''
         return v i simga squre
@@ -208,14 +204,14 @@ class Info_result(object):
     @property 
     def MU(self):
         '''
-        return mu for 
+        return MU for 
         '''
         return self.info_dict['MU']
     
     @property 
     def comm_var(self):
         '''
-        return mu for 
+        return comm_var for 
         '''
         return self.info_dict['comm_var']
 
@@ -225,6 +221,14 @@ class Info_result(object):
         return mu for 
         '''
         return self.info_dict['comm_mu']
+
+
+    @property 
+    def cov_istar(self):
+        '''
+        return cov_istar for 
+        '''
+        return self.info_dict['cov_istar']
 
     # @property 
     # def beta(self):

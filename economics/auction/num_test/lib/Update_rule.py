@@ -45,7 +45,7 @@ class Update_rule:
         self.xi_rival_sigma2 = self.para.xi_rival_sigma2[i_id]
         self.vi_rival_mu     = self.para.vi_rival_mu[i_id]
         self.vi_rival_sigma2 = self.para.vi_rival_sigma2[i_id]   
-
+        self.cov_istar       =self.para.cov_istar[i_id]
 
         # dimension
         #             
@@ -54,7 +54,7 @@ class Update_rule:
         self.xi_rival_sigma2 = self.xi_rival_sigma2.reshape(self.N-1,1)
         self.vi_rival_mu     = self.vi_rival_mu.reshape(self.N-1,1)
         self.vi_rival_sigma2 = self.vi_rival_sigma2.reshape(self.N-1,1)
-
+        self.cov_istar       = self.cov_istar.reshape(self.N,1) 
         
     def l_bound(self,state):
         # uninformed lower bound 
@@ -151,7 +151,8 @@ class Update_rule:
         # Constat part 
         Sigma_inv = inv(self.SIGMA2)
 
-        COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var)
+        # COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var) # old and possibly wrong implementation
+        COV_xvi=self.cov_istar
 
         CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
         AA_coef =  Sigma_inv @ COV_xvi
@@ -219,8 +220,8 @@ class Update_rule:
         # Constat part 
         Sigma_inv = inv(self.SIGMA2)
         
-        COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var)
-
+        # COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var)
+        COV_xvi=self.cov_istar
         
         CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
         AA_coef =  Sigma_inv @ COV_xvi
@@ -239,7 +240,7 @@ class Update_rule:
             x_j_upper=upper_b_j[:,0]
             x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder )
 
-            E_j=sum(AA_j*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
+            E_j=sum(AA_j.flatten()*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
         except Exception as e:
             print(e)            
             print(x_j_lower)
@@ -252,7 +253,7 @@ class Update_rule:
         part_mu=COV_xvi.T @ Si_va[1:,:].T @ self.MU[1:]
         # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
         # 
-        var_update = self.vi_sigma2 -AA_i*self.vi_sigma2 + (E_j-part_mu )**2
+        var_update = self.vi_sigma2 -AA_i.flatten()*self.vi_sigma2 + (E_j-part_mu )**2
         
         
         # constant part 
@@ -263,7 +264,7 @@ class Update_rule:
         Pure_value=E_j+E_const
         bid_price =self.T_p[bid]
 
-        return [Pure_value,bid_price,AA_i]
+        return [Pure_value.flatten(),bid_price,AA_i.flatten()]
 
 
 
