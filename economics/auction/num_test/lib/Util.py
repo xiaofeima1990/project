@@ -126,7 +126,7 @@ def signal_DGP_est(para,rng,N,i_id,res,JJ=400):
 
     # entry selection 
     con_var = para.vi_sigma2 - para.vi_sigma2**2 / para.xi_sigma2
-    X_bar = para.xi_sigma2 /para.vi_sigma2 *(np.log(res) - para.vi_mu - 0.5*con_var ) + para.xi_mu
+    X_bar = para.xi_sigma2 / para.vi_sigma2 *(np.log(res) - para.vi_mu - 0.5*con_var ) + para.xi_mu
     X_bar = X_bar.reshape(1,N)
     check_flag = x_signal >= X_bar
     check_flag_v=np.prod(check_flag, axis=1)
@@ -166,6 +166,7 @@ def pre_data(Est_data):
     Est_data['res_norm']=Est_data['reserve_price']/Est_data['evaluation_price']
     Est_data = Est_data[np.isfinite(Est_data['res_norm'])]
     Est_data=Est_data.dropna(subset=['res_norm'])
+    Est_data=Est_data[Est_data['res_norm'] >= 0.7]
     # normalize the win bid
     Est_data['win_norm']=Est_data['win_bid']/Est_data['evaluation_price']
     

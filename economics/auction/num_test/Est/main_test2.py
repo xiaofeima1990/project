@@ -79,10 +79,10 @@ def list_duplicates(seq):
 def GMM_Ineq(Theta0,Est_data,d_struct):
     Theta={
     "comm_mu":Theta0[0],
-    "epsilon_mu":Theta0[1], # change from private mu to epsilon_mu
-    "comm_var":Theta0[2],
-    "priv_var":Theta0[3],
-    "epsilon_var":Theta0[4],
+    # "epsilon_mu":Theta0[1], # change from private mu to epsilon_mu
+    "comm_var":Theta0[1],
+    "priv_var":Theta0[2],
+    "epsilon_var":Theta0[3],
     }
     
 
@@ -187,7 +187,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[-0.5,0.05,0.3,0.1,0.2]
+    Theta=[0,0.3,0.05,0.35]
     
     start = time.time()
     now = datetime.datetime.now()

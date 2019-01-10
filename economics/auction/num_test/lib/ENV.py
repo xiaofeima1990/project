@@ -43,7 +43,8 @@ class ENV:
         self.comm_mu  = dict_para['comm_mu']
         self.priv_mu  = 0
         # self.beta     =dict_para['beta']
-        self.noise_mu = dict_para['epsilon_mu']  # set epsilon mu always zero
+        # self.noise_mu = dict_para['epsilon_mu']  # set epsilon mu always zero
+        self.noise_mu   = 0
         self.comm_var =dict_para['comm_var']
         self.priv_var =dict_para['priv_var']
         self.noise_var=dict_para['epsilon_var']
