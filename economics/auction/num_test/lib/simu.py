@@ -43,7 +43,9 @@ class Simu:
         self.rng       =np.random.RandomState(rng_seed)
                 
         self.comm_mu   =dict_para['comm_mu']
-        self.priv_mu   =dict_para['priv_mu']
+        self.priv_mu   =0
+        # self.epsilon_mu   = dict_para['epsilon_mu']
+        self.epsilon_mu   = 0
         self.comm_var  =dict_para['comm_var']
         self.priv_var  =dict_para['priv_var']
         self.noise_var =dict_para['epsilon_var']
@@ -53,7 +55,7 @@ class Simu:
         
 
         
-    def signal_DGP_simu(self, para,rng,N,res,JJ=20):
+    def signal_DGP_simu(self, para,rng,N,res,JJ=40):
 
         # is_sorted = lambda a: np.all(a[:-1] <= a[1:])
         MU       =para.MU[-1] 
@@ -325,7 +327,7 @@ class Simu:
                 # add t
                 t += 1
                 # check whether the price path is enough 
-                if t>T_end-5+extend_i*T_end:
+                if t>T_end-5+extend_i*T_end and price_v[-1] < 3.5:
                     temp_p = np.array(range((extend_i+1)*T_end+1,(extend_i+2)*T_end+1))*ladder + res
                     price_v = np.append(price_v,temp_p)
                     extend_i+=1

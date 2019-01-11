@@ -45,11 +45,11 @@ from scipy import stats
 
 Simu_para_dict={
 
-        "comm_mu":-2,
+        "comm_mu":-0.3,
         "priv_mu":0,
-        "comm_var":0.16,
-        "priv_var":0.14,
-        "epsilon_var":0.38,
+        "comm_var":0.25,
+        "priv_var":0.1,
+        "epsilon_var":0.35,
         }
 
 

@@ -29,7 +29,7 @@ import pandas as pd
 
 if __name__ == '__main__':
     # read the data 
-
+    PATH= 'E:/github/Project/economics/auction/num_test/simu'
     # without the informed bidder 
     with open( data_path + "simu_data_10.pkl", "rb") as f :
         simu_data_0=pk.load( f)
@@ -38,3 +38,39 @@ if __name__ == '__main__':
         simu_data_1=pk.load( f)
         
     
+    # subsampling https://stackoverflow.com/questions/18713929/subsample-pandas-dataframe
+    # df.sample
+    # sample(self, n=None, frac=None, replace=False, weights=None, random_state=None, axis=None) method of pandas.core.frame.DataFrame instance
+    # Returns a random sample of items from an axis of object.
+
+
+
+
+    # -------------------------------------------------------------
+    # 1: used for calculating equilibrium bidding premium a la Dionne et al 2009
+    # 1.1 all the prices 
+    #     pi(i,k,j) = b^1(i,k,j) - b^0(i,k,j) 
+    #     for angent i, simulated replication j and bidding round k 
+    # 1.2 winnig bid
+    #     pi(i=2,k=N-1,j|I=1,k=N,j) = b^1(i,k,j|I=1,k=N,j) - b^0(i=2,k=N-1,j) 
+    # -------------------------------------------------------------
+
+
+
+
+
+
+    # -------------------------------------------------------------
+    # 2: used for generating the value distribution under informed and 
+    #    uninformed case. 
+    # 2.1 fixed # of bidders: winning bid, bid freqency, 
+	# 2.2 use possion process to randomize # of bidders. 
+	# -------------------------------------------------------------
+
+
+
+
+    # -------------------------------------------------------------
+    # 3: try to find way to decompose the channels for the learning effect, 
+    #    private value, and competitive effect.
+    # -------------------------------------------------------------
