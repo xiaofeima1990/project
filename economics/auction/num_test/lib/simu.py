@@ -240,7 +240,7 @@ class Simu:
             # informed or not informed
             info_index_v= np.ones(N)
             if info_flag==1:            
-                info_index  = rank_index[np.random.randint(0,N,size=1)][0]
+                info_index  = rank_index[np.random.randint(0,N,size=1)]
                 info_index_v[info_index]=0
             else:
                 info_index = -1
