@@ -14,6 +14,8 @@ remember the price needs to take log form
 Order still Matters! At least in the final bidding value calculation 
 E[v_i | X] here i is the order, I should not treat all the bidder as "1"
 
+change again, make the variance part simple !!! not make any complicated choice just the same as 
+conditional variance in multivariate normal
 
 """
 
@@ -81,8 +83,8 @@ class Update_rule:
 
         # conditional variance var(v_i | x_i , x_j , x_q)
         # actually I do not think this part is of any importance 
-        part_varj = sum(AA_j.flatten()**2 * self.truc_x_var(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_bar,8))
-        var_update = self.vi_sigma2 -AA_i.flatten()*self.vi_sigma2 + part_varj    
+        # part_varj = sum(AA_j.flatten()**2 * self.truc_x_var(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_bar,8))
+        var_update = self.vi_sigma2 -COV_xvi.T @  Sigma_inv @  COV_xvi
         # var_update = self.vi_sigma2 -AA_i*self.vi_sigma2 + (E_j-part_mu )**2
         var_update = var_update.flatten()
         E_win_revenue=E_j+ CC_i+0.5*var_update  + AA_i*x_bar - np.log(res)
