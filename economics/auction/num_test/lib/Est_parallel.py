@@ -60,9 +60,13 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     # rank_index=ss.rankdata(data_state)-1
     iden_index=np.ones(N)
     info_v=np.ones(N)
+    i_id=0
     if info_flag-1 >=0:
         info_v[info_flag] = 0
-
+        if info_v[0] == 1:
+            i_id = 0
+        else:
+            i_id = 1
     r     =pub_info[-1]
 
     
@@ -77,7 +81,11 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     
 
     JJ=JJ+100*N
-    [x_signal,w_x]=signal_DGP_est(para,rng,N,0,r,JJ)
+    # add whether it is informed or not informed  
+    Update_bid.setup_para(i_id)
+    X_bar = Update_bid.entry_selection(r)
+    
+    [x_signal,w_x]=signal_DGP_est(para,rng,N,0,X_bar,JJ)
     if x_signal.shape[0]<25:
         return 100000
 

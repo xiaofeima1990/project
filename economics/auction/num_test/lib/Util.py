@@ -100,9 +100,9 @@ def balance_data(DATA_STRUCT,n_work):
 
 
 
-def signal_DGP_est(para,rng,N,i_id,res,JJ=400):
+def signal_DGP_est(para,rng,N,i_id,X_bar,JJ=400):
     # this part should follow the ascending order 
-
+    # X_bar is the threshold 
     
     MU       =para.MU[i_id] 
     MU       =MU.reshape(N,1)
@@ -125,9 +125,7 @@ def signal_DGP_est(para,rng,N,i_id,res,JJ=400):
 
 
     # entry selection 
-    con_var = para.vi_sigma2 - para.vi_sigma2**2 / para.xi_sigma2
-    X_bar = para.xi_sigma2 / para.vi_sigma2 *(np.log(res) - para.vi_mu - 0.5*con_var ) + para.xi_mu
-    X_bar = X_bar.reshape(1,N)
+    X_bar = X_bar * np.ones([1,N])
     check_flag = x_signal >= X_bar
     check_flag_v=np.prod(check_flag, axis=1)
     check_flag_v=check_flag_v.astype(bool)

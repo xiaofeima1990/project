@@ -22,6 +22,7 @@ from numpy.linalg import inv
 from scipy.stats import norm
 import warnings
 import math
+from scipy.optimize import minimize
 # warnings.filterwarnings('error')
 
 
@@ -56,6 +57,48 @@ class Update_rule:
         self.vi_rival_sigma2 = self.vi_rival_sigma2.reshape(self.N-1,1)
         self.cov_istar       = self.cov_istar.reshape(self.N,1) 
         
+
+    def entry_truc(self,x_bar,res):
+                # Constat part 
+        Sigma_inv = inv(self.SIGMA2)
+
+        # COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var) # old and possibly wrong implementation
+        COV_xvi=self.cov_istar
+
+        CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
+        AA_coef =  Sigma_inv @ COV_xvi
+        
+        AA_i = AA_coef[0]
+        AA_j = AA_coef[1:]
+
+        Sigma=np.diag(self.SIGMA2)**0.5
+        
+        a = (x_bar-self.MU)/(Sigma)
+
+        X_j = self.MU + Sigma * norm.pdf( a)/(1-norm.pdf( a))
+        E_j = sum(AA_j.flatten()*X_j)
+
+        # conditional variance var(v_i | x_i , x_j , x_q)
+        Si_va=Sigma_inv
+        part_mu=COV_xvi.T @ Si_va[1:,:].T @ self.MU[1:]
+        # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
+        var_update = self.vi_sigma2 -AA_i*self.vi_sigma2 + (E_j-part_mu )**2
+
+        E_win_revenue=E_j+ CC_i+0.5*var_update  + AA_i*x_bar - np.log(res)
+        return E_win_revenue ** 2
+
+    def entry_selection(self,res):
+        # initial point for uninformed 
+        con_var = self.vi_sigma2 - self.vi_sigma2**2 / self.xi_sigma2
+        X_bar = self.xi_sigma2 / self.vi_sigma2 *(np.log(res) - self.vi_mu - 0.5*con_var ) + self.xi_mu
+        # find root value 
+        results=minimize(self.entry_truc,X_bar,args=(res,),method='Nelder-Mead')
+
+        return results.x
+ 
+    
+
+
     def l_bound(self,state):
         # uninformed lower bound 
         # get the info structure
@@ -327,7 +370,7 @@ class Update_rule:
         result = Mu+Sigma*(temp_no / temp_de)
 
 
-        # if sum(upper == -1:
+        # if sum(upper) == -1:
         #     result = Mu + Sigma * norm.pdf( a)/(1-norm.pdf( a))
         #     # result = truncate(pd,lower,Inf);
            

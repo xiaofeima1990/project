@@ -55,7 +55,7 @@ class Simu:
         
 
         
-    def signal_DGP_simu(self, para,rng,N,res,JJ=40):
+    def signal_DGP_simu(self, para,rng,N,X_bar,JJ=40):
 
         # is_sorted = lambda a: np.all(a[:-1] <= a[1:])
         MU       =para.MU[-1] 
@@ -69,9 +69,10 @@ class Simu:
             x_signal=self.rng.multivariate_normal(MU,SIGMA2,JJ)
 
             # entry selection 
-            con_var = para.vi_sigma2 - para.vi_sigma2**2/para.xi_sigma2
-            X_bar = para.xi_sigma2 /para.vi_sigma2 *(np.log(res) - para.vi_mu - 0.5*con_var ) +para.xi_mu
-            X_bar = X_bar.reshape(1,N)
+            # con_var = para.vi_sigma2 - para.vi_sigma2**2/para.xi_sigma2
+            # X_bar = para.xi_sigma2 /para.vi_sigma2 *(np.log(res) - para.vi_mu - 0.5*con_var ) +para.xi_mu
+            
+            X_bar = X_bar * np.ones([1,N])
             check_flag = x_signal > X_bar
             check_flag_v=np.prod(check_flag, axis=1)
             check_flag_v=check_flag_v.astype(bool)
@@ -241,9 +242,12 @@ class Simu:
             rank_index=np.ones(N)
             # informed or not informed
             info_index_v= np.ones(N)
+            i_id = 0 
             if info_flag==1:            
                 info_index  = rank_index[np.random.randint(0,N,size=1)][0]
                 info_index_v[info_index]=0
+                if info_index ==0 : 
+                    i_id = 1
             else:
                 info_index = -1
 
@@ -257,8 +261,10 @@ class Simu:
             Update_bid=Update_rule(para)
 
             res =  0.75 + 0.25*self.rng.rand() 
-            
-            [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,res)
+            Update_bid.setup_para(i_id)
+            X_bar = Update_bid.entry_selection(res)
+
+            [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,X_bar)
             pub_info=[res,N,info_index,ladder]
             
 
