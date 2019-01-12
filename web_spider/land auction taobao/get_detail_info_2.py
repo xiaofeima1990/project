@@ -238,14 +238,14 @@ def get_info(driver,link_url,status,auction_time_flag):
             if pri_flag==True and do_search == True:
                 pri_icon = driver.find_elements_by_class_name('icon-user.icon-priority-1')
                 if len(pri_icon)>0:
-                    parent_el = pri_icon.find_element_by_xpath("..")
+                    parent_el = pri_icon[0].find_element_by_xpath("..")
                     parent_el=parent_el.find_element_by_xpath("..")
                     pri_ID=parent_el.text
                     df_pri.loc[0,'pri_ID']=pri_ID
                     print('priority bidder! in {} : bidder ID is {}'.format(id_info,pri_ID))
                     con1 = sqlite3.connect(store_path+"auction_pri_house.sqlite")
                     df_pri.to_sql(auction_time_flag, con1, if_exists="append")
-                    con.close()
+                    con1.close()
                     do_search=False
                     
             try:

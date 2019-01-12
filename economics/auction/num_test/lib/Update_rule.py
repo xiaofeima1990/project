@@ -22,6 +22,7 @@ from numpy.linalg import inv
 from scipy.stats import norm
 import warnings
 import math
+from scipy.optimize import minimize
 # warnings.filterwarnings('error')
 
 
@@ -56,6 +57,75 @@ class Update_rule:
         self.vi_rival_sigma2 = self.vi_rival_sigma2.reshape(self.N-1,1)
         self.cov_istar       = self.cov_istar.reshape(self.N,1) 
         
+
+    def entry_truc(self,x_bar,res):
+                # Constat part 
+        Sigma_inv = inv(self.SIGMA2)
+
+        # COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var) # old and possibly wrong implementation
+        COV_xvi=self.cov_istar
+
+        CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
+        CC_i = CC_i.flatten()
+        AA_coef =  Sigma_inv @ COV_xvi
+        
+        AA_i = AA_coef[0]
+        AA_j = AA_coef[1:]
+        Mu   = self.xi_rival_mu.flatten()
+        Sigma=self.xi_rival_sigma2.flatten()**0.5
+        
+        a = (x_bar*np.ones(self.N-1)-Mu)/(Sigma)
+
+        X_j = Mu + Sigma * norm.pdf( a)/(1-norm.pdf( a))
+        E_j = sum(AA_j.flatten()*X_j)
+
+        # conditional variance var(v_i | x_i , x_j , x_q)
+        # actually I do not think this part is of any importance 
+        part_varj = sum(AA_j.flatten()**2 * self.truc_x_var(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_bar,8))
+        var_update = self.vi_sigma2 -AA_i.flatten()*self.vi_sigma2 + part_varj    
+        # var_update = self.vi_sigma2 -AA_i*self.vi_sigma2 + (E_j-part_mu )**2
+        var_update = var_update.flatten()
+        E_win_revenue=E_j+ CC_i+0.5*var_update  + AA_i*x_bar - np.log(res)
+        return E_win_revenue ** 2
+
+    def entry_selection(self,res):
+        # initial point for uninformed 
+        con_var = self.vi_sigma2 - self.vi_sigma2**2 / self.xi_sigma2
+        X_bar = self.xi_sigma2 / self.vi_sigma2 *(np.log(res) - self.vi_mu - 0.5*con_var ) + self.xi_mu
+        # find root value 
+        results=minimize(self.entry_truc,X_bar,args=(res,),method='Nelder-Mead')
+
+        return results.x
+ 
+    def entry_simu_up(self,x_bar,up):
+                # Constat part 
+        Sigma_inv = inv(self.SIGMA2)
+
+        # COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var) # old and possibly wrong implementation
+        COV_xvi=self.cov_istar
+
+        CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
+        CC_i = CC_i.flatten()
+        AA_coef =  Sigma_inv @ COV_xvi
+        
+        AA_i = AA_coef[0]
+        AA_j = AA_coef[1:]
+        Mu   = self.xi_rival_mu.flatten()
+        Sigma=self.xi_rival_sigma2.flatten()**0.5
+        
+        a = (x_bar*np.ones(self.N-1)-Mu)/(Sigma)
+
+        X_j = Mu + Sigma * norm.pdf( a)/(1-norm.pdf( a))
+        E_j = sum(AA_j.flatten()*X_j)
+
+        # conditional variance var(v_i | x_i , x_j , x_q)
+        #
+        # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
+        # at most for the variance 
+        x_up=(1 / AA_i)* (np.log(up) - (E_j+ CC_i+0.5*self.vi_sigma2.flatten() ) ) 
+        return x_up
+
+
     def l_bound(self,state):
         # uninformed lower bound 
         # get the info structure
@@ -155,6 +225,7 @@ class Update_rule:
         COV_xvi=self.cov_istar
 
         CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
+        
         AA_coef =  Sigma_inv @ COV_xvi
         
         AA_i = AA_coef[0]
@@ -169,7 +240,7 @@ class Update_rule:
             x_j_upper=upper_b_j[:,0]
             x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder*2 )
             
-            E_j=sum(AA_j*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
+            E_j=sum(AA_j.flatten()*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
         except Exception as e:
             print(e)            
             print(x_j_lower)
@@ -178,11 +249,11 @@ class Update_rule:
             print('-------------------------')
 
         # conditional variance var(v_i | x_i , x_j , x_q)
-        Si_va=Sigma_inv
-        part_mu=COV_xvi.T @ Si_va[1:,:].T @ self.MU[1:]
         # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
-        var_update = self.vi_sigma2 -AA_i*self.vi_sigma2 + (E_j-part_mu )**2
-        
+        # var_update = self.vi_sigma2 -2*AA_i*self.vi_sigma2 + AA_i*self.xi_sigma2*AA_i + E_j**2
+        # modify the conditional variancce, a basic criterion is that conditional variance must be less than vi_sigma2 
+        part_varj = sum(AA_j.flatten()**2 * self.truc_x_var(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
+        var_update = self.vi_sigma2 -AA_i.flatten()*self.vi_sigma2 + part_varj         
         
         # constant part 
         E_const = CC_i+0.5*var_update
@@ -224,6 +295,7 @@ class Update_rule:
         COV_xvi=self.cov_istar
         
         CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
+
         AA_coef =  Sigma_inv @ COV_xvi
         
         AA_i = AA_coef[0]
@@ -249,11 +321,10 @@ class Update_rule:
             print('-------------------------')
 
         # conditional variance var(v_i | x_i , x_j , x_q)
-        Si_va=Sigma_inv
-        part_mu=COV_xvi.T @ Si_va[1:,:].T @ self.MU[1:]
         # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
-        # 
-        var_update = self.vi_sigma2 -AA_i.flatten()*self.vi_sigma2 + (E_j-part_mu )**2
+        # modify the conditional variancce, a basic criterion is that conditional variance must be less than vi_sigma2 
+        part_varj = sum(AA_j.flatten()**2 * self.truc_x_var(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
+        var_update = self.vi_sigma2 -AA_i.flatten()*self.vi_sigma2 + part_varj 
         
         
         # constant part 
@@ -261,7 +332,7 @@ class Update_rule:
         
         # total expected value
         
-        Pure_value=E_j+E_const
+        Pure_value=E_j+E_const 
         bid_price =self.T_p[bid]
 
         return [Pure_value.flatten(),bid_price,AA_i.flatten()]
@@ -322,12 +393,12 @@ class Update_rule:
         a = (lower-Mu)/(Sigma)
         b = (upper-Mu)/(Sigma)
         
-        temp_de = norm.cdf(b) - norm.cdf(a)+10**(-8)
+        temp_de = norm.cdf(b) - norm.cdf(a)+10**(-10)
         temp_no = norm.pdf(a) - norm.pdf(b)
         result = Mu+Sigma*(temp_no / temp_de)
 
 
-        # if sum(upper == -1:
+        # if sum(upper) == -1:
         #     result = Mu + Sigma * norm.pdf( a)/(1-norm.pdf( a))
         #     # result = truncate(pd,lower,Inf);
            
@@ -342,9 +413,16 @@ class Update_rule:
         return result
         
         
-    
-       
+    def truc_x_var(self,Mu,Sigma,lower,upper):
+        Sigma=Sigma**0.5
         
+        a = (lower-Mu)/(Sigma)
+        b = (upper-Mu)/(Sigma)
+
+        partA = (a * norm.pdf(a) -b*norm.pdf(b)) / (norm.cdf(b) - norm.cdf(a) + 10**(-10)) 
+        partB = (norm.pdf(a) - norm.pdf(b))**2 / (norm.cdf(b) - norm.cdf(a) + 10**(-10))**2 
+       
+        return Sigma**2 * (1+ partA + partB  )  
         
 
 class update_results:

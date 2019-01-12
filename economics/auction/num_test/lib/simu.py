@@ -43,7 +43,9 @@ class Simu:
         self.rng       =np.random.RandomState(rng_seed)
                 
         self.comm_mu   =dict_para['comm_mu']
-        self.priv_mu   =dict_para['priv_mu']
+        self.priv_mu   =0
+        # self.epsilon_mu   = dict_para['epsilon_mu']
+        self.epsilon_mu   = 0
         self.comm_var  =dict_para['comm_var']
         self.priv_var  =dict_para['priv_var']
         self.noise_var =dict_para['epsilon_var']
@@ -53,7 +55,7 @@ class Simu:
         
 
         
-    def signal_DGP_simu(self, para,rng,N,res,JJ=20):
+    def signal_DGP_simu(self, para,rng,N,X_bar,X_up, JJ=40):
 
         # is_sorted = lambda a: np.all(a[:-1] <= a[1:])
         MU       =para.MU[-1] 
@@ -67,11 +69,15 @@ class Simu:
             x_signal=self.rng.multivariate_normal(MU,SIGMA2,JJ)
 
             # entry selection 
-            con_var = para.vi_sigma2 - para.vi_sigma2**2/para.xi_sigma2
-            X_bar = para.xi_sigma2 /para.vi_sigma2 *(np.log(res) - para.vi_mu - 0.5*con_var ) +para.xi_mu
-            X_bar = X_bar.reshape(1,N)
+            # con_var = para.vi_sigma2 - para.vi_sigma2**2/para.xi_sigma2
+            # X_bar = para.xi_sigma2 /para.vi_sigma2 *(np.log(res) - para.vi_mu - 0.5*con_var ) +para.xi_mu
+            
+            X_bar = X_bar * np.ones([1,N])
             check_flag = x_signal > X_bar
             check_flag_v=np.prod(check_flag, axis=1)
+            check_flag2 = x_signal < X_up
+            check_flag_v2=np.prod(check_flag2, axis=1)
+            check_flag_v = check_flag_v * check_flag_v2
             check_flag_v=check_flag_v.astype(bool)
             if len(x_signal[check_flag_v,]) >0:
                 x_signal=x_signal[check_flag_v,]
@@ -239,9 +245,12 @@ class Simu:
             rank_index=np.ones(N)
             # informed or not informed
             info_index_v= np.ones(N)
+            i_id = 0 
             if info_flag==1:            
                 info_index  = rank_index[np.random.randint(0,N,size=1)]
                 info_index_v[info_index]=0
+                if info_index ==0 : 
+                    i_id = 1
             else:
                 info_index = -1
 
@@ -255,8 +264,10 @@ class Simu:
             Update_bid=Update_rule(para)
 
             res =  0.75 + 0.25*self.rng.rand() 
-            
-            [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,res)
+            Update_bid.setup_para(i_id)
+            X_bar = Update_bid.entry_selection(res)
+            X_up  = Update_bid.entry_simu_up(X_bar,3)
+            [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,X_bar,X_up)
             pub_info=[res,N,info_index,ladder]
             
 
@@ -325,7 +336,7 @@ class Simu:
                 # add t
                 t += 1
                 # check whether the price path is enough 
-                if t>T_end-5+extend_i*T_end:
+                if t>T_end-5+extend_i*T_end and price_v[-1] < 3.5:
                     temp_p = np.array(range((extend_i+1)*T_end+1,(extend_i+2)*T_end+1))*ladder + res
                     price_v = np.append(price_v,temp_p)
                     extend_i+=1
