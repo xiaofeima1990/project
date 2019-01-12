@@ -281,14 +281,15 @@ class Simu:
             auction_flag=True
             t=0 # auction period
             extend_i=0
-            while auction_flag:
+            while auction_flag and t <= 300:
                 
                 if t == 0: 
                     curr_bidder=int(np.argmax(x_signal))
                     Data_act.append(curr_bidder)
                     State[curr_bidder]=State[curr_bidder]+1
                 else:
-                    
+
+
                     for i in range(0,N):
                         temp_state=copy.deepcopy(State)
                         
@@ -336,7 +337,7 @@ class Simu:
                 # add t
                 t += 1
                 # check whether the price path is enough 
-                if t>T_end-5+extend_i*T_end and price_v[-1] < 3.5:
+                if t>T_end-5+extend_i*T_end:
                     temp_p = np.array(range((extend_i+1)*T_end+1,(extend_i+2)*T_end+1))*ladder + res
                     price_v = np.append(price_v,temp_p)
                     extend_i+=1

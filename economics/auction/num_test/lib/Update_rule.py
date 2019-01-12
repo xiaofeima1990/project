@@ -124,7 +124,9 @@ class Update_rule:
         #
         # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
         # at most for the variance 
-        x_up=(1 / AA_i)* (np.log(up) - (E_j+ CC_i+0.5*self.vi_sigma2.flatten() ) ) 
+        var_update = self.vi_sigma2 -COV_xvi.T @  Sigma_inv @  COV_xvi
+
+        x_up=(1 / AA_i)* (np.log(up) - (E_j+ CC_i+0.5*var_update.flatten() ) ) 
         return x_up
 
 
@@ -254,9 +256,11 @@ class Update_rule:
         # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
         # var_update = self.vi_sigma2 -2*AA_i*self.vi_sigma2 + AA_i*self.xi_sigma2*AA_i + E_j**2
         # modify the conditional variancce, a basic criterion is that conditional variance must be less than vi_sigma2 
-        part_varj = sum(AA_j.flatten()**2 * self.truc_x_var(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
-        var_update = self.vi_sigma2 -AA_i.flatten()*self.vi_sigma2 + part_varj         
-        
+        # part_varj = sum(AA_j.flatten()**2 * self.truc_x_var(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
+        # var_update = self.vi_sigma2 -AA_i.flatten()*self.vi_sigma2 + part_varj         
+        var_update = self.vi_sigma2 - COV_xvi.T @  Sigma_inv @  COV_xvi
+
+
         # constant part 
         E_const = CC_i+0.5*var_update
         
@@ -325,8 +329,10 @@ class Update_rule:
         # conditional variance var(v_i | x_i , x_j , x_q)
         # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
         # modify the conditional variancce, a basic criterion is that conditional variance must be less than vi_sigma2 
-        part_varj = sum(AA_j.flatten()**2 * self.truc_x_var(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
-        var_update = self.vi_sigma2 -AA_i.flatten()*self.vi_sigma2 + part_varj 
+        # part_varj = sum(AA_j.flatten()**2 * self.truc_x_var(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
+        # var_update = self.vi_sigma2 -AA_i.flatten()*self.vi_sigma2 + part_varj
+
+        var_update = self.vi_sigma2 -COV_xvi.T @  Sigma_inv @  COV_xvi 
         
         
         # constant part 
@@ -424,7 +430,7 @@ class Update_rule:
         partA = (a * norm.pdf(a) -b*norm.pdf(b)) / (norm.cdf(b) - norm.cdf(a) + 10**(-10)) 
         partB = (norm.pdf(a) - norm.pdf(b))**2 / (norm.cdf(b) - norm.cdf(a) + 10**(-10))**2 
        
-        return Sigma**2 * (1+ partA + partB  )  
+        return Sigma**2 * (1+ partA + partB  )
         
 
 class update_results:
