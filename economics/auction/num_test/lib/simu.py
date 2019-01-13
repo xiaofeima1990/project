@@ -51,9 +51,15 @@ class Simu:
         self.noise_var =dict_para['epsilon_var']
         self.dict_para =dict_para
 
-        
-        
 
+    def randomize_para(self):
+        dict_para={}
+        dict_para['comm_mu']=self.dict_para['comm_mu']+ (-0.075, 0.15*self.rng.rand())
+        dict_para['comm_var']=self.dict_para['comm_var']+ (-0.05, 0.1*self.rng.rand())
+        dict_para['priv_var']=self.dict_para['priv_var']+ (-0.05, 0.1*self.rng.rand())
+        dict_para['epsilon_var']=self.dict_para['epsilon_var']+ (-0.05, 0.1*self.rng.rand())
+
+        return dict_para
         
     def signal_DGP_simu(self, para,rng,N,X_bar,X_up, JJ=40):
 
@@ -211,11 +217,6 @@ class Simu:
         
  
 
-        # generate ENV 
-        Env=ENV(N, self.dict_para)
-
-
-
         # prepared vector
         Sim_df=pd.DataFrame(columns=Col_name)
 
@@ -239,6 +240,10 @@ class Simu:
         # start the simulation
         for s in range(0,SS):
 
+            # generate random ENV in each time 
+            dict_para = self.randomize_para()
+            Env=ENV(N, dict_para)
+
             # ordered index for the bidders remove
             # rank_index=np.array(random.sample(range(0, N), N))
             # ord_index =np.argsort(rank_index)
@@ -247,7 +252,7 @@ class Simu:
             info_index_v= np.ones(N)
             i_id = 0 
             if info_flag==1:            
-                info_index  = rank_index[np.random.randint(0,N,size=1)]
+                info_index  = int(rank_index[np.random.randint(0,N,size=1)])
                 info_index_v[info_index]=0
                 if info_index ==0 : 
                     i_id = 1

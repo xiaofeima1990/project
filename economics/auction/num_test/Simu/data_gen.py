@@ -45,11 +45,11 @@ from scipy import stats
 
 Simu_para_dict={
 
-        "comm_mu":-0.3,
-        "priv_mu":0,
-        "comm_var":0.25,
-        "priv_var":0.1,
-        "epsilon_var":0.35,
+        "comm_mu":-0.4,
+        "epsilon_mu":0,
+        "comm_var":0.3,
+        "priv_var":0.25,
+        "epsilon_var":0.4,
         }
 
 
@@ -125,11 +125,11 @@ if __name__ == '__main__':
 
         with open( data_path + "simu_data_10.pkl", "wb") as f : 
             pk.dump(simu_data_1, f)
-
-        info_flag=1
-        simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
-        with open( data_path + "simu_data_11.pkl", "wb") as f : 
-            pk.dump(simu_data_1, f)
+        #print('info case')
+        #info_flag=1
+        #simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
+        #with open( data_path + "simu_data_11.pkl", "wb") as f : 
+        #    pk.dump(simu_data_1, f)
 
     elif mode_flag==2:
     
