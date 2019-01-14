@@ -19,7 +19,6 @@ lib_path= os.path.dirname(PATH) + '/lib/'
 sys.path.append(lib_path)
 
 data_path= os.path.dirname(PATH) + '/data/Simu/'
-from simu import Simu
 from Update_rule import Update_rule
 from est import Est
 from ENV import ENV
@@ -31,10 +30,10 @@ if __name__ == '__main__':
     # read the data 
     PATH= 'E:/github/Project/economics/auction/num_test/simu'
     # without the informed bidder 
-    with open( data_path + "simu_data_10.pkl", "rb") as f :
+    with open( data_path + "simu_data_10-rand.pkl", "rb") as f :
         simu_data_0=pk.load( f)
     # with the informed bidder
-    with open( data_path + "simu_data_11.pkl", "rb") as f :
+    with open( data_path + "simu_data_11-rand.pkl", "rb") as f :
         simu_data_1=pk.load( f)
         
     
@@ -42,6 +41,35 @@ if __name__ == '__main__':
     # df.sample
     # sample(self, n=None, frac=None, replace=False, weights=None, random_state=None, axis=None) method of pandas.core.frame.DataFrame instance
     # Returns a random sample of items from an axis of object.
+
+
+
+    # clean the data 
+    df_0=simu_data_0[0]
+    
+    temp_df=simu_data_0[1]
+    temp_df=temp_df.reset_index()
+    temp_df.rename(columns={'index':'ID'},inplace= True)
+    
+    
+    df_0=df_0.merge(temp_df,on='ID',how='inner')
+    
+    
+    df_1=simu_data_1[0]
+    temp_df=simu_data_1[1]
+    temp_df=temp_df.reset_index()
+    temp_df.rename(columns={'index':'ID'},inplace= True)
+    
+    df_1=df_1.merge(temp_df,on='ID',how='inner')
+
+
+    # get real number of bidder 8 
+    df_0_c=df_0[df_0['num_i']==8]
+    df_1_c=df_1[df_1['num_i']==8]
+
+
+
+
 
 
 
@@ -74,3 +102,6 @@ if __name__ == '__main__':
     # 3: try to find way to decompose the channels for the learning effect, 
     #    private value, and competitive effect.
     # -------------------------------------------------------------
+    
+    
+    # draw general graph for the simulation

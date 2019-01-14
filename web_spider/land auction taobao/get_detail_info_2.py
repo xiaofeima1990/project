@@ -337,6 +337,7 @@ if __name__ == '__main__':
         
             df_INFO1=df_INFO1.append(df_info1,ignore_index=True)
             df_INFO2=df_INFO2.append(df_info2,ignore_index=True)
+            time.sleep(5)  
     ## how to save for the data especially for the auction data 
     # http://www.datacarpentry.org/python-ecology-lesson/08-working-with-sql/
             
@@ -347,6 +348,10 @@ if __name__ == '__main__':
                 df_INFO1=pd.DataFrame(columns=col_name)
                 df_INFO2.to_sql(city+"_"+auction_time_flag, con2, if_exists="append")
                 df_INFO2=pd.DataFrame(columns=col_bid2)
+                driver.quit()
+                time.sleep(15)
+                driver=webdriver.Firefox(firefox_profile=profile)
+
             if (index==total_len-1) and index % 25 !=0:
                 df_INFO1.to_sql(city+"_"+auction_time_flag, con, if_exists="append")
                 df_INFO2.to_sql(city+"_"+auction_time_flag, con2, if_exists="append")

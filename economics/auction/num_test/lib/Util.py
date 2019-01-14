@@ -114,22 +114,27 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,JJ=400):
     Sigma=LAA.sqrtm(SIGMA2)
     Sigma=Sigma.real
 
+    t_count=4
+    while t_count>0 :
+        # lattices 
+        [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='R',random_state=rng)
+        
+        a_n= norm.ppf(xi_n)
 
-    # lattices 
-    [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='R',random_state=rng)
-    
-    a_n= norm.ppf(xi_n)
-
-    x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ)])
-    x_signal= x_signal.T
+        x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ)])
+        x_signal= x_signal.T
 
 
-    # entry selection 
-    X_bar = X_bar * np.ones([1,N])
-    check_flag = x_signal >= X_bar
-    check_flag_v=np.prod(check_flag, axis=1)
-    check_flag_v=check_flag_v.astype(bool)
+        # entry selection 
+        X_bar = X_bar * np.ones([1,N])
+        check_flag = x_signal >= X_bar
 
+        check_flag_v=np.prod(check_flag, axis=1)
+        check_flag_v=check_flag_v.astype(bool)
+
+        if len(x_signal[check_flag_v,]) > 50:
+            break
+        t_count -= 1
 
     return [x_signal[check_flag_v,],w_n[check_flag_v,]]
 
@@ -149,13 +154,13 @@ def pre_data(Est_data):
               'real_num_bidder','win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
     # get rid of number of bidder = = 1
     Est_data=Est_data[Est_data['num_bidder']>1]
-    Est_data=Est_data[Est_data['num_bidder']<=10]
+    Est_data=Est_data[Est_data['num_bidder']<=12]
     Est_data=Est_data[Est_data['len_act']>2]
 
     # double check
     Est_data['real_num_bidder']= Est_data['bidder_state'].apply(lambda x: len(x))
     Est_data=Est_data[Est_data['real_num_bidder']>1]
-    Est_data=Est_data[Est_data['real_num_bidder']<=10]
+    Est_data=Est_data[Est_data['real_num_bidder']<=12]
     # get rid of priority people
     Est_data=Est_data[Est_data['priority_people']==0]
     

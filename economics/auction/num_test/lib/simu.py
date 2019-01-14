@@ -54,10 +54,10 @@ class Simu:
 
     def randomize_para(self):
         dict_para={}
-        dict_para['comm_mu']=self.dict_para['comm_mu']+ (-0.075, 0.15*self.rng.rand())
-        dict_para['comm_var']=self.dict_para['comm_var']+ (-0.05, 0.1*self.rng.rand())
-        dict_para['priv_var']=self.dict_para['priv_var']+ (-0.05, 0.1*self.rng.rand())
-        dict_para['epsilon_var']=self.dict_para['epsilon_var']+ (-0.05, 0.1*self.rng.rand())
+        dict_para['comm_mu']=self.dict_para['comm_mu']+ (-0.075  + 0.15*self.rng.rand())
+        dict_para['comm_var']=self.dict_para['comm_var']+ (-0.05 + 0.1*self.rng.rand())
+        dict_para['priv_var']=self.dict_para['priv_var']+ (-0.05 + 0.1*self.rng.rand())
+        dict_para['epsilon_var']=self.dict_para['epsilon_var']+ (-0.05 +  0.1*self.rng.rand())
 
         return dict_para
         
@@ -234,7 +234,7 @@ class Simu:
         sec_freq_i1=np.zeros((SS,1))
         sec_freq_i2=np.zeros((SS,1))
         low_freq_ratio_i=np.zeros((SS,1))
-        
+        ID_i=np.zeros((SS,1))
         third_win_i=np.zeros((SS,1))
 
         # start the simulation
@@ -413,7 +413,7 @@ class Simu:
                     sec_freq_i2[s]=np.nanstd(low_freq_list)
                     low_freq_ratio_i[s]=sum(low_freq_list)/sum(freq_sum)
                 
-                
+                ID_i[s] = s
                 ## find real bidding bidders
                 # pub_info[1]=int(sum((State>0)*1))
                 # third highest winning price (relative)
@@ -431,6 +431,7 @@ class Simu:
             Sim_df=Sim_df.append(temp_series, ignore_index=True)
 
         data_dict={
+                'ID':ID_i,
                 'data_bid_freq':data_bid_freq,
                 'data_win':data_win.flatten(),
                 'num_i':num_i.flatten(),

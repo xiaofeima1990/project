@@ -32,7 +32,7 @@ def list_duplicates(seq):
 
 
 def map_integ(price_v,x_signal_i,s_state,Update_bid,arg_data):
-    i,bid,low_bid,high_bid=arg_data
+    i,bid,high_bid,low_bid=arg_data
     state=s_state[i]
 
     exp_value = Update_bid.bid_vector(x_signal_i[:,i],bid,state,price_v,i)
@@ -86,7 +86,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     X_bar = Update_bid.entry_selection(r)
     
     [x_signal,w_x]=signal_DGP_est(para,rng,N,0,X_bar,JJ)
-    if x_signal.shape[0]<25:
+    if x_signal.shape[0]<50:
         return 100000
 
     data_pos.sort()
@@ -160,7 +160,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     
     # dimension problem
     sum_value=np.sum(low_part,axis=0)**0.5 + np.sum(high_part,axis=0)**0.5
-    sum_value=sum_value * w_x
+    sum_value=sum_value * w_x / sum(w_x)
     norm_var=Theta['comm_var']+Theta['priv_var']+Theta['epsilon_var']
     final_value=np.sum(sum_value)/(norm_var**0.5)
     

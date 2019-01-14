@@ -75,7 +75,10 @@ class Update_rule:
         AA_j = AA_coef[1:]
         Mu   = self.xi_rival_mu.flatten()
         Sigma=self.xi_rival_sigma2.flatten()**0.5
-        
+        # well this part should not be x>=x_bar but x=x_bar 
+        # because what if my rivals only has the limited value 
+        # remember when we calculate the bidding decisions we assumes that the rivals will drop at the next period
+
         a = (x_bar*np.ones(self.N-1)-Mu)/(Sigma)
 
         X_j = Mu + Sigma * norm.pdf( a)/(1-norm.pdf( a))
@@ -92,12 +95,37 @@ class Update_rule:
 
     def entry_selection(self,res):
         # initial point for uninformed 
-        con_var = self.vi_sigma2 - self.vi_sigma2**2 / self.xi_sigma2
-        X_bar = self.xi_sigma2 / self.vi_sigma2 *(np.log(res) - self.vi_mu - 0.5*con_var ) + self.xi_mu
+        # con_var = self.vi_sigma2 - self.vi_sigma2**2 / self.xi_sigma2
+        # X_bar = self.xi_sigma2 / self.vi_sigma2 *(np.log(res) - self.vi_mu - 0.5*con_var ) + self.xi_mu
         # find root value 
-        results=minimize(self.entry_truc,X_bar,args=(res,),method='Nelder-Mead')
+        mu_k = np.append(self.vi_mu, self.vi_rival_mu)
+        mu_k=mu_k.reshape(mu_k.size,1)
+        
+        l_k  = np.ones((self.N,1))
+        
+        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
+        Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
+        
+        
+        Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2)-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
 
-        return results.x
+        
+        Sigma_inv = inv(self.SIGMA2)
+        # Sigma_inv_k1 = Sigma_inv[0:self.N,:] # N-1+1 all the rest of the 
+        MU        = self.MU
+        AA_k = inv(Delta_k @ Sigma_inv.T) @ l_k
+        temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
+        temp_diag=temp_diag.reshape(temp_diag.size,1)
+        CC_k = 0.5*inv(Delta_k @ (Sigma_inv.T)) @ (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@MU)
+
+        
+
+        x_drop = AA_k*np.log(res) - CC_k
+        results = max(x_drop)
+
+        # results=minimize(self.entry_truc,X_bar,args=(res,),method='Nelder-Mead')
+
+        return results
  
     def entry_simu_up(self,x_bar,up):
                 # Constat part 
