@@ -270,7 +270,7 @@ class Update_rule:
         # up + lower of the rivals
         try:
             x_j_upper=upper_b_j[:,0]
-            x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder*2 )
+            x_j_upper = 1*(x_j_lower<xi)*xi + 1*((xi <= x_j_lower)*x_j_lower + ladder )
             
             E_j=sum(AA_j.flatten()*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
         except Exception as e:
@@ -338,21 +338,21 @@ class Update_rule:
 
         # potential upper bound of the rivals
         upper_b_j = self.u_bound_E(bid,state)
-
+        x_j_upper=upper_b_j[:,0]
 
         # prepare for the winning bid expectation : take expectation on x_j 
         # up + lower of the rivals
-        try:
-            x_j_upper=upper_b_j[:,0]
-            x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder )
+        # try:
+        #     x_j_upper=upper_b_j[:,0]
+        #     x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder )
 
-            E_j=sum(AA_j.flatten()*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
-        except Exception as e:
-            print(e)            
-            print(x_j_lower)
-            print(x_j_upper)
-            print(upper_b_j[:,0:2])
-            print('-------------------------')
+        #     E_j=sum(AA_j.flatten()*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
+        # except Exception as e:
+        #     print(e)            
+        #     print(x_j_lower)
+        #     print(x_j_upper)
+        #     print(upper_b_j[:,0:2])
+        #     print('-------------------------')
 
         # conditional variance var(v_i | x_i , x_j , x_q)
         # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
@@ -368,10 +368,9 @@ class Update_rule:
         
         # total expected value
         
-        Pure_value=E_j+E_const 
         bid_price =self.T_p[bid]
 
-        return [Pure_value.flatten(),bid_price,AA_i.flatten()]
+        return [E_const.flatten(),x_j_lower,x_j_upper,bid_price,AA_i.flatten(),AA_j.flatten()]
 
 
 
@@ -379,9 +378,16 @@ class Update_rule:
         self.setup_para(i_id)
         # Pure_value, bid_price, AA_i -> only in log form
         # I have to go back to normal price
-        [Pure_value,bid_price,AA_i]=self.real_bid_calc(bid,state,price_v,i_id)
+        [E_const,x_j_lower,x_j_upper,bid_price,AA_i,AA_j]=self.real_bid_calc(bid,state,price_v,i_id)
+        ladder=np.log(price_v[-1]) - np.log(price_v[-2])
+        xi_v = xi_v.reshape(xi_v.size,1)
+        x_j_upper_final = 1*(x_j_lower.reshape(1,self.N-1)< np.repeat(xi_v,self.N-1, axis = 1) )*xi_v + 1*((np.repeat(xi_v,self.N-1, axis = 1) <= x_j_lower.reshape(1,self.N-1) )*x_j_lower + ladder )
+        AA_j=AA_j.reshape(AA_j.size, 1 )
+        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper_final) @ AA_j
+        exp_value= AA_i*xi_v + E_j + E_const 
 
-        return np.exp(AA_i*xi_v+Pure_value)
+
+        return np.exp(exp_value)
 
 
     

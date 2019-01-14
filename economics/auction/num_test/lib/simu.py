@@ -431,7 +431,7 @@ class Simu:
             Sim_df=Sim_df.append(temp_series, ignore_index=True)
 
         data_dict={
-                'ID':ID_i,
+                'ID':ID_i.flatten(),
                 'data_bid_freq':data_bid_freq,
                 'data_win':data_win.flatten(),
                 'num_i':num_i.flatten(),

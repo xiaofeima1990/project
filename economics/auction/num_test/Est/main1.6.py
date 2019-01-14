@@ -231,7 +231,7 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[-0.3,0.25,0.1,0.3]
+    Theta=[-0.6,0.4,0.6,0.9]
     
     start = time.time()
     now = datetime.datetime.now()
