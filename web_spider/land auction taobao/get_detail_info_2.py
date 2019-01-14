@@ -348,16 +348,19 @@ if __name__ == '__main__':
                 df_INFO1=pd.DataFrame(columns=col_name)
                 df_INFO2.to_sql(city+"_"+auction_time_flag, con2, if_exists="append")
                 df_INFO2=pd.DataFrame(columns=col_bid2)
-                driver.quit()
                 time.sleep(15)
                 driver=webdriver.Firefox(firefox_profile=profile)
-
+                con.close()
+                con = sqlite3.connect(store_path+"auction_info_house.sqlite")
+                con2.close()
+                con2 = sqlite3.connect(store_path+"auction_bidding_house.sqlite")
+                
             if (index==total_len-1) and index % 25 !=0:
                 df_INFO1.to_sql(city+"_"+auction_time_flag, con, if_exists="append")
                 df_INFO2.to_sql(city+"_"+auction_time_flag, con2, if_exists="append")
                 df_INFO2=pd.DataFrame(columns=col_bid2)
                 df_INFO1=pd.DataFrame(columns=col_name)
-            
+                
             print("第-"+str(index)+"-拍卖, 第-"+auction_time_flag+"-次,"+"状态: "+status+" ,"+"id: "+str(id_info))
             
         

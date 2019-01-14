@@ -11,6 +11,11 @@ new updated version:
     - simplify the code
  
 delete the rank order assumption
+Q1 why I can not generate corresponding N active bidders? 
+because the auctioneer random pick the candidate at each period. Someone may have lower signal which will drop very early.
+Another way is to change the picking rule. let lower valued guy bidding first 
+
+
 """
 
 import numpy as np

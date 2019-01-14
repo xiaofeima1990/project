@@ -270,7 +270,7 @@ class Update_rule:
         # up + lower of the rivals
         try:
             x_j_upper=upper_b_j[:,0]
-            x_j_upper = 1*(x_j_lower<xi)*xi + 1*((xi <= x_j_lower)*x_j_lower + ladder )
+            x_j_upper = 1*(x_j_lower<xi*np.ones(self.N-1))*xi + 1*((xi*np.ones(self.N-1) <= x_j_lower)*(x_j_lower + ladder) )
             
             E_j=sum(AA_j.flatten()*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
         except Exception as e:
@@ -381,7 +381,7 @@ class Update_rule:
         [E_const,x_j_lower,x_j_upper,bid_price,AA_i,AA_j]=self.real_bid_calc(bid,state,price_v,i_id)
         ladder=np.log(price_v[-1]) - np.log(price_v[-2])
         xi_v = xi_v.reshape(xi_v.size,1)
-        x_j_upper_final = 1*(x_j_lower.reshape(1,self.N-1)< np.repeat(xi_v,self.N-1, axis = 1) )*xi_v + 1*((np.repeat(xi_v,self.N-1, axis = 1) <= x_j_lower.reshape(1,self.N-1) )*x_j_lower + ladder )
+        x_j_upper_final = 1*(x_j_lower.reshape(1,self.N-1)< np.repeat(xi_v,self.N-1, axis = 1) )*xi_v + 1*((np.repeat(xi_v,self.N-1, axis = 1) <= x_j_lower.reshape(1,self.N-1) )*(x_j_lower + ladder) )
         AA_j=AA_j.reshape(AA_j.size, 1 )
         E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper_final) @ AA_j
         exp_value= AA_i*xi_v + E_j + E_const 

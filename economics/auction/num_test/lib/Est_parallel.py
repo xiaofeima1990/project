@@ -160,7 +160,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     
     # dimension problem
     sum_value=np.sum(low_part,axis=0)**0.5 + np.sum(high_part,axis=0)**0.5
-    sum_value=sum_value * w_x / sum(w_x)
+    # sum_value=sum_value * w_x / sum(w_x)
     norm_var=Theta['comm_var']+Theta['priv_var']+Theta['epsilon_var']
     final_value=np.sum(sum_value)/(norm_var**0.5)
     
