@@ -120,16 +120,16 @@ if __name__ == '__main__':
         N= 8
         SS= 1000
         Rng_seed= 12456
-        info_flag=0
-        simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
+        # info_flag=0
+        # simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
 
-        with open( data_path + "simu_data_10.pkl", "wb") as f : 
-            pk.dump(simu_data_1, f)
+        # with open( data_path + "simu_data_10.pkl", "wb") as f : 
+        #     pk.dump(simu_data_1, f)
         #print('info case')
-        #info_flag=1
-        #simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
-        #with open( data_path + "simu_data_11.pkl", "wb") as f : 
-        #    pk.dump(simu_data_1, f)
+        info_flag=1
+        simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
+        with open( data_path + "simu_data_11.pkl", "wb") as f : 
+           pk.dump(simu_data_1, f)
 
     elif mode_flag==2:
     

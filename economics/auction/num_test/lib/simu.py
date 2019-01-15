@@ -257,7 +257,7 @@ class Simu:
             info_index_v= np.ones(N)
             i_id = 0 
             if info_flag==1:            
-                info_index  = int(rank_index[np.random.randint(0,N,size=1)])
+                info_index  = int(np.random.randint(0,N,size=1))
                 info_index_v[info_index]=0
                 if info_index ==0 : 
                     i_id = 1
@@ -294,7 +294,8 @@ class Simu:
             while auction_flag and t <= 300:
                 
                 if t == 0: 
-                    curr_bidder=int(np.argmax(x_signal))
+                    curr_bidder=self.rng.choice(range(N),size=1) 
+                    
                     Data_act.append(curr_bidder)
                     State[curr_bidder]=State[curr_bidder]+1
                 else:

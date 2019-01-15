@@ -12,7 +12,8 @@ remember the price should take log form
 I should keep the setup
 where mu_ai = a_1  ; var_ai = a_2
 
-
+I just realied that my estimation moment has some problems 
+modify the map_integ to take average inside the integ
 """
 from functools import partial
 from collections import defaultdict,OrderedDict
@@ -22,6 +23,7 @@ from Update_rule import Update_rule
 from ENV import ENV
 from Util import *
 import scipy.stats as ss
+
 
 
 def list_duplicates(seq):
@@ -36,9 +38,14 @@ def map_integ(price_v,x_signal_i,s_state,Update_bid,arg_data):
     state=s_state[i]
 
     exp_value = Update_bid.bid_vector(x_signal_i[:,i],bid,state,price_v,i)
+    # I just realized that I have to take integration inside 
+    # like Hong and Shum 2003 SNLS, because x_signal is unkown and simulated. 
+    # not like CT 2009 , their X can be observed
 
-    low_case  = low_bid  - exp_value
-    high_case = high_bid - exp_value
+    exp_value_M = np.mean(exp_value)
+
+    low_case  = low_bid  - exp_value_M
+    high_case = high_bid - exp_value_M
 
     low_sum = np.square((low_case>0)*1*low_case)
     high_sum = np.square((high_case<0)*1*high_case)
@@ -148,6 +155,8 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     for i in range(0,N):
         bid_v.append(int(max(state_temp[i,:]))+1)
         ss_state_v.append([int(x) for x in state_temp[i,:].tolist()])
+    
+    # censer_prob=[1-ss.norm.cdf(X_bar,ele[0],ele[1]) for ele in zip(para.xi_mu,para.xi_sigma2)]
     map_func=partial(map_integ,price_v,x_signal,ss_state_v,Update_bid)
     # ss_state_v how to load the right part 
     exp_value=list(map(map_func,zip(range(0,N),bid_v,bid_up,bid_low))) 
@@ -156,7 +165,8 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     # I believe there exist some problem for 
     # the winning bidder upper case Need more time to debug
     index_win=np.argmax(data_state)
-    high_part[index_win,:]=0
+    # high_part[index_win,:]=0
+    high_part[index_win]=0
     
     # dimension problem
     sum_value=np.sum(low_part,axis=0)**0.5 + np.sum(high_part,axis=0)**0.5
