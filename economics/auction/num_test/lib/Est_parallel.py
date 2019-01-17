@@ -65,6 +65,11 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     # ord_index=np.argsort(data_state)    # order the bidder's bidding value, highest has high order index! 
     #                                     # ord_index=np.argsort(data_state)[::-1] descedning order
     # rank_index=ss.rankdata(data_state)-1
+    # wait still, I can use rank order to dervie the dropout price. 
+
+    # order index to order from highest to lowest 
+    ord_index=np.argsort(data_state)[::-1] 
+    # index for generating the bidder identity make everyone the same
     iden_index=np.ones(N)
     info_v=np.ones(N)
     i_id=0
@@ -90,47 +95,54 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     JJ=JJ+100*N
     # add whether it is informed or not informed  
     Update_bid.setup_para(i_id)
-    X_bar = Update_bid.entry_selection(r)
+    r_bar=price_v[ord_index]
+    X_bar = Update_bid.lower_bound(r_bar)
     
     [x_signal,w_x]=signal_DGP_est(para,rng,N,0,X_bar,JJ)
     if x_signal.shape[0]<50:
         return 100000
 
+    # re-order 
     data_pos.sort()
+    bidder_bid_history=data_pos[ord_index]
+    
+
 
 
     state_temp=np.zeros((N,N))
 
-     # get the bidders state for calculation
-    for i in range(0,N):
-        flag_select=np.ones(N)
-        flag_select[i]=0
-        select_flag=np.nonzero(flag_select)[0].tolist()
+    #  # get the bidders state for calculation
+    # for i in range(0,N):
+    #     flag_select=np.ones(N)
+    #     flag_select[i]=0
+    #     select_flag=np.nonzero(flag_select)[0].tolist()
 
-        state_temp[i,0]=data_state[i]
+    #     state_temp[i,0]=data_state[i]
         
-        temp_s=[]
-        for j in select_flag:
-            try:
-                bid_post=data_pos[j][1]
+    #     temp_s=[]
+    #     for j in select_flag:
+    #         try:
+    #             bid_post=data_pos[j][1]
                 
                 
-                if bid_post[0] > data_state[i]:
-                    temp_s.append(0)
-                else: 
-                    temp_p=[x for x in bid_post if x < data_state[i] ]
-                    temp_p.sort()
-                    temp_s.append(temp_p[-1])
-            except Exception as e:
-                print(e)
-                print(data_pos)
-                print(temp_p)
-                print(data_state[i])
-                temp_s.append(0)
-                print('this is number ',tt)
-                input('wait for check')
+    #             if bid_post[0] > data_state[i]:
+    #                 temp_s.append(0)
+    #             else: 
+    #                 temp_p=[x for x in bid_post if x < data_state[i] ]
+    #                 temp_p.sort()
+    #                 temp_s.append(temp_p[-1])
+    #         except Exception as e:
+    #             print(e)
+    #             print(data_pos)
+    #             print(temp_p)
+    #             print(data_state[i])
+    #             temp_s.append(0)
+    #             print('this is number ',tt)
+    #             input('wait for check')
                 
-        state_temp[i,1:] = temp_s
+    #     state_temp[i,1:] = temp_s
+
+
 
 
     # for the expected value of each bidders

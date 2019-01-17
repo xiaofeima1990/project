@@ -59,9 +59,39 @@ class Update_rule:
         self.vi_rival_sigma2 = self.vi_rival_sigma2.reshape(self.N-1,1)
         self.cov_istar       = self.cov_istar.reshape(self.N,1) 
         
+    def lower_bound(self, p_low):
+
+        ## all the rivals bidding price is known
+        p_k=p_low.reshape(p_low.size,1)
+        # mu_k
+        
+        mu_k = np.append(self.vi_mu, self.vi_rival_mu)
+        mu_k=mu_k.reshape(mu_k.size,1)
+        MU = self.MU
+        l_k  = np.ones((self.N,1))
+        
+        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
+        Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
+        
+        
+        Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2)-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
+
+        
+        Sigma_inv = inv(self.SIGMA2)
+        # Sigma_inv_k1 = Sigma_inv[0:self.N,:] # N-1+1 all the rest of the 
+
+        AA_k = inv(Delta_k @ Sigma_inv.T) @ l_k
+        temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
+        temp_diag=temp_diag.reshape(temp_diag.size,1)
+        CC_k = 0.5*inv(Delta_k @ (Sigma_inv.T)) @ (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@MU)
+
+        
+
+        x_drop = AA_k[1:]*p_k - CC_k[1:]
+        x_drop = x_drop.reshape(1,x_drop.size)
 
     def entry_truc(self,x_bar,res):
-                # Constat part 
+        # Constat part 
         Sigma_inv = inv(self.SIGMA2)
 
         # COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var) # old and possibly wrong implementation
@@ -372,7 +402,50 @@ class Update_rule:
 
         return [E_const.flatten(),x_j_lower,x_j_upper,bid_price,AA_i.flatten(),AA_j.flatten()]
 
+    def real_bid_calc_new(self,bid,price_v,ord_id):
+        self.T_p = np.log(price_v)
+        ladder=np.log(price_v[-1]) - np.log(price_v[-2])
 
+        # Constat part 
+        Sigma_inv = inv(self.SIGMA2)
+        
+        # COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var)
+        COV_xvi=self.cov_istar
+        
+        CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
+
+        AA_coef =  Sigma_inv @ COV_xvi
+        
+        AA_i = AA_coef[0]
+        AA_j = AA_coef[1:]
+
+        var_update = self.vi_sigma2 -COV_xvi.T @  Sigma_inv @  COV_xvi
+        
+        up_bound=np.ones(self.N-1)
+        up_bound[0:ord_id]=-1
+        up_bound[ord_id]=0
+        # constant part 
+        E_const = CC_i+0.5*var_update
+
+        return [E_const.flatten(),up_bound,AA_i.flatten(),AA_j.flatten()]
+
+    def bid_vector_new(self,xi_v,bid,x_j_low,price_v,ord_id):
+        self.setup_para(ord_id)
+        [E_const,up_bound,AA_i,AA_j]=self.real_bid_calc_new(bid,price_v,ord_id)
+        ladder=np.log(price_v[-1]) - np.log(price_v[-2])
+        xi_v = xi_v.reshape(xi_v.size,1)
+        real_upper_bound_v=np.zeros([xi_v.size,self.N])
+        for i in range(len(up_bound)):
+            if up_bound[i]==-1:
+                real_upper_bound_v[:,i] = 10
+            elif up_bound[i]== 1:
+                real_upper_bound_v[:,i] = xi_v
+
+        AA_j=AA_j.reshape(AA_j.size, 1 )
+        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_low,real_upper_bound_v) @ AA_j
+
+        exp_value= AA_i*xi_v + E_j + E_const 
+        return np.exp(exp_value)
 
     def bid_vector(self,xi_v,bid,state,price_v,i_id):
         self.setup_para(i_id)
