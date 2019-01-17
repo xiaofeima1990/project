@@ -100,7 +100,7 @@ def balance_data(DATA_STRUCT,n_work):
 
 
 
-def signal_DGP_est(para,rng,N,i_id,X_bar,JJ=400):
+def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,JJ=400):
     # this part should follow the ascending order 
     # X_bar is the threshold 
     
@@ -128,9 +128,13 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,JJ=400):
         # entry selection 
         X_bar = X_bar.reshape(1,N)
         check_flag = x_signal >= X_bar
-
         check_flag_v=np.prod(check_flag, axis=1)
+        check_flag2 = x_signal <= X_up
+        check_flag_v2=np.prod(check_flag2, axis=1)
+
+        check_flag_v=check_flag_v*check_flag_v2
         check_flag_v=check_flag_v.astype(bool)
+
 
         if x_signal[check_flag_v,].shape[0] > 50:
             break

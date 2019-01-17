@@ -22,6 +22,7 @@ import numpy as np
 from Update_rule import Update_rule
 from ENV import ENV
 from Util import *
+import copy
 import scipy.stats as ss
 
 
@@ -116,13 +117,14 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     Update_bid.setup_para(i_id)
     r_bar=price_v[data_state[ord_index]]
     X_bar = Update_bid.lower_bound(r_bar)
-    
-    [x_signal,w_x]=signal_DGP_est(para,rng,N,0,X_bar,JJ)
+    X_up = np.ones([1,N])*X_bar[0]
+    X_up[0] = 3.5
+    [x_signal,w_x]=signal_DGP_est(para,rng,N,0,X_bar,X_up,JJ)
     if x_signal.shape[0]<50:
         return 100000
 
     # re-order 
-    bidder_bid_history=[data_pos[int(ord_index[i])] for i in ord_index]
+    bidder_bid_history=[data_pos[int(ord_index[i])] for i in range(len(ord_index))]
     
 
 
@@ -168,9 +170,10 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     
     bid_low=[]
     
-    for ele in data_state:
-        bid_low.append(price_v[int(ele)])
+    # for ele in x_lower_bound:
+    #     bid_low.append(price_v[int(ele)])
     # bid_low=[price_v[int(ele)] for ele in data_state]
+    bid_low=r_bar
     bid_up =(price_v[-1]+ladder)*np.ones(N)
 
     sum_value=0
@@ -180,12 +183,12 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     price_v=np.append(price_v,np.linspace(1,4,4)*ladder+price_v[-1])
 
     # use map to accelerate the speed
-    bid_v=[]
-    ss_state_v=[]
-    for i in range(0,N):
-        bid_v.append(int(max(state_temp[i,:]))+1)
-        ss_state_v.append([int(x) for x in state_temp[i,:].tolist()])
-    
+    # bid_v=[]
+    # ss_state_v=[]
+    # for i in range(0,N):
+    #     bid_v.append(int(max(state_temp[i,:]))+1)
+    #     ss_state_v.append([int(x) for x in state_temp[i,:].tolist()])
+    bid_v=price_v[data_state[ord_index]+1]
     # censer_prob=[1-ss.norm.cdf(X_bar,ele[0],ele[1]) for ele in zip(para.xi_mu,para.xi_sigma2)]
 
     # map_func=partial(map_integ,price_v,x_signal,ss_state_v,Update_bid)

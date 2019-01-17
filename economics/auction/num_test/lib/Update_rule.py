@@ -403,7 +403,7 @@ class Update_rule:
 
         return [E_const.flatten(),x_j_lower,x_j_upper,bid_price,AA_i.flatten(),AA_j.flatten()]
 
-    def real_bid_calc_new(self,bid,price_v,ord_id):
+    def real_bid_calc_new(self,price_v,ord_id):
         self.T_p = np.log(price_v)
 
         # Constat part 
@@ -416,8 +416,8 @@ class Update_rule:
 
         AA_coef =  Sigma_inv @ COV_xvi
         
-        AA_i = AA_coef[0]
-        AA_j = AA_coef[1:]
+        AA_i = AA_coef[ord_id]
+        AA_j = np.delete(AA_coef,ord_id)
 
         var_update = self.vi_sigma2 -COV_xvi.T @  Sigma_inv @  COV_xvi
         
@@ -431,7 +431,7 @@ class Update_rule:
 
     def bid_vector_new(self,xi_v,x_j_low,price_v,ord_id):
         self.setup_para(ord_id)
-        [E_const,up_bound,AA_i,AA_j]=self.real_bid_calc_new(bid,price_v,ord_id)
+        [E_const,up_bound,AA_i,AA_j]=self.real_bid_calc_new(price_v,ord_id)
         ladder=np.log(price_v[-1]) - np.log(price_v[-2])
         xi_v = xi_v.reshape(xi_v.size,1)
         real_upper_bound_v=np.zeros([xi_v.size,self.N])
@@ -439,10 +439,10 @@ class Update_rule:
             if up_bound[i]==-1:
                 real_upper_bound_v[:,i] = 10
             elif up_bound[i]== 1:
-                real_upper_bound_v[:,i] = xi_v
-
+                real_upper_bound_v[:,i] = xi_v.flatten()
+        real_upper_bound_v=np.delete(real_upper_bound_v,ord_id,axis=1)
         AA_j=AA_j.reshape(AA_j.size, 1 )
-        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_low,real_upper_bound_v) @ AA_j
+        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),np.delete(x_j_low,ord_id),real_upper_bound_v) @ AA_j
 
         exp_value= AA_i*xi_v + E_j + E_const 
         return np.exp(exp_value)
