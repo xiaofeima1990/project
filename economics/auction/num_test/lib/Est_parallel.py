@@ -52,6 +52,24 @@ def map_integ(price_v,x_signal_i,s_state,Update_bid,arg_data):
     return (low_sum,high_sum)
 
 
+def map_integ_new(price_v,x_signal_i,x_low_bound,Update_bid,arg_data):
+    i,bid,high_bid,low_bid=arg_data
+
+    exp_value = Update_bid.bid_vector_new(x_signal_i[:,i],x_low_bound,price_v,i)
+    # I just realized that I have to take integration inside 
+    # like Hong and Shum 2003 SNLS, because x_signal is unkown and simulated. 
+    # not like CT 2009 , their X can be observed
+
+    exp_value_M = np.mean(exp_value)
+
+    low_case  = low_bid  - exp_value_M
+    high_case = high_bid - exp_value_M
+
+    low_sum = np.square((low_case>0)*1*low_case)
+    high_sum = np.square((high_case<0)*1*high_case)
+    return (low_sum,high_sum)
+
+
 
 
 
@@ -69,6 +87,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
 
     # order index to order from highest to lowest 
     ord_index=np.argsort(data_state)[::-1] 
+    data_state=np.array(data_state)
     # index for generating the bidder identity make everyone the same
     iden_index=np.ones(N)
     info_v=np.ones(N)
@@ -95,7 +114,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     JJ=JJ+100*N
     # add whether it is informed or not informed  
     Update_bid.setup_para(i_id)
-    r_bar=price_v[ord_index]
+    r_bar=price_v[data_state[ord_index]]
     X_bar = Update_bid.lower_bound(r_bar)
     
     [x_signal,w_x]=signal_DGP_est(para,rng,N,0,X_bar,JJ)
@@ -103,8 +122,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
         return 100000
 
     # re-order 
-    data_pos.sort()
-    bidder_bid_history=data_pos[ord_index]
+    bidder_bid_history=[data_pos[int(ord_index[i])] for i in ord_index]
     
 
 
@@ -142,7 +160,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
                 
     #     state_temp[i,1:] = temp_s
 
-
+    x_lower_bound=data_state[ord_index]
 
 
     # for the expected value of each bidders
@@ -169,7 +187,9 @@ def para_fun_est(Theta,rng,JJ,arg_data):
         ss_state_v.append([int(x) for x in state_temp[i,:].tolist()])
     
     # censer_prob=[1-ss.norm.cdf(X_bar,ele[0],ele[1]) for ele in zip(para.xi_mu,para.xi_sigma2)]
-    map_func=partial(map_integ,price_v,x_signal,ss_state_v,Update_bid)
+
+    # map_func=partial(map_integ,price_v,x_signal,ss_state_v,Update_bid)
+    map_func=partial(map_integ_new,price_v,x_signal,x_lower_bound,Update_bid)
     # ss_state_v how to load the right part 
     exp_value=list(map(map_func,zip(range(0,N),bid_v,bid_up,bid_low))) 
     low_part =np.array([x[0] for x in exp_value])

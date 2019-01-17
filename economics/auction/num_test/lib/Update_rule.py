@@ -87,8 +87,9 @@ class Update_rule:
 
         
 
-        x_drop = AA_k[1:]*p_k - CC_k[1:]
-        x_drop = x_drop.reshape(1,x_drop.size)
+        x_drop = AA_k*np.log(p_k) - CC_k
+        
+        return x_drop.reshape(1,x_drop.size)
 
     def entry_truc(self,x_bar,res):
         # Constat part 
@@ -404,7 +405,6 @@ class Update_rule:
 
     def real_bid_calc_new(self,bid,price_v,ord_id):
         self.T_p = np.log(price_v)
-        ladder=np.log(price_v[-1]) - np.log(price_v[-2])
 
         # Constat part 
         Sigma_inv = inv(self.SIGMA2)
@@ -429,7 +429,7 @@ class Update_rule:
 
         return [E_const.flatten(),up_bound,AA_i.flatten(),AA_j.flatten()]
 
-    def bid_vector_new(self,xi_v,bid,x_j_low,price_v,ord_id):
+    def bid_vector_new(self,xi_v,x_j_low,price_v,ord_id):
         self.setup_para(ord_id)
         [E_const,up_bound,AA_i,AA_j]=self.real_bid_calc_new(bid,price_v,ord_id)
         ladder=np.log(price_v[-1]) - np.log(price_v[-2])

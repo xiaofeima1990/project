@@ -117,7 +117,7 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,JJ=400):
     t_count=3
     while t_count>0 :
         # lattices 
-        [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='N',random_state=int(rng + np.random.randint(1000, size=1)) )
+        [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='N',random_state=rng )
         
         a_n= norm.ppf(xi_n)
 
