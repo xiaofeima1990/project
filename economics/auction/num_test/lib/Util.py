@@ -184,7 +184,6 @@ def pre_data(Est_data):
     Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
     Est_data['price_norm'] = Est_data['bidder_price']/Est_data['evaluation_price']
 
-    Est_data=Est_data[Est_data['real_num_bidder']>4]
     
     return Est_data[col_name]
                 

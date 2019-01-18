@@ -91,38 +91,7 @@ class Update_rule:
         
         return x_drop.reshape(1,x_drop.size)
 
-    def entry_truc(self,x_bar,res):
-        # Constat part 
-        Sigma_inv = inv(self.SIGMA2)
 
-        # COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var) # old and possibly wrong implementation
-        COV_xvi=self.cov_istar
-
-        CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
-        CC_i = CC_i.flatten()
-        AA_coef =  Sigma_inv @ COV_xvi
-        
-        AA_i = AA_coef[0]
-        AA_j = AA_coef[1:]
-        Mu   = self.xi_rival_mu.flatten()
-        Sigma=self.xi_rival_sigma2.flatten()**0.5
-        # well this part should not be x>=x_bar but x=x_bar 
-        # because what if my rivals only has the limited value 
-        # remember when we calculate the bidding decisions we assumes that the rivals will drop at the next period
-
-        a = (x_bar*np.ones(self.N-1)-Mu)/(Sigma)
-
-        X_j = Mu + Sigma * norm.pdf( a)/(1-norm.pdf( a))
-        E_j = sum(AA_j.flatten()*X_j)
-
-        # conditional variance var(v_i | x_i , x_j , x_q)
-        # actually I do not think this part is of any importance 
-        # part_varj = sum(AA_j.flatten()**2 * self.truc_x_var(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_bar,8))
-        var_update = self.vi_sigma2 -COV_xvi.T @  Sigma_inv @  COV_xvi
-        # var_update = self.vi_sigma2 -AA_i*self.vi_sigma2 + (E_j-part_mu )**2
-        var_update = var_update.flatten()
-        E_win_revenue=E_j+ CC_i+0.5*var_update  + AA_i*x_bar - np.log(res)
-        return E_win_revenue ** 2
 
     def entry_selection(self,res):
         # initial point for uninformed 
@@ -344,64 +313,7 @@ class Update_rule:
         # return pure value E_win and flag
         return [Pure_value,E_win_revenue,flag]
 
-    def real_bid_calc(self,bid,state,price_v,i_id):
-        self.T_p = np.log(price_v)
-        ladder=np.log(price_v[-1]) - np.log(price_v[-2])
-        lower_b = self.l_bound(state)
-        
-        #  dropout x
-        x_j_lower = lower_b[:,0]
 
-
-        # Constat part 
-        Sigma_inv = inv(self.SIGMA2)
-        
-        # COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var)
-        COV_xvi=self.cov_istar
-        
-        CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
-
-        AA_coef =  Sigma_inv @ COV_xvi
-        
-        AA_i = AA_coef[0]
-        AA_j = AA_coef[1:]
-
-
-        # potential upper bound of the rivals
-        upper_b_j = self.u_bound_E(bid,state)
-        x_j_upper=upper_b_j[:,0]
-
-        # prepare for the winning bid expectation : take expectation on x_j 
-        # up + lower of the rivals
-        # try:
-        #     x_j_upper=upper_b_j[:,0]
-        #     x_j_upper=1*(x_j_upper>x_j_lower)*x_j_upper + 1*((x_j_upper <= x_j_lower)*x_j_lower + ladder )
-
-        #     E_j=sum(AA_j.flatten()*self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
-        # except Exception as e:
-        #     print(e)            
-        #     print(x_j_lower)
-        #     print(x_j_upper)
-        #     print(upper_b_j[:,0:2])
-        #     print('-------------------------')
-
-        # conditional variance var(v_i | x_i , x_j , x_q)
-        # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
-        # modify the conditional variancce, a basic criterion is that conditional variance must be less than vi_sigma2 
-        # part_varj = sum(AA_j.flatten()**2 * self.truc_x_var(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper))
-        # var_update = self.vi_sigma2 -AA_i.flatten()*self.vi_sigma2 + part_varj
-
-        var_update = self.vi_sigma2 -COV_xvi.T @  Sigma_inv @  COV_xvi 
-        
-        
-        # constant part 
-        E_const = CC_i+0.5*var_update
-        
-        # total expected value
-        
-        bid_price =self.T_p[bid]
-
-        return [E_const.flatten(),x_j_lower,x_j_upper,bid_price,AA_i.flatten(),AA_j.flatten()]
 
     def real_bid_calc_new(self,price_v,ord_id):
         self.T_p = np.log(price_v)
@@ -421,7 +333,7 @@ class Update_rule:
 
         var_update = self.vi_sigma2 -COV_xvi.T @  Sigma_inv @  COV_xvi
         
-        up_bound=np.ones(self.N-1)
+        up_bound=np.ones(self.N)
         up_bound[0:ord_id]=-1
         up_bound[ord_id]=0
         # constant part 
@@ -445,21 +357,6 @@ class Update_rule:
         E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),np.delete(x_j_low,ord_id),real_upper_bound_v) @ AA_j
 
         exp_value= AA_i*xi_v + E_j + E_const 
-        return np.exp(exp_value)
-
-    def bid_vector(self,xi_v,bid,state,price_v,i_id):
-        self.setup_para(i_id)
-        # Pure_value, bid_price, AA_i -> only in log form
-        # I have to go back to normal price
-        [E_const,x_j_lower,x_j_upper,bid_price,AA_i,AA_j]=self.real_bid_calc(bid,state,price_v,i_id)
-        ladder=np.log(price_v[-1]) - np.log(price_v[-2])
-        xi_v = xi_v.reshape(xi_v.size,1)
-        x_j_upper_final = 1*(x_j_lower.reshape(1,self.N-1)< np.repeat(xi_v,self.N-1, axis = 1) )*xi_v + 1*((np.repeat(xi_v,self.N-1, axis = 1) <= x_j_lower.reshape(1,self.N-1) )*(x_j_lower + ladder) )
-        AA_j=AA_j.reshape(AA_j.size, 1 )
-        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper_final) @ AA_j
-        exp_value= AA_i*xi_v + E_j + E_const 
-
-
         return np.exp(exp_value)
 
 
