@@ -92,7 +92,7 @@ class ENV:
 
 
             # this rival means the rival's mu and variance, i.e. vj and xj, still we have to count for private and nosiy part  
-            self.info_st['xi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order+ self.noise_mu*temp_info_v  )
+            self.info_st['xi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order + self.noise_mu*temp_info_v )
             self.info_st['vi_rival_mu'].append( self.comm_mu + self.priv_mu*temp_order )
 
             # self.info_st['xi_rival_sigma2'].append( self.comm_var + self.priv_var*temp_order + self.noise_var*temp_info_v )
@@ -107,11 +107,11 @@ class ENV:
             temp_sigma2=self.priv_var*np.ones(self.N) + self.noise_var*new_info_v
             self.info_st['SIGMA2'].append( np.diag(temp_sigma2) + np.ones([self.N,self.N])*self.comm_var )
 
-        # add extra ascending order for the MU and SIGMA2 
-        temp_order=np.array(range(0,self.N))
-        self.info_st['MU'].append( self.comm_mu+self.priv_mu*temp_order + self.noise_mu*info_flag  )
-        temp_sigma2=self.priv_var*np.ones(self.N) + self.noise_var*info_flag
-        self.info_st['SIGMA2'].append( np.diag(temp_sigma2) + np.ones([self.N,self.N])*self.comm_var )
+        # # add extra ascending order for the MU and SIGMA2 
+        # temp_order=np.array(range(0,self.N))
+        # self.info_st['MU'].append( self.comm_mu+self.priv_mu*temp_order + self.noise_mu*info_flag  )
+        # temp_sigma2=self.priv_var*np.ones(self.N) + self.noise_var*info_flag
+        # self.info_st['SIGMA2'].append( np.diag(temp_sigma2) + np.ones([self.N,self.N])*self.comm_var )
         ## remember that MU and SIGMA2 have extra item that is used for generating R.V.
         return Info_result(self.info_st)
 

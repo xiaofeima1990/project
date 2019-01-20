@@ -108,7 +108,6 @@ class Update_rule:
         
         
         Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2)-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
-
         
         Sigma_inv = inv(self.SIGMA2)
         # Sigma_inv_k1 = Sigma_inv[0:self.N,:] # N-1+1 all the rest of the 
@@ -121,11 +120,10 @@ class Update_rule:
         
 
         x_drop = AA_k*np.log(res) - CC_k
-        results = max(x_drop)
 
         # results=minimize(self.entry_truc,X_bar,args=(res,),method='Nelder-Mead')
 
-        return results
+        return x_drop.reshape(1,x_drop.size)
  
     def entry_simu_up(self,x_bar,up):
                 # Constat part 

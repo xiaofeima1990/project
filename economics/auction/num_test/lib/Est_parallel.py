@@ -54,7 +54,7 @@ def map_integ(price_v,x_signal_i,s_state,Update_bid,arg_data):
 
 
 def map_integ_new(price_v,x_signal_i,x_low_bound,Update_bid,arg_data):
-    i,bid,high_bid,low_bid=arg_data
+    i,high_bid,low_bid=arg_data
 
     exp_value = Update_bid.bid_vector_new(x_signal_i[:,i],x_low_bound,price_v,i)
     # I just realized that I have to take integration inside 
@@ -115,13 +115,14 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     JJ=JJ+100*N
     # add whether it is informed or not informed  
     Update_bid.setup_para(i_id)
-    r_bar=price_v[data_state[ord_index]]
-    X_bar = Update_bid.lower_bound(r_bar)
-    X_up = np.ones([1,N])*X_bar[0]
-    X_up[0] = 3.5
+    
+    # I think it is still the entry threshold not the final posting price as the lower bound
+    X_bar = Update_bid.lower_bound(r*np.ones(N))
+    # Why I need up, I do not need it 
+    X_up = np.ones([1,N])*4
     [x_signal,w_x]=signal_DGP_est(para,rng,N,0,X_bar,X_up,JJ)
     if x_signal.shape[0]<50:
-        return 100000
+        return 1000000
 
     # re-order each bidder's bidding history
     # bidder_bid_history=[data_pos[int(ord_index[i])] for i in range(len(ord_index))]
@@ -130,15 +131,16 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     x_lower_bound=data_state[ord_index]
 
     # construct lower price bound and upper price bound
-    bid_low=[]
+    # bid_low=[]
     
     # for ele in x_lower_bound:
     #     bid_low.append(price_v[int(ele)])
     # bid_low=[price_v[int(ele)] for ele in data_state]
-    bid_low=r_bar
-    bid_up =(price_v[-1]+ladder)*np.ones(N)
+    r_bar   = price_v[data_state[ord_index]]
+    bid_low = r_bar
+    bid_up  = (price_v[-1]+ladder)*np.ones(N)
 
-    sum_value=0
+    # sum_value=0
 
     # now I need to calculate empirical integ 
     # start = time.time()
@@ -147,18 +149,17 @@ def para_fun_est(Theta,rng,JJ,arg_data):
 
     # use map to accelerate the speed
 
-    bid_v=price_v[data_state[ord_index]+1]
+    # bid_v=price_v[data_state[ord_index]+1]
 
 
     map_func=partial(map_integ_new,price_v,x_signal,x_lower_bound,Update_bid)
-
-    exp_value=list(map(map_func,zip(range(0,N),bid_v,bid_up,bid_low))) 
+    # i = 0.1.2.3... is the rank order for the participants!!!
+    exp_value=list(map(map_func,zip(range(0,N),bid_up,bid_low))) 
     low_part =np.array([x[0] for x in exp_value])
     high_part=np.array([x[1] for x in exp_value])
+
     # winning bid no uppder bound constraints
-    index_win=np.argmax(data_state)
-    # high_part[index_win,:]=0
-    high_part[index_win]=0
+    high_part[0]=0
     
     # sum together 
     sum_value=np.sum(low_part,axis=0)**0.5 + np.sum(high_part,axis=0)**0.5

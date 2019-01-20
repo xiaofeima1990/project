@@ -23,6 +23,8 @@ import pickle as pk
 import quantecon  as qe
 # from numpy import linalg as LA
 
+# I need to make sure descending order 
+is_sorted = lambda a: np.all(a[:-1] >= a[1:])
 
 def balance_data_est(Est_data,n_work):
     pecentil_slice=1.0/n_work
@@ -135,8 +137,10 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,JJ=400):
         check_flag_v=check_flag_v*check_flag_v2
         check_flag_v=check_flag_v.astype(bool)
 
+        x_signal=x_signal[check_flag_v,]
+        x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
 
-        if x_signal[check_flag_v,].shape[0] > 50:
+        if x_signal[x_check_f,].shape[0] > 50 :
             break
         t_count -= 1
         JJ=JJ*2
