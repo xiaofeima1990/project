@@ -136,7 +136,7 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,JJ=400):
 
         check_flag_v=check_flag_v*check_flag_v2
         check_flag_v=check_flag_v.astype(bool)
-
+        w_n = w_n[check_flag_v,]
         x_signal=x_signal[check_flag_v,]
         x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
 
@@ -145,7 +145,7 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,JJ=400):
         t_count -= 1
         JJ=JJ*2
 
-    return [x_signal[check_flag_v,],w_n[check_flag_v,]]
+    return [x_signal[x_check_f,],w_n[x_check_f,]]
 
 
 
