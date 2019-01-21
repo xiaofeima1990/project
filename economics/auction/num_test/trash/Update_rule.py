@@ -95,9 +95,6 @@ class Update_rule:
             Sigma_inv_k2 = Sigma_inv[self.N-k:,:]
             
             
-
-            AA_k = inv(Delta_k @ (Sigma_inv_k1.T)) @ l_k
-            
             temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
             temp_diag=temp_diag.reshape(temp_diag.size,1)
             

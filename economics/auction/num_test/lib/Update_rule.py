@@ -59,35 +59,50 @@ class Update_rule:
         self.vi_rival_sigma2 = self.vi_rival_sigma2.reshape(self.N-1,1)
         self.cov_istar       = self.cov_istar.reshape(self.N,1) 
         
-    def lower_bound(self, p_low):
+    def bound(self, p_low):
+        # still I have to calculate the signal recurisively
 
         ## all the rivals bidding price is known
         p_k=p_low.reshape(p_low.size,1)
         # mu_k
-        
-        mu_k = np.append(self.vi_mu, self.vi_rival_mu)
-        mu_k=mu_k.reshape(mu_k.size,1)
-        MU = self.MU
-        l_k  = np.ones((self.N,1))
-        
-        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
-        Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
-        
-        
-        Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2)-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
-
-        
+        x_drop=np.zeros(self.N)
         Sigma_inv = inv(self.SIGMA2)
-        # Sigma_inv_k1 = Sigma_inv[0:self.N,:] # N-1+1 all the rest of the 
+        MU = self.MU
+        for k in range(self.N):
+            
+            mu_k = np.append(self.vi_mu, self.vi_rival_mu)
+            mu_k = mu_k[0:self.N-k]
+            mu_k=mu_k.reshape(mu_k.size,1)
+            
+            l_k  = np.ones((self.N-k,1))
+            
+            Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
+            Gamma_k = Gamma_k[0:self.N-k]
+            Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
+            
+            
+            Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2)-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
+            Delta_k=Delta_k[:,0:self.N-k].T
+            
+            
+            Sigma_inv_k1 = Sigma_inv[0:self.N-k,:] # N-1+1 all the rest of the 
 
-        AA_k = inv(Delta_k @ Sigma_inv.T) @ l_k
-        temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
-        temp_diag=temp_diag.reshape(temp_diag.size,1)
-        CC_k = 0.5*inv(Delta_k @ (Sigma_inv.T)) @ (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@MU)
 
-        
+            AA_k = inv(Delta_k @ Sigma_inv_k1.T) @ l_k
+            temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
+            temp_diag=temp_diag.reshape(temp_diag.size,1)
+            
+            CC_k = 0.5*inv(Delta_k @ Sigma_inv_k1.T) @ (Gamma_k - temp_diag + 2*mu_k -2* Delta_k @ Sigma_inv @ MU)
 
-        x_drop = AA_k*np.log(p_k) - CC_k
+            
+            if k>0:
+                Sigma_inv_k2 = Sigma_inv[self.N-k:,:]
+                DD_k = inv(Delta_k @ (Sigma_inv_k1.T)) @ (Delta_k @ (Sigma_inv_k2.T))
+                x_d = x_drop[self.N-k:]
+            else:
+                DD_k = np.zeros([1,1])
+                x_d = 0
+            x_drop[self.N-k-1] = AA_k[-1]*np.log(p_k[self.N-k-1]) - np.dot( DD_k[-1,:],  x_d) - CC_k[-1]
         
         return x_drop.reshape(1,x_drop.size)
 
@@ -311,7 +326,36 @@ class Update_rule:
         # return pure value E_win and flag
         return [Pure_value,E_win_revenue,flag]
 
+    def real_bid_calc(self,bid,state,price_v,i_id):
+        
+        #  dropout x
+        lower_b = self.l_bound(state)
+        x_j_lower = lower_b[:,0]
 
+        # Constat part 
+        Sigma_inv = inv(self.SIGMA2)
+        
+        # COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var)
+        COV_xvi=self.cov_istar
+        CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
+
+        AA_coef =  Sigma_inv @ COV_xvi
+        AA_i = AA_coef[0]
+        AA_j = AA_coef[1:]
+
+        # potential upper bound of the rivals
+        upper_b_j = self.u_bound_E(bid,state)
+        x_j_upper=upper_b_j[:,0]
+        # conditional variance var(v_i | x_i , x_j , x_q)
+        # sigma_vi^2 , cov_xi_vi == sigma_vi^2 
+        # modify the conditional variancce, a basic criterion is that conditional variance must be less than vi_sigma2 
+
+        var_update = self.vi_sigma2 -COV_xvi.T @  Sigma_inv @  COV_xvi 
+        
+        # constant part 
+        E_const = CC_i+0.5*var_update
+        
+        return [E_const.flatten(),x_j_lower,x_j_upper,AA_i.flatten(),AA_j.flatten()]
 
     def real_bid_calc_new(self,price_v,ord_id):
         self.T_p = np.log(price_v)
@@ -339,7 +383,8 @@ class Update_rule:
 
         return [E_const.flatten(),up_bound,AA_i.flatten(),AA_j.flatten()]
 
-    def bid_vector_new(self,xi_v,x_j_low,price_v,ord_id):
+    def bid_vector_high(self,xi_v,x_j_low,price_v,ord_id):
+        # count the x signal criterion
         self.setup_para(ord_id)
         [E_const,up_bound,AA_i,AA_j]=self.real_bid_calc_new(price_v,ord_id)
         ladder=np.log(price_v[-1]) - np.log(price_v[-2])
@@ -350,14 +395,38 @@ class Update_rule:
                 real_upper_bound_v[:,i] = 10
             elif up_bound[i]== 1:
                 real_upper_bound_v[:,i] = xi_v.flatten()
+        
+        check_flag = real_upper_bound_v >= x_j_low.reshape(1,x_j_low.size)
+        w_n=np.prod(check_flag, axis=1)
+        check_flag_v=w_n.astype(bool)
+        real_upper_bound_v[~check_flag_v,:]=x_j_low.reshape(1,x_j_low.size)+ladder
         real_upper_bound_v=np.delete(real_upper_bound_v,ord_id,axis=1)
+
         AA_j=AA_j.reshape(AA_j.size, 1 )
         E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),np.delete(x_j_low,ord_id),real_upper_bound_v) @ AA_j
 
         exp_value= AA_i*xi_v + E_j + E_const 
+        return [np.exp(exp_value),w_n]
+
+    def bid_vector_low(self,xi_v,bid,state,price_v,i_id):
+        # doe not need to count the x signal criterion
+        self.setup_para(i_id)
+        # Pure_value, bid_price, AA_i -> only in log form
+        # I have to go back to normal price
+        [E_const,x_j_lower,x_j_upper,AA_i,AA_j]=self.real_bid_calc(bid,state,price_v,i_id)
+        ladder=np.log(price_v[-1]) - np.log(price_v[-2])
+        xi_v = xi_v.reshape(xi_v.size,1)
+        upper_bound=np.repeat(xi_v,self.N-1,axis=1)
+        check_flag = upper_bound >= x_j_lower
+        w_n=np.prod(check_flag, axis=1)
+        check_flag_v=w_n.astype(bool)
+        upper_bound[~check_flag_v,:]=x_j_upper.reshape(1,self.N-1)
+
+        AA_j=AA_j.reshape(AA_j.size, 1 )
+        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,upper_bound) @ AA_j
+
+        exp_value= AA_i*xi_v + E_j + E_const 
         return np.exp(exp_value)
-
-
     
     
     def u_bound_E(self,bid,state):

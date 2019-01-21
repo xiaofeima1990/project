@@ -24,7 +24,11 @@ import quantecon  as qe
 # from numpy import linalg as LA
 
 # I need to make sure descending order 
-is_sorted = lambda a: np.all(a[:-1] >= a[1:])
+# is_sorted = lambda a: np.all(a[:-1] >= a[1:])
+# it is very hard to guarantee the ordered case 
+# So I choose to treat the  order into the first guy is the highest 
+is_sorted = lambda a: np.all(a[0] > a[1:])
+is_sorted2 = lambda a: np.all(a[1] > a[2:])
 
 def balance_data_est(Est_data,n_work):
     pecentil_slice=1.0/n_work
@@ -100,8 +104,6 @@ def balance_data(DATA_STRUCT,n_work):
     return [data_struct(ele) for ele in Data_Struct_c ]
 
 
-
-
 def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,JJ=400):
     # this part should follow the ascending order 
     # X_bar is the threshold 
@@ -116,7 +118,7 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,JJ=400):
     Sigma=LAA.sqrtm(SIGMA2)
     Sigma=Sigma.real
 
-    t_count=3
+    t_count=5
     while t_count>0 :
         # lattices 
         [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='N',random_state=rng )
@@ -139,7 +141,9 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,JJ=400):
         w_n = w_n[check_flag_v,]
         x_signal=x_signal[check_flag_v,]
         x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
-
+        if N>2 :
+            x_check_f=np.apply_along_axis(is_sorted2,1,x_signal[x_check_f,])
+            
         if x_signal[x_check_f,].shape[0] > 50 :
             break
         t_count -= 1
@@ -154,22 +158,19 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,JJ=400):
 Data preprocessing
 '''
 
-    
-
-
 
 def pre_data(Est_data):
     col_name=['ID', 'bidder_act', 'len_act', 'bidder_pos', 'bidder_state','bidder_price','ladder_norm',
               'real_num_bidder','win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
     # get rid of number of bidder = = 1
     Est_data=Est_data[Est_data['num_bidder']>1]
-    Est_data=Est_data[Est_data['num_bidder']<=12]
+    Est_data=Est_data[Est_data['num_bidder']<=10]
     Est_data=Est_data[Est_data['len_act']>2]
 
     # double check
     Est_data['real_num_bidder']= Est_data['bidder_state'].apply(lambda x: len(x))
     Est_data=Est_data[Est_data['real_num_bidder']>1]
-    Est_data=Est_data[Est_data['real_num_bidder']<=12]
+    Est_data=Est_data[Est_data['real_num_bidder']<=10]
     # get rid of priority people
     Est_data=Est_data[Est_data['priority_people']==0]
     
@@ -188,7 +189,7 @@ def pre_data(Est_data):
     Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
     Est_data['price_norm'] = Est_data['bidder_price']/Est_data['evaluation_price']
 
-    
+    Est_data=Est_data[Est_data['real_num_bidder']>4]
     return Est_data[col_name]
                 
 
