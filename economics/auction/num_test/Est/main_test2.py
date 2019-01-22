@@ -177,7 +177,7 @@ if __name__ == '__main__':
     # set up the hyper parameters
     rng_seed=789
     SS=25
-    JJ=500
+    JJ=800
     
     
     d_struct={

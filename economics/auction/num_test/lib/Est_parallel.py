@@ -64,20 +64,23 @@ def map_integ(price_v,x_signal_i,s_state,Update_bid,arg_data):
 
 
 def map_integ_new(price_v,x_signal_i,low_state,high_bound,Update_bid,arg_data):
-    i,high_bid,low_bid=arg_data
+    i,bid,high_bid,low_bid=arg_data
     # calculate lower bound
-    exp_value1 = Update_bid.bid_vector_low(x_signal_i[:,i],low_state,price_v,i)
+    exp_value1 = Update_bid.bid_vector_low(x_signal_i[:,i],bid,low_state[i],price_v,i)
 
     (exp_value2,w_n2) = Update_bid.bid_vector_high(x_signal_i[:,i],high_bound,price_v,i)
 
     # count the criterion
     low_case  = 1*(low_bid  <= exp_value1) # this lower bound should be one of the criterion
     # high_case = 1*(high_bid >= exp_value2)
+    low_case=low_case.flatten()
+    # question ~~~ how can I add w_n2
     final_w=w_n2*low_case
     
-    return (exp_value2,final_w)
+    return (exp_value2.flatten(),final_w)
 
-def map_integ_final(high_bid,low_bid,exp_value):
+def map_integ_final(arg_data):
+    high_bid,low_bid,exp_value = arg_data
     exp_value_S= np.mean(exp_value)
     
     low_1     =  low_bid  - exp_value_S
@@ -129,7 +132,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     Update_bid.setup_para(i_id)
     
     # I think it is still the entry threshold not the final posting price as the lower bound
-    X_bar = Update_bid.lower_bound(r*np.ones([1,N]))
+    X_bar = Update_bid.bound(r*np.ones([1,N]))
     # Why I need up, I do not need it 
     X_up = np.ones([1,N])*4
     [x_signal,w_x]=signal_DGP_est(para,rng,N,0,X_bar,X_up,JJ)
@@ -162,30 +165,29 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     low_state=np.zeros((N,N))
 
     # get the bidder's lower bound state for calculation
-    for i in range(0,len(data_state)):
+    for i in range(0,N):
         flag_select=np.ones(N)
         flag_select[i]=0
         select_flag=np.nonzero(flag_select)[0].tolist()
 
-        low_state[i,0]=data_state[i]
+        low_state[i,0]=bid_v[i]
         
         temp_s=[]
         for j in select_flag:
             try:
                 bid_post=bidder_bid_history[j][1]
-                
-                
-                if bid_post[0] > data_state[i]:
+            
+                if bid_post[0] > bid_v[i]:
                     temp_s.append(0)
                 else: 
-                    temp_p=[x for x in bid_post if x < data_state[i] ]
+                    temp_p=[x for x in bid_post if x < bid_v[i] ]
                     temp_p.sort()
                     temp_s.append(temp_p[-1])
             except Exception as e:
                 print(e)
                 print(data_pos)
                 print(temp_p)
-                print(data_state[i])
+                print(bid_v[i])
                 temp_s.append(0)
                 print('this is number ',tt)
                 input('wait for check')
@@ -197,22 +199,25 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     # start mapping for calculation
     map_func=partial(map_integ_new,price_v,x_signal,low_state,higher_bound,Update_bid)
     # i = 0.1.2.3... is the rank order for the participants!!!
-    exp_value=list(map(map_func,zip(range(0,N),bid_up,bid_low))) 
+    exp_value=list(map(map_func,zip(range(0,N),bid_v,bid_up,bid_low))) 
     exp_value2 =np.array([x[0] for x in exp_value])
     final_w    =np.array([x[1] for x in exp_value])
     final_w    = np.prod(final_w,axis=0)
+    final_w    = final_w.astype(bool)
     # check whether it still has enough data satisfying the criterion
     # sum(final_w) >5
+
     exp_value2=exp_value2.T
     exp_value2=exp_value2[final_w,:]
     exp_value2=exp_value2.T
 
-    object_value=list(map(map_integ_final,(bid_up,bid_low,exp_value2)))
+    object_value=list(map(map_integ_final,zip(bid_up,bid_low,exp_value2 )))
     low_part =np.array([x[0] for x in object_value])
     high_part=np.array([x[1] for x in object_value]) 
     high_part[0]=0
     # sum together 
     # sum_value=np.sum(low_part,axis=0)**0.5 + np.sum(high_part,axis=0)**0.5
+
     sum_value = np.sum(low_part)+np.sum(high_part)
     norm_var=Theta['comm_var']+Theta['priv_var']+Theta['epsilon_var']
     final_value=np.sum(sum_value)/(norm_var**0.5)

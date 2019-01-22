@@ -177,7 +177,7 @@ class Update_rule:
         
         pos=state[1:]
 
-        price_v=[self.T_p[x] for x in pos]
+        price_v=[self.T_p[int(x)] for x in pos]
 
         pos     = np.asarray(pos)
         pos     = pos.reshape(pos.size,1)
@@ -327,7 +327,7 @@ class Update_rule:
         return [Pure_value,E_win_revenue,flag]
 
     def real_bid_calc(self,bid,state,price_v,i_id):
-        
+        self.T_p = np.log(price_v)
         #  dropout x
         lower_b = self.l_bound(state)
         x_j_lower = lower_b[:,0]
@@ -395,15 +395,16 @@ class Update_rule:
                 real_upper_bound_v[:,i] = 10
             elif up_bound[i]== 1:
                 real_upper_bound_v[:,i] = xi_v.flatten()
-        
-        check_flag = real_upper_bound_v >= x_j_low.reshape(1,x_j_low.size)
+        real_upper_bound_v=np.delete(real_upper_bound_v,ord_id,axis=1)
+        x_j_low_cut=np.delete(x_j_low,ord_id)
+        check_flag = real_upper_bound_v >= x_j_low_cut.reshape(1,x_j_low_cut.size)
         w_n=np.prod(check_flag, axis=1)
         check_flag_v=w_n.astype(bool)
-        real_upper_bound_v[~check_flag_v,:]=x_j_low.reshape(1,x_j_low.size)+ladder
-        real_upper_bound_v=np.delete(real_upper_bound_v,ord_id,axis=1)
+        real_upper_bound_v[~check_flag_v,:]=x_j_low_cut.reshape(1,x_j_low_cut.size)+ladder
+        
 
         AA_j=AA_j.reshape(AA_j.size, 1 )
-        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),np.delete(x_j_low,ord_id),real_upper_bound_v) @ AA_j
+        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_low_cut,real_upper_bound_v) @ AA_j
 
         exp_value= AA_i*xi_v + E_j + E_const 
         return [np.exp(exp_value),w_n]

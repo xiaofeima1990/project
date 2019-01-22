@@ -141,8 +141,11 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,JJ=400):
         w_n = w_n[check_flag_v,]
         x_signal=x_signal[check_flag_v,]
         x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
+        
         if N>2 :
-            x_check_f=np.apply_along_axis(is_sorted2,1,x_signal[x_check_f,])
+            x_signal =x_signal[x_check_f,]
+            w_n      =w_n[x_check_f,]
+            x_check_f=np.apply_along_axis(is_sorted2,1,x_signal)
             
         if x_signal[x_check_f,].shape[0] > 50 :
             break
