@@ -83,7 +83,7 @@ def poolcontext(*args, **kwargs):
 
 
 
-def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
+def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     Theta={
     "comm_mu":Theta0[0],
     # "epsilon_mu":Theta0[1], # change from private mu to epsilon_mu
@@ -136,7 +136,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     for Data_Struct in DATA_STRUCT_c:
      
 
-        auction_list.append(work_pool.submit(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct),Data_Struct).result())
+        auction_list.append(work_pool.submit(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct,xi_n),Data_Struct).result())
     
     
     auction_result=np.nanmean(auction_list)
@@ -159,7 +159,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct):
     return auction_result
 
 
-def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
+def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct,xi_n):
     time.sleep(0.5)
     
     
@@ -168,7 +168,6 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
     
     
     
-    JJ    =d_struct["JJ"]
     
     TT,_=Data_struct.shape
 
@@ -178,7 +177,7 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
     results=[]
     try:
         
-        func=partial(para_fun_est,Theta,rng,JJ)
+        func=partial(para_fun_est,Theta,rng,xi_n)
 
         pool = ProcessPoolExecutor(max_workers=cpu_num)
         
@@ -212,15 +211,14 @@ if __name__ == '__main__':
     Est_data=pre_data(Est_data)
     # set up the hyper parameters
     rng_seed=1234
-    SS=25
-    JJ=400
-    
+    max_N = 10
+    JJ    = 15000
     
     d_struct={
             'rng_seed':rng_seed,
-            'SS':SS,
-            "JJ":JJ,
+            "max_N":max_N,
             }
+    
     
     # Theta={
     #     "comm_mu":1, # comman value mu
@@ -236,7 +234,7 @@ if __name__ == '__main__':
     start = time.time()
     now = datetime.datetime.now()
     bnds = ((0, 2), (-1, 1), (0,2), (0,2), (0,2))
-
+    xi_n =rng_generate(JJ,max_N)
     print("------------------------------------------------------------------")
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")

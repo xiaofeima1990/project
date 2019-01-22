@@ -89,7 +89,7 @@ def map_integ_final(arg_data):
     high_sum = np.square((high_1<0)*1*high_1)
     return (low_sum,high_sum)
 
-def para_fun_est(Theta,rng,JJ,arg_data):
+def para_fun_est(Theta,rng,xi_n,arg_data):
     tt,data_state,data_pos,price_v,pub_info=arg_data
     info_flag=pub_info[3]
     N        =int(pub_info[2])
@@ -135,7 +135,7 @@ def para_fun_est(Theta,rng,JJ,arg_data):
     X_bar = Update_bid.bound(r*np.ones([1,N]))
     # Why I need up, I do not need it 
     X_up = np.ones([1,N])*4
-    [x_signal,w_x]=signal_DGP_est(para,rng,N,0,X_bar,X_up,JJ)
+    x_signal=signal_DGP_est(para,rng,N,0,X_bar,X_up,JJ)
     if x_signal.shape[0]<50:
         return 1000000
 

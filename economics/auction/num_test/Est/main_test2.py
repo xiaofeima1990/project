@@ -76,7 +76,7 @@ def list_duplicates(seq):
 
 
 
-def GMM_Ineq(Theta0,Est_data,d_struct):
+def GMM_Ineq(Theta0,Est_data,d_struct,xi_n):
     Theta={
     "comm_mu":Theta0[0],
     # "epsilon_mu":Theta0[1], # change from private mu to epsilon_mu
@@ -97,7 +97,6 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
     print(Theta)
 #    print('# of auctions: '+str(TT) )
     
-    JJ    =d_struct["JJ"]
     Mom_v =0
     
     nn=len(Est_data)
@@ -128,7 +127,7 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
         '''
         serial testing 
         '''
-        func=partial(para_fun_est,Theta,rng,JJ)
+        func=partial(para_fun_est,Theta,rng,xi_n)
         results=[]
         pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
         for arg_data_ele in zip(range(0,TT),Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[pub_col].values.tolist()):
@@ -176,25 +175,25 @@ if __name__ == '__main__':
     est_data=pre_data(Est_data)
     # set up the hyper parameters
     rng_seed=789
-    SS=25
-    JJ=800
-    
+    max_N = 10
+    JJ    = 10000
     
     d_struct={
             'rng_seed':rng_seed,
-            'SS':SS,
-            "JJ":JJ,
+            "max_N":max_N,
             }
     
 
     Theta=[-0.3,0.4,0.2,0.3]
     start = time.time()
     now = datetime.datetime.now()
+
+    xi_n =rng_generate(JJ,max_N)
     print("------------------------------------------------------------------")
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")
     
-    res = minimize(GMM_Ineq, Theta, method='Nelder-Mead',args=(est_data,d_struct)) 
+    res = minimize(GMM_Ineq, Theta, method='Nelder-Mead',args=(est_data,d_struct,xi_n)) 
     
     print("------------------------------------------------------------------")
     now = datetime.datetime.now()

@@ -103,56 +103,51 @@ def balance_data(DATA_STRUCT,n_work):
 
     return [data_struct(ele) for ele in Data_Struct_c ]
 
+def rng_generate(JJ=10000,N_max=10):
+    [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N_max),np.zeros(N_max),np.ones(N_max),kind='N',random_state=rng )
+    a_n= norm.ppf(xi_n)
+    return a_n
 
-def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,JJ=400):
+def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     # this part should follow the ascending order 
     # X_bar is the threshold 
     
     MU       =para.MU[i_id] 
     MU       =MU.reshape(N,1)
     SIGMA2   =para.SIGMA2[i_id]
-
-    
     
     # use scipy to comput the square root of Sigma
     Sigma=LAA.sqrtm(SIGMA2)
     Sigma=Sigma.real
 
-    t_count=5
-    while t_count>0 :
-        # lattices 
-        [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='N',random_state=rng )
+    # lattices 
+    # [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='N',random_state=rng )
+    
+    
+    x_signal= Sigma@xi_n.T +MU@np.ones([1,int(JJ)])
+    x_signal= x_signal.T
+
+
+    # entry selection 
+    X_bar = X_bar.reshape(1,N)
+    check_flag = x_signal >= X_bar
+    check_flag_v=np.prod(check_flag, axis=1)
+    check_flag2 = x_signal <= X_up
+    check_flag_v2=np.prod(check_flag2, axis=1)
+
+    check_flag_v=check_flag_v*check_flag_v2
+    check_flag_v=check_flag_v.astype(bool)
+    x_signal=x_signal[check_flag_v,]
+    x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
+    
+    if N>2 :
+        x_signal =x_signal[x_check_f,]
+        w_n      =w_n[x_check_f,]
+        x_check_f=np.apply_along_axis(is_sorted2,1,x_signal)
         
-        a_n= norm.ppf(xi_n)
-
-        x_signal= Sigma@a_n.T +MU@np.ones([1,int(JJ)])
-        x_signal= x_signal.T
 
 
-        # entry selection 
-        X_bar = X_bar.reshape(1,N)
-        check_flag = x_signal >= X_bar
-        check_flag_v=np.prod(check_flag, axis=1)
-        check_flag2 = x_signal <= X_up
-        check_flag_v2=np.prod(check_flag2, axis=1)
-
-        check_flag_v=check_flag_v*check_flag_v2
-        check_flag_v=check_flag_v.astype(bool)
-        w_n = w_n[check_flag_v,]
-        x_signal=x_signal[check_flag_v,]
-        x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
-        
-        if N>2 :
-            x_signal =x_signal[x_check_f,]
-            w_n      =w_n[x_check_f,]
-            x_check_f=np.apply_along_axis(is_sorted2,1,x_signal)
-            
-        if x_signal[x_check_f,].shape[0] > 50 :
-            break
-        t_count -= 1
-        JJ=JJ*2
-
-    return [x_signal[x_check_f,],w_n[x_check_f,]]
+    return [x_signal[x_check_f,]
 
 
 
@@ -162,18 +157,18 @@ Data preprocessing
 '''
 
 
-def pre_data(Est_data):
+def pre_data(Est_data,max_N=10):
     col_name=['ID', 'bidder_act', 'len_act', 'bidder_pos', 'bidder_state','bidder_price','ladder_norm',
               'real_num_bidder','win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
     # get rid of number of bidder = = 1
     Est_data=Est_data[Est_data['num_bidder']>1]
-    Est_data=Est_data[Est_data['num_bidder']<=10]
+    Est_data=Est_data[Est_data['num_bidder']<=max_N]
     Est_data=Est_data[Est_data['len_act']>2]
 
     # double check
     Est_data['real_num_bidder']= Est_data['bidder_state'].apply(lambda x: len(x))
     Est_data=Est_data[Est_data['real_num_bidder']>1]
-    Est_data=Est_data[Est_data['real_num_bidder']<=10]
+    Est_data=Est_data[Est_data['real_num_bidder']<=max_N]
     # get rid of priority people
     Est_data=Est_data[Est_data['priority_people']==0]
     
