@@ -348,6 +348,7 @@ if __name__ == '__main__':
                 df_INFO1=pd.DataFrame(columns=col_name)
                 df_INFO2.to_sql(city+"_"+auction_time_flag, con2, if_exists="append")
                 df_INFO2=pd.DataFrame(columns=col_bid2)
+                driver.quit()
                 time.sleep(15)
                 driver=webdriver.Firefox(firefox_profile=profile)
                 con.close()
