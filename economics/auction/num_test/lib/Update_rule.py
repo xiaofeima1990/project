@@ -386,15 +386,18 @@ class Update_rule:
     def bid_vector_high(self,xi_v,x_j_low,price_v,ord_id):
         # count the x signal criterion
         self.setup_para(ord_id)
+        x_j_low=x_j_low.flatten()
         [E_const,up_bound,AA_i,AA_j]=self.real_bid_calc_new(price_v,ord_id)
         ladder=np.log(price_v[-1]) - np.log(price_v[-2])
         xi_v = xi_v.reshape(xi_v.size,1)
         real_upper_bound_v=np.zeros([xi_v.size,self.N])
         for i in range(len(up_bound)):
             if up_bound[i]==-1:
-                real_upper_bound_v[:,i] = 10
+                real_upper_bound_v[:,i] = x_j_low[0]
             elif up_bound[i]== 1:
                 real_upper_bound_v[:,i] = xi_v.flatten()
+        if ord_id>0:
+            real_upper_bound_v[:,0] = 10
         real_upper_bound_v=np.delete(real_upper_bound_v,ord_id,axis=1)
         x_j_low_cut=np.delete(x_j_low,ord_id)
         check_flag = real_upper_bound_v >= x_j_low_cut.reshape(1,x_j_low_cut.size)

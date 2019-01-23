@@ -127,7 +127,6 @@ def para_fun_est(Theta,rng,xi_n,arg_data):
 
     
 
-    JJ=JJ+100*N
     # add whether it is informed or not informed  
     Update_bid.setup_para(i_id)
     
@@ -135,9 +134,8 @@ def para_fun_est(Theta,rng,xi_n,arg_data):
     X_bar = Update_bid.bound(r*np.ones([1,N]))
     # Why I need up, I do not need it 
     X_up = np.ones([1,N])*4
-    x_signal=signal_DGP_est(para,rng,N,0,X_bar,X_up,JJ)
-    if x_signal.shape[0]<50:
-        return 1000000
+    x_signal=signal_DGP_est(para,rng,N,0,X_bar,X_up,xi_n)
+
 
 
 
@@ -206,10 +204,12 @@ def para_fun_est(Theta,rng,xi_n,arg_data):
     final_w    = final_w.astype(bool)
     # check whether it still has enough data satisfying the criterion
     # sum(final_w) >5
-
+    
     exp_value2=exp_value2.T
     exp_value2=exp_value2[final_w,:]
     exp_value2=exp_value2.T
+    if exp_value2.shape[1] <10:
+        return 100000
 
     object_value=list(map(map_integ_final,zip(bid_up,bid_low,exp_value2 )))
     low_part =np.array([x[0] for x in object_value])
@@ -217,8 +217,9 @@ def para_fun_est(Theta,rng,xi_n,arg_data):
     high_part[0]=0
     # sum together 
     # sum_value=np.sum(low_part,axis=0)**0.5 + np.sum(high_part,axis=0)**0.5
-
-    sum_value = np.sum(low_part)+np.sum(high_part)
+    low_part[1] =low_part[1]*N 
+    high_part[1] = high_part[1] * N 
+    sum_value = np.sum(low_part)/(2*N)+np.sum(high_part)/(2*N)
     norm_var=Theta['comm_var']+Theta['priv_var']+Theta['epsilon_var']
     final_value=np.sum(sum_value)/(norm_var**0.5)
     

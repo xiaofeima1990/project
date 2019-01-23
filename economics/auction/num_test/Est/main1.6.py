@@ -234,12 +234,12 @@ if __name__ == '__main__':
     start = time.time()
     now = datetime.datetime.now()
     bnds = ((0, 2), (-1, 1), (0,2), (0,2), (0,2))
-    xi_n =rng_generate(JJ,max_N)
+    xi_n =rng_generate(np.random.RandomState(rng_seed),JJ,max_N)
     print("------------------------------------------------------------------")
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")
     
-    res = minimize(GMM_Ineq_parall, Theta, method='Nelder-Mead',args=(Est_data,d_struct),bounds=bnds) 
+    res = minimize(GMM_Ineq_parall, Theta, method='Nelder-Mead',args=(Est_data,d_struct,xi_n),bounds=bnds) 
     
     print("------------------------------------------------------------------")
     now = datetime.datetime.now()

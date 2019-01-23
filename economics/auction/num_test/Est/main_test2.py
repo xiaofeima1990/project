@@ -184,13 +184,13 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[-0.3,0.4,0.2,0.3]
+    Theta=[-0.1,0.05,0.02,0.02]
     start = time.time()
     now = datetime.datetime.now()
 
-    xi_n =rng_generate(JJ,max_N)
+    xi_n =rng_generate(np.random.RandomState(rng_seed),JJ,max_N)
     print("------------------------------------------------------------------")
-    print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
+    print("optimization Begins(Nelder) at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")
     
     res = minimize(GMM_Ineq, Theta, method='Nelder-Mead',args=(est_data,d_struct,xi_n)) 

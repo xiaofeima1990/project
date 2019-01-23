@@ -103,7 +103,7 @@ def balance_data(DATA_STRUCT,n_work):
 
     return [data_struct(ele) for ele in Data_Struct_c ]
 
-def rng_generate(JJ=10000,N_max=10):
+def rng_generate(rng,JJ=10000,N_max=10):
     [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N_max),np.zeros(N_max),np.ones(N_max),kind='N',random_state=rng )
     a_n= norm.ppf(xi_n)
     return a_n
@@ -112,6 +112,7 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     # this part should follow the ascending order 
     # X_bar is the threshold 
     
+
     MU       =para.MU[i_id] 
     MU       =MU.reshape(N,1)
     SIGMA2   =para.SIGMA2[i_id]
@@ -122,9 +123,10 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
 
     # lattices 
     # [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='N',random_state=rng )
+    r,n=xi_n.shape
+    a_n = xi_n[:,0:N]
     
-    
-    x_signal= Sigma@xi_n.T +MU@np.ones([1,int(JJ)])
+    x_signal= Sigma@a_n.T +MU@np.ones([1,r])
     x_signal= x_signal.T
 
 
@@ -142,12 +144,11 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     
     if N>2 :
         x_signal =x_signal[x_check_f,]
-        w_n      =w_n[x_check_f,]
         x_check_f=np.apply_along_axis(is_sorted2,1,x_signal)
         
 
 
-    return [x_signal[x_check_f,]
+    return x_signal[x_check_f,]
 
 
 
