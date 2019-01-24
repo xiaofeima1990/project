@@ -341,7 +341,7 @@ if __name__ == '__main__':
     ## how to save for the data especially for the auction data 
     # http://www.datacarpentry.org/python-ecology-lesson/08-working-with-sql/
             
-            if (index+1)% 25 ==0:
+            if (index+1)% 50 ==0:
                     # output 
                     
                 df_INFO1.to_sql(city+"_"+auction_time_flag, con, if_exists="append")
@@ -350,6 +350,8 @@ if __name__ == '__main__':
                 df_INFO2=pd.DataFrame(columns=col_bid2)
                 driver.quit()
                 time.sleep(15)
+                profile=webdriver.firefox.firefox_profile.FirefoxProfile()
+                profile.set_preference("permissions.default.image", 2)
                 driver=webdriver.Firefox(firefox_profile=profile)
                 con.close()
                 con = sqlite3.connect(store_path+"auction_info_house.sqlite")

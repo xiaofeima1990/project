@@ -159,7 +159,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     return auction_result
 
 
-def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct,xi_n):
+def para_data_allo_1(Theta,cpu_num, rng, d_struct, xi_n, Data_struct):
     time.sleep(0.5)
     
     
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[-0.6,0.4,0.6,0.9]
+    Theta=[-0.08,0.015,0.001,0.001]
     
     start = time.time()
     now = datetime.datetime.now()
