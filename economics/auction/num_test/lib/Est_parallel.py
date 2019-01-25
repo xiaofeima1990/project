@@ -208,9 +208,9 @@ def para_fun_est(Theta,rng,xi_n,arg_data):
     exp_value2=exp_value2.T
     exp_value2=exp_value2[final_w,:]
     exp_value2=exp_value2.T
-    if exp_value2.shape[1] <15:
+    if exp_value2.shape[1] <10:
         print('+++++++++++++++++++++++++')
-        print('outlier! tt %d, # of bidders %d '%(tt,N ))
+        print('outlier! tt %d, # of bidders %d, # of x %d '%(tt,N,exp_value2.shape[1] ))
         print('posting bid :', end=' ')
         print(r_bar)
         print('+++++++++++++++++++++++++')

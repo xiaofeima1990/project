@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Dec 28 18:42:03 2018
-
+Created on Thu Jan 24 22:26:03 2019
 
 @author: mgxgl
 
-use real data to do the parallel estimation 
+This version do not balance the data at the very beginning,
+Just run parallel at first layer  
 
 """
 
@@ -96,11 +96,9 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
 
     rng=np.random.RandomState(d_struct['rng_seed'])
     
-
     start = time.time()
     
-    
-    print('--------------------------------------------------------')
+    print("------------------------------------------------------------------")
     print('current parameter set are :')
     print(Theta)
 #    print('# of auctions: '+str(TT) )
@@ -112,64 +110,22 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     '''
     if Theta['priv_var'] <=0 or Theta['epsilon_var']<=0 or Theta['comm_var']<=0 :
     	print('variance can not be negative')
-    	return 10000
+    	return 100000
     # if Theta['comm_mu'] <=-3 or Theta['priv_mu']<= -3 :
     #     print('mean can not be so negative')
     #     return 10000
 
     data_n=len(DATA_STRUCT)
     
-    num_works = 4
-    work_pool = ThreadPoolExecutor(max_workers=num_works)
-    
-    # reorganize the data
-    DATA_STRUCT_c = balance_data_est(DATA_STRUCT,num_works)
-    
     cpu_num=multiprocessing.cpu_count()
-    cpu_num_node=int((cpu_num-num_works)/num_works)
+
     
-    auction_list=[]
+    # auction_list=[]
     # balance each work pool tasks: 
     # make data similar rather than sequencially run # 3, 4, 5, 6, 7, ...
     
 
-    for Data_Struct in DATA_STRUCT_c:
-     
-
-        auction_list.append(work_pool.submit(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct,xi_n),Data_Struct).result())
-    
-    
-    auction_result=np.nanmean(auction_list)
-    
-    end = time.time()
-    
-    print("object value : "+ str(auction_result) )
-    print("time spend in this loop: ")
-    print(end - start)
-    print('--------------------------------------------------------\n')
-    
-    ## save the parameters and objective value 
-    
-    with open('para_est-Nelder.txt', 'a+') as f:
-        for item in Theta0:
-            f.write("%f\t" % item)
-            
-        f.write("{0:.12f}\n".format(auction_result))
-    
-    return auction_result
-
-
-def para_data_allo_1(Theta,cpu_num, rng, d_struct, xi_n, Data_struct):
-    time.sleep(0.5)
-    
-    
-    # print(" id: {} , is dealing the auction with {} bidder ".format(threading.get_ident(),pub[2]))
-    
-    
-    
-    
-    
-    TT,_=Data_struct.shape
+    TT,_=DATA_STRUCT.shape
 
     print("the length of the auction is {}".format(TT))
     
@@ -178,14 +134,10 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, xi_n, Data_struct):
     try:
         
         func=partial(para_fun_est,Theta,rng,xi_n)
-
         pool = ProcessPoolExecutor(max_workers=cpu_num)
+        results= pool.map(func, zip(range(0,TT), DATA_STRUCT['bidder_state'],DATA_STRUCT['bidder_pos'],DATA_STRUCT['price_norm'],DATA_STRUCT[Pub_col].values.tolist()))
         
-        
-        results= pool.map(func, zip(range(0,TT), Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[Pub_col].values.tolist()))
-        
-        
-        MoM=np.nansum(list(results))
+        MoM=np.nanmean(list(results))
 
     except np.linalg.LinAlgError as err:
         if 'Singular matrix' in str(err):
@@ -193,9 +145,24 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, xi_n, Data_struct):
         else:
             print(err)
             exit(1)
+
+    end = time.time()
     
+    print("object value : "+ str(MoM) )
+    print("time spend in this loop: ")
+    print(end - start)
+    print("------------------------------------------------------------------\n")
     
-    return MoM / TT
+    ## save the parameters and objective value 
+    
+    with open('para_est-Nelder.txt', 'a+') as f:
+        for item in Theta0:
+            f.write("%f\t" % item)
+            
+        f.write("{0:.12f}\n".format(MoM))
+    
+    return MoM
+
 
  
 
@@ -212,7 +179,7 @@ if __name__ == '__main__':
     # set up the hyper parameters
     rng_seed=1234
     max_N = 10
-    JJ    = 15000
+    JJ    = 20000
     
     d_struct={
             'rng_seed':rng_seed,
@@ -229,7 +196,7 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[-0.08,0.015,0.001,0.001]
+    Theta=[0.1,0.15,0.1,0.1]
     
     start = time.time()
     now = datetime.datetime.now()
@@ -252,6 +219,7 @@ if __name__ == '__main__':
     print(res.message)
     print(res.x)
             
+
 
 
 
