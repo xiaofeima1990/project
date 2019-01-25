@@ -29,7 +29,7 @@ import quantecon  as qe
 # So I choose to treat the  order into the first guy is the highest 
 is_sorted = lambda a: np.all(a[0] > a[1:])
 is_sorted2 = lambda a: np.all(a[1] > a[2:])
-
+is_sorted3 = lambda a: np.all(a[-1] <= a[0:-1])
 def balance_data_est(Est_data,n_work):
     pecentil_slice=1.0/n_work
     Data_Struct_c=[]
@@ -141,7 +141,8 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     check_flag_v=check_flag_v.astype(bool)
     x_signal=x_signal[check_flag_v,]
     x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
-    
+    x_signal =x_signal[x_check_f,]
+    x_check_f=np.apply_along_axis(is_sorted3,1,x_signal)
     if N>2 :
         x_signal =x_signal[x_check_f,]
         x_check_f=np.apply_along_axis(is_sorted2,1,x_signal)
@@ -181,14 +182,15 @@ def pre_data(Est_data,max_N=10):
     Est_data=Est_data[Est_data['res_norm'] >= 0.7]
     # normalize the win bid
     Est_data['win_norm']=Est_data['win_bid']/Est_data['evaluation_price']
-    
+    tail=Est_data['win_norm'].quantile(0.95)
+    Est_data=Est_data[Est_data['win_norm']<=tail]
     # normalize bid ladder 
     Est_data['ladder_norm']=Est_data['bid_ladder']/Est_data['evaluation_price']
     
     Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
     Est_data['price_norm'] = Est_data['bidder_price']/Est_data['evaluation_price']
 
-    Est_data=Est_data[Est_data['real_num_bidder']>4]
+    # Est_data=Est_data[Est_data['real_num_bidder']>=6]
     return Est_data[col_name]
                 
 

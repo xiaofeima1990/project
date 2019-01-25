@@ -208,12 +208,19 @@ def para_fun_est(Theta,rng,xi_n,arg_data):
     exp_value2=exp_value2.T
     exp_value2=exp_value2[final_w,:]
     exp_value2=exp_value2.T
-    if exp_value2.shape[1] <10:
+    if exp_value2.shape[1] <15:
+        print('+++++++++++++++++++++++++')
+        print('outlier! tt %d, # of bidders %d '%(tt,N ))
+        print('posting bid :', end=' ')
+        print(r_bar)
+        print('+++++++++++++++++++++++++')
         return 100000
-
+    #print(exp_value2.shape[1])
     object_value=list(map(map_integ_final,zip(bid_up,bid_low,exp_value2 )))
     low_part =np.array([x[0] for x in object_value])
     high_part=np.array([x[1] for x in object_value]) 
+    #print(high_part)
+
     high_part[0]=0
     # sum together 
     # sum_value=np.sum(low_part,axis=0)**0.5 + np.sum(high_part,axis=0)**0.5

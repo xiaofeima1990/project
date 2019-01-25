@@ -184,7 +184,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[-0.1,0.05,0.02,0.02]
+    Theta=[-0.037564,	0.313446,	0.034100,	0.173924]
     start = time.time()
     now = datetime.datetime.now()
 
