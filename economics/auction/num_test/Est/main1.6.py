@@ -212,7 +212,7 @@ if __name__ == '__main__':
     # set up the hyper parameters
     rng_seed=1234
     max_N = 10
-    JJ    = 15000
+    JJ    = 20000
     
     d_struct={
             'rng_seed':rng_seed,
