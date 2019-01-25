@@ -18,7 +18,7 @@ from simu import Simu,data_struct
 from Update_rule import Update_rule
 import scipy.linalg as LAA
 from functools import partial
-from scipy.stats import norm
+from scipy.stats import norm,truncnorm
 import pickle as pk
 import quantecon  as qe
 # from numpy import linalg as LA
@@ -103,10 +103,13 @@ def balance_data(DATA_STRUCT,n_work):
 
     return [data_struct(ele) for ele in Data_Struct_c ]
 
-def rng_generate(rng,JJ=10000,N_max=10):
-    [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N_max),np.zeros(N_max),np.ones(N_max),kind='N',random_state=rng )
-    a_n= norm.ppf(xi_n)
-    return a_n
+def rng_generate(rng,JJ=10000,N_max=10,loc=0.9):
+    # I believe I have to use truncated stanard normal to generate the results 
+    xi_n = truncnorm.rvs(0,1,2,size=int(JJ*N_max))
+    xi_n = xi_n.reshape(JJ,N_max)
+    # [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N_max),np.zeros(N_max),np.ones(N_max),kind='N',random_state=rng )
+    # a_n= norm.ppf(xi_n)
+    return xi_n
 
 def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     # this part should follow the ascending order 
@@ -141,8 +144,8 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     check_flag_v=check_flag_v.astype(bool)
     x_signal=x_signal[check_flag_v,]
     x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
-    x_signal =x_signal[x_check_f,]
-    x_check_f=np.apply_along_axis(is_sorted3,1,x_signal)
+    # x_signal =x_signal[x_check_f,]
+    # x_check_f=np.apply_along_axis(is_sorted3,1,x_signal)
     if N>2 :
         x_signal =x_signal[x_check_f,]
         x_check_f=np.apply_along_axis(is_sorted2,1,x_signal)
