@@ -220,24 +220,37 @@ def get_info(driver,link_url,status,auction_time_flag):
             pri_flag=False
         pri_ID=''
         do_search=True
+
         while flag==1:
             df_temp=pd.DataFrame(columns=col_bid)
-            table_content=driver.find_element_by_css_selector(bidding_table).text
-            if "出价记录" in table_content:
-                break
+            try:
+                table_content=driver.find_element_by_css_selector(bidding_table).text
+                if "出价记录" in table_content:
+                    break
             
-            table_content=table_content.split()
-            for j in range(0,int(len(table_content)/5)):
-                df_temp.loc[j]=table_content[j*5:j*5+5]
+                table_content=table_content.split()
+                for j in range(0,int(len(table_content)/5)):
+                    df_temp.loc[j]=table_content[j*5:j*5+5]
+            except Exception as e:
+                print(e)
+                print(table_content)
                 
                 
             df_info2=df_info2.append(df_temp,ignore_index=True)
             driver.find_element_by_css_selector(bidding_table).click()
-            
+
             # find the priority bidder
             if pri_flag==True and do_search == True:
+                ff_pri=False
                 pri_icon = driver.find_elements_by_class_name('icon-user.icon-priority-1')
-                if len(pri_icon)>0:
+                if len(pri_icon)==0:
+                    pri_icon2 = driver.find_elements_by_class_name('nickname.priority')
+                    if len(pri_icon2)>0:
+                        ff_pri=True
+                else:
+                    ff_pri=True
+                    
+                if ff_pri:
                     parent_el = pri_icon[0].find_element_by_xpath("..")
                     parent_el=parent_el.find_element_by_xpath("..")
                     pri_ID=parent_el.text
