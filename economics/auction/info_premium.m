@@ -1,6 +1,8 @@
 % test for the info premium
-% assume bidder i is in the first order
-% assume the informed bidder is in the second order
+% this test aims at verifying the argument in the Dionne et al 2009
+% that equilibrium price premium is indepdendent of number of bidders
+% To testfiy this, we have to derive the coeffients under two different 
+% scenario.  
 
 
 
@@ -12,96 +14,45 @@ sig_e=0.4;
 
 
 
-%% uninformed part 
+%% uninformed, symmetric case
+% we care about the second highest bidder's bidding outcome
 
-N=3;
-
+for N = 3:6 
+% sigma
 SIGMA= diag((sig_a+sig_e)*ones(1,N))+ones(N,N)*sig_v;
-
+% covaraince i 
 COVi= sig_v * ones(N,1);
-COVi(1) = COVi(1) + sig_a;
-
+COVi(2) = COVi(2) + sig_a;
 coeff1=inv(SIGMA) * COVi;
-sum(coeff1)
-
-N=4;
-
-SIGMA= diag((sig_a+sig_e)*ones(1,N))+ones(N,N)*sig_v;
-
-COVi= sig_v * ones(N,1);
-COVi(1) = COVi(1) + sig_a;
-
-coeff2=inv(SIGMA) * COVi;
-sum(coeff2)
-gross_leaning=sum(coeff2(2:end))-sum(coeff1(2:end))
-
-N=5; 
-
-SIGMA= diag((sig_a+sig_e)*ones(1,N))+ones(N,N)*sig_v;
-
-COVi= sig_v * ones(N,1);
-COVi(1) = COVi(1) + sig_a;
-
-coeff3=inv(SIGMA) * COVi;
-sum(coeff3)
-
-gross_leaning=sum(coeff3(2:end))-sum(coeff2(2:end))
-
-N=6; 
-
-SIGMA= diag((sig_a+sig_e)*ones(1,N))+ones(N,N)*sig_v;
-
-COVi= sig_v * ones(N,1);
-COVi(1) = COVi(1) + sig_a;
-
-coeff4=inv(SIGMA) * COVi;
-
-gross_leaning=sum(coeff4(2:end))-sum(coeff3(2:end))
+X = ['coeffient under N =', num2str(N),' is :',num2str(coeff1') ];
+disp(X)
+XX = ['The sum is :',num2str(sum(coeff1))];
+disp(XX)
+end
 
 
-
-
-%% informed part 
+%% informed case 
+% in this case informed bidder is the one who wins the auction
 % construct the SIGMA
-sig_v=1;
-sig_a=0.8;
-sig_e=0.4;
 
-N=3;
-
+for N = 3:6 
+% sigma
 SIGMA= diag((sig_a+sig_e)*ones(1,N))+ones(N,N)*sig_v;
-SIGMA(2,2)=sig_v+sig_a;
-
+% first order is the informed guy
+SIGMA(1,1)=sig_v+sig_a;
+% covaraince i=2 
 COVi= sig_v * ones(N,1);
-COVi(1) = COVi(1) + sig_a;
-
+COVi(2) = COVi(2) + sig_a;
 coeff1=inv(SIGMA) * COVi;
-
-(sum(coeff1) - coeff1(2))/(1 - coeff1(2))
-
-N=4;
-
-SIGMA= diag((sig_a+sig_e)*ones(1,N))+ones(N,N)*sig_v;
-SIGMA(2,2)=sig_v+sig_a;
-COVi= sig_v * ones(N,1);
-COVi(1) = COVi(1) + sig_a;
-
-coeff2=inv(SIGMA) * COVi;
-(sum(coeff2) - coeff2(2))/(1 - coeff2(2))
-gross_leaning=sum(coeff2(2:end))-sum(coeff1(2:end))
-
-
-N=5; 
-
-SIGMA= diag((sig_a+sig_e)*ones(1,N))+ones(N,N)*sig_v;
-SIGMA(2,2)=sig_v+sig_a;
-COVi= sig_v * ones(N,1);
-COVi(1) = COVi(1) + sig_a;
-
-coeff3=inv(SIGMA) * COVi;
-(sum(coeff3) - coeff3(2))/(1 - coeff3(2))
-gross_leaning=sum(coeff3(2:end))-sum(coeff2(2:end))
-
+X = ['coeffient under N =', num2str(N),' is :',num2str(coeff1') ];
+disp(X)
+% we have to adjust the denominator, because we have to derive the expected
+% private signal for the informed bidder given i=2 
+% after adjustment, the sum of the coefficient is identical to the 
+% uninformed case. 
+XX = ['The sum is :',num2str((sum(coeff1) - coeff1(1))/(1 - coeff1(1)))];
+disp(XX)
+end
 
 %% pure IPV situation
 sig_v=1;
@@ -112,3 +63,9 @@ sig_e=0.4;
 coeff = sig_v / (sig_v + sig_a + sig_e)
 
 
+%% eigen decposition 
+
+% symmetric case 
+N=3;
+SIGMA= diag((sig_a+sig_e)*ones(1,N))+ones(N,N)*sig_v;
+[V,D] = eig(SIGMA)
