@@ -3,10 +3,16 @@
 % assume the informed bidder is in the second order
 
 
+
+
 % construct the SIGMA
 sig_v=1;
 sig_a=0.8;
 sig_e=0.4;
+
+
+
+%% uninformed part 
 
 N=3;
 
@@ -16,6 +22,7 @@ COVi= sig_v * ones(N,1);
 COVi(1) = COVi(1) + sig_a;
 
 coeff1=inv(SIGMA) * COVi;
+sum(coeff1)
 
 N=4;
 
@@ -25,7 +32,7 @@ COVi= sig_v * ones(N,1);
 COVi(1) = COVi(1) + sig_a;
 
 coeff2=inv(SIGMA) * COVi;
-
+sum(coeff2)
 gross_leaning=sum(coeff2(2:end))-sum(coeff1(2:end))
 
 N=5; 
@@ -36,6 +43,7 @@ COVi= sig_v * ones(N,1);
 COVi(1) = COVi(1) + sig_a;
 
 coeff3=inv(SIGMA) * COVi;
+sum(coeff3)
 
 gross_leaning=sum(coeff3(2:end))-sum(coeff2(2:end))
 
@@ -69,6 +77,8 @@ COVi(1) = COVi(1) + sig_a;
 
 coeff1=inv(SIGMA) * COVi;
 
+(sum(coeff1) - coeff1(2))/(1 - coeff1(2))
+
 N=4;
 
 SIGMA= diag((sig_a+sig_e)*ones(1,N))+ones(N,N)*sig_v;
@@ -77,7 +87,7 @@ COVi= sig_v * ones(N,1);
 COVi(1) = COVi(1) + sig_a;
 
 coeff2=inv(SIGMA) * COVi;
-
+(sum(coeff2) - coeff2(2))/(1 - coeff2(2))
 gross_leaning=sum(coeff2(2:end))-sum(coeff1(2:end))
 
 
@@ -89,5 +99,16 @@ COVi= sig_v * ones(N,1);
 COVi(1) = COVi(1) + sig_a;
 
 coeff3=inv(SIGMA) * COVi;
-
+(sum(coeff3) - coeff3(2))/(1 - coeff3(2))
 gross_leaning=sum(coeff3(2:end))-sum(coeff2(2:end))
+
+
+%% pure IPV situation
+sig_v=1;
+sig_a=0.8;
+sig_e=0.4;
+
+
+coeff = sig_v / (sig_v + sig_a + sig_e)
+
+
