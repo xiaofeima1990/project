@@ -72,21 +72,10 @@ SIGMA= diag((sig_a+sig_e)*ones(1,N))+ones(N,N)*sig_v;
 
 
 %% decomposition analysis
-sig_v=1;
-sig_a=0.8;
-sig_e=0.4;
-
-
-
 SIGMA2= diag((sig_a+sig_e)*ones(1,N))+ones(N,N)*sig_v;
 SIGMA2(1,1)=sig_v+sig_a;
 [V2,D2] = eig(SIGMA2)
 INV_SIGMA2=inv(SIGMA2)
 
-COVi= sig_v * ones(N,1);
-COVi(2) = COVi(2) + sig_a;
-coeff1=inv(SIGMA2) * COVi
-
 % test for a^2 * x1^2 *lambda3 +c^2 * x2^2 *lambda1 
-AA3=(INV_SIGMA2(2,2)+INV_SIGMA2(2,3))*D2(1,1)*D2(3,3)/2
-AA4=(INV_SIGMA2(2,2)-INV_SIGMA2(2,3))*D2(1,1)*D2(3,3)/2
+(INV_SIGMA2(2,2)+INV_SIGMA2(2,3))*D2(1,1)*D2(3,3)
