@@ -15,6 +15,10 @@ Q1 why I can not generate corresponding N active bidders?
 because the auctioneer random pick the candidate at each period. Someone may have lower signal which will drop very early.
 Another way is to change the picking rule. let lower valued guy bidding first 
 
+it is somehow much complicated than I can image
+But I want to use this to generate :
+informed bidder's bidding status 
+the distribution of number of bidders
 
 """
 

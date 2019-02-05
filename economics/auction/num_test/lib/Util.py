@@ -21,7 +21,7 @@ from functools import partial
 from scipy.stats import norm,truncnorm
 import pickle as pk
 import quantecon  as qe
-# from numpy import linalg as LA
+from numpy import linalg as LA
 
 # I need to make sure descending order 
 # is_sorted = lambda a: np.all(a[:-1] >= a[1:])
@@ -121,8 +121,12 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     SIGMA2   =para.SIGMA2[i_id]
     
     # use scipy to comput the square root of Sigma
-    Sigma=LAA.sqrtm(SIGMA2)
-    Sigma=Sigma.real
+    [D,V]=LA.eig(SIGMA2)
+    D_root = D**0.5
+    Sigma = V @ np.diag(D_root) @ LA.inv(V)
+
+    # Sigma=LAA.sqrtm(SIGMA2)
+    # Sigma=Sigma.real
 
     # lattices 
     # [xi_n,w_n]=qe.quad.qnwequi(int(JJ),np.zeros(N),np.ones(N),kind='N',random_state=rng )
@@ -201,13 +205,13 @@ def pre_data(Est_data,max_N=10):
                 
 
 
-# def is_pos_def(Theta):
-#     flag=True
-#     for n in range(2,9):
-#         temp_matrix= np.ones((n,n))*Theta['comm_var'] + np.eye(n)*(Theta['priv_var']+Theta['noise_var'])    
-#         # check whether all the n are positive definite
-#         if not np.all(LA.eigvals(temp_matrix) > 0):
-#             flag=False
+def is_pos_def(Theta,N):
+    flag=True
+    for n in range(2,N):
+        temp_matrix= np.ones((n,n))*Theta['comm_var'] + np.eye(n)*(Theta['priv_var']+Theta['epsilon_var'])    
+        # check whether all the n are positive definite
+        if not np.all(LA.eigvals(temp_matrix) > 0):
+            flag=False
 
 
-#     return flag
+    return flag

@@ -104,6 +104,10 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
         print('variance can not be negative')
         return 100000
 
+    if is_pos_def(Theta,d_struct['max_N']) :
+        print("not positive definite variance matrix")
+        return 10000
+
     data_n=len(DATA_STRUCT)
     
     num_works = 4

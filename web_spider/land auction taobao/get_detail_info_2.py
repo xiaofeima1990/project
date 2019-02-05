@@ -244,9 +244,10 @@ def get_info(driver,link_url,status,auction_time_flag):
                 ff_pri=False
                 pri_icon = driver.find_elements_by_class_name('icon-user.icon-priority-1')
                 if len(pri_icon)==0:
-                    pri_icon2 = driver.find_elements_by_class_name('nickname.priority')
-                    if len(pri_icon2)>0:
+                    pri_icon = driver.find_elements_by_class_name('nickname.priority')
+                    if len(pri_icon)>0:
                         ff_pri=True
+                        
                 else:
                     ff_pri=True
                     

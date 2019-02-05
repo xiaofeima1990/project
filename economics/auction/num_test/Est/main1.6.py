@@ -113,8 +113,11 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     if Theta['priv_var'] <=0 or Theta['epsilon_var']<=0 or Theta['comm_var']<=0 :
     	print('variance can not be negative')
     	return 10000
-    # if Theta['comm_mu'] <=-3 or Theta['priv_mu']<= -3 :
-    #     print('mean can not be so negative')
+    if Theta['epsilon_var'] >1 or Theta['comm_var'] > 1 :
+        print('variance can not be larger than 1')
+        return 10000
+    # if is_pos_def(Theta,d_struct['max_N']) :
+    #     print("not positive definite variance matrix")
     #     return 10000
 
     data_n=len(DATA_STRUCT)
@@ -229,7 +232,7 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[-0.08,0.015,0.001,0.001]
+    Theta=[0.131422,	0.103803,	0.001270,	0.162089]
     
     start = time.time()
     now = datetime.datetime.now()
