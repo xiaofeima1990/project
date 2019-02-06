@@ -114,7 +114,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     work_pool = ThreadPoolExecutor(max_workers=num_works)
     
     # reorganize the data
-    DATA_STRUCT_c = balance_data_est(Est_data,num_works)
+    DATA_STRUCT_c = balance_data_est(DATA_STRUCT,num_works)
     
     cpu_num=multiprocessing.cpu_count()
     cpu_num_node=int((cpu_num-num_works)/num_works)
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[-0.28,0.15,0.2,0.10]
+    Theta=[0.28,0.15,0.2,0.10]
 
     start = time.time()
     now = datetime.datetime.now()

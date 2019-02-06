@@ -27,9 +27,9 @@ from numpy import linalg as LA
 # is_sorted = lambda a: np.all(a[:-1] >= a[1:])
 # it is very hard to guarantee the ordered case 
 # So I choose to treat the  order into the first guy is the highest 
-is_sorted = lambda a: np.all(a[0] > a[1:])
-is_sorted2 = lambda a: np.all(a[1] > a[2:])
-is_sorted3 = lambda a: np.all(a[-1] <= a[0:-1])
+is_sorted = lambda a: np.all(a[0] >= a[1:])  # Test for first position is the highest valued bidder
+is_sorted2 = lambda a: np.all(a[1] >= a[2:]) # Test for the second position is the second highest valued bidder
+is_sorted3 = lambda a: np.all(a[-1] <= a[0:-1]) # Test for the last position is the lowest valued bidder 
 def balance_data_est(Est_data,n_work):
     pecentil_slice=1.0/n_work
     Data_Struct_c=[]
@@ -105,10 +105,19 @@ def balance_data(DATA_STRUCT,n_work):
 
 def rng_generate(rng,JJ=10000,N_max=10,loc=0.9):
     # I believe I have to use truncated stanard normal to generate the results 
-    xi_n = truncnorm.rvs(0,1,2,size=int(JJ*N_max))
+    xi_n = truncnorm.rvs(0,1,loc,size=int(JJ*N_max))
     xi_n = xi_n.reshape(JJ,N_max)
     # [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N_max),np.zeros(N_max),np.ones(N_max),kind='N',random_state=rng )
     # a_n= norm.ppf(xi_n)
+    
+    # order
+    x_check_f=np.apply_along_axis(is_sorted,1,xi_n)
+    xi_n=xi_n[x_check_f,]
+    x_check_f=np.apply_along_axis(is_sorted2,1,xi_n)
+    xi_n=xi_n[x_check_f,]
+    x_check_f=np.apply_along_axis(is_sorted3,1,xi_n)
+    xi_n=xi_n[x_check_f,]
+
     return xi_n
 
 def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
@@ -124,6 +133,7 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     [D,V]=LA.eig(SIGMA2)
     D_root = D**0.5
     Sigma = V @ np.diag(D_root) @ LA.inv(V)
+    Sigma=Sigma.real
 
     # Sigma=LAA.sqrtm(SIGMA2)
     # Sigma=Sigma.real
