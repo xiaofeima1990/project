@@ -483,10 +483,8 @@ class Update_rule:
 
         # if sum(upper) == -1:
         #     result = Mu + Sigma * norm.pdf( a)/(1-norm.pdf( a))
-        #     # result = truncate(pd,lower,Inf);
-           
+        #     # result = truncate(pd,lower,Inf);         
         # else:
-            
         #     if lower == -1:
         #         result = Mu-Sigma*norm.pdf(b)/(1-norm.cdf(b))
         #     else:

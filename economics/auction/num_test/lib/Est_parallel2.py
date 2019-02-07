@@ -1,25 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Nov 25 18:35:22 2018
+Created on Thur Feb 7 10:35:22 2019
 
 @author: mgxgl
 save the parallel running function
 
-modify the private part--no
-where mu_ai = a_1*i  ; var_ai = a_2*i 
-remember the price should take log form
-
-I should keep the setup
-where mu_ai = a_1  ; var_ai = a_2
-
-I just realied that my estimation moment has some problems 
-modify the map_integ to take average inside the integ
-
-#--- big modification ---#
-I need to use (34) and (35) to do the estimation
-To do this, I have to calculate the bidding function iteratively each time for each random vector 
-
-
+modfiy for (34) and (35) in Hong and Shum 2003
 
 """
 
@@ -89,6 +75,46 @@ def map_integ_final(arg_data):
     high_sum = np.square((high_1<0)*1*high_1)
     return (low_sum,high_sum)
 
+def map_E(N,h,state_p_l_bound,Update_bid,x_signal):
+    '''
+    1 calcuate the expected value at each "round"
+    for all bidders (active) as in Hong and Shum 2003
+    This aims to do the smooth weighting simulation
+    2 construct the "m"
+    '''
+    # calcualte the expected value at each "round"
+    [E_post,E_value_list] = Update_bid.post_E_value(state_p_l_bound,xi_v)
+
+    # construct m in (35) Hong and Shum 2003
+    # m denominator
+    phi_v=np.array([])
+    for kk in range(N-1):
+        # loop from round k =0 to N-2 
+        
+        # consider the remaining bidder from 0 (highest) to N-kk -1 
+        p_k   = E_post[kk]
+        p_k_j = E_value_list[kk]
+
+        diff  = (p_k_j - p_k )/h
+
+        phi   = norm.pdf(diff)
+        phi_v   = np.append(np.prod(phi),phi_v)
+
+      
+    m_denominator = np.prod(phi_v)
+    
+    # m nominator from 0 to N-2 round 
+    m_nominator = m_denominator * E_post
+
+    return [m_nominator,m_denominator]
+
+
+
+
+
+
+
+
 def para_fun_est(Theta,rng, ,arg_data):
     tt,data_state,data_pos,price_v,pub_info=arg_data
     info_flag=pub_info[3]
@@ -139,39 +165,18 @@ def para_fun_est(Theta,rng, ,arg_data):
 
 
 
-
-    # construct lower price bound and upper price bound
-    r_bar   = price_v[data_state[ord_index]]
-
-    bid_low = r_bar
-    bid_up  = (price_v[-1]+ladder)*np.ones(N)
-    bid_v   = data_state[ord_index]
-    # construct the posting activtity for lower and upper bound
-    # high bound
-    higher_bound = Update_bid.bound(r_bar)
-    # sum_value=0
+    price_v=np.append(price_v,np.linspace(1,4,4)*ladder+price_v[-1])
+    # construct price vector for the posting price
+    post_price  = price_v[data_state[ord_index]]
 
     # now I need to calculate empirical integ 
     # start = time.time()
-    
-    price_v=np.append(price_v,np.linspace(1,4,4)*ladder+price_v[-1])
-    # lower bound 
-    # re-order each bidder's bidding history
-    bidder_bid_history=[data_pos[int(ord_index[i])] for i in range(len(ord_index))]
-    
 
     low_state=np.zeros((N,N))
 
     # get the bidder's lower bound state for calculation
     for i in range(0,N):
-        flag_select=np.ones(N)
-        flag_select[i]=0
-        select_flag=np.nonzero(flag_select)[0].tolist()
-
-        low_state[i,0]=bid_v[i]
-        
-        temp_s=[]
-        for j in select_flag:
+        for j in range(0,N):
             try:
                 bid_post=bidder_bid_history[j][1]
             
@@ -190,47 +195,31 @@ def para_fun_est(Theta,rng, ,arg_data):
                 print('this is number ',tt)
                 input('wait for check')
                 
-        low_state[i,1:] = temp_s
+        low_state[i,:] = temp_s
 
+    state_p_l_bound= price_v[low_state]
+    # 1 calculate the complicated expected value at each "round" for all remaining bidders
+    map_func=partial(map_E,N,h,state_p_l_bound,Update_bid)
+    m_k_s=list(map(map_func,x_signal))
+    m_k_s_1 = np.array([x[0] for x in m_k_s])
+    m_k_s_2 = np.array([x[1] for x in m_k_s])
 
-
-    # start mapping for calculation
-    map_func=partial(map_integ_new,price_v,x_signal,low_state,higher_bound,Update_bid)
-    # i = 0.1.2.3... is the rank order for the participants!!!
-    exp_value=list(map(map_func,zip(range(0,N),bid_v,bid_up,bid_low))) 
-    exp_value2 =np.array([x[0] for x in exp_value])
-    final_w    =np.array([x[1] for x in exp_value])
-    final_w    = np.prod(final_w,axis=0)
-    final_w    = final_w.astype(bool)
-    # check whether it still has enough data satisfying the criterion
-    # sum(final_w) >5
+    # take mean for m_k_s_1 and m_k_s_2 to calculate the m_k
+    de_PT = np.mean(m_k_s_2)
+    mk_v = np.mean(m_k_s_1,axis=1)
     
-    exp_value2=exp_value2.T
-    exp_value2=exp_value2[final_w,:]
-    exp_value2=exp_value2.T
-    if exp_value2.shape[1] <10:
-        print('+++++++++++++++++++++++++')
-        print('outlier! tt %d, # of bidders %d, # of x %d '%(tt,N,exp_value2.shape[1] ))
-        print('posting bid :', end=' ')
-        print(r_bar)
-        print('+++++++++++++++++++++++++')
-        return 100000
-    #print(exp_value2.shape[1])
-    object_value=list(map(map_integ_final,zip(bid_up,bid_low,exp_value2 )))
-    low_part =np.array([x[0] for x in object_value])
-    high_part=np.array([x[1] for x in object_value]) 
-    #print(high_part)
+    # lower bound and upper bound 
+    low_bound   = price_v[data_state[ord_index]]
+    up_bound    = low_bound[0]*np.ones(N)
 
-    high_part[0]=0
-    # sum together 
-    # sum_value=np.sum(low_part,axis=0)**0.5 + np.sum(high_part,axis=0)**0.5
-    low_part[1] =low_part[1]*N 
-    high_part[1] = high_part[1] * N 
-    sum_value = np.sum(low_part)/(2*N)+np.sum(high_part)/(2*N)
-    norm_var=Theta['comm_var']+Theta['priv_var']+Theta['epsilon_var']
-    final_value=np.sum(sum_value)/(norm_var**0.5)
-    
-    # end = time.time()
-    # print('return auction {} with # of bidder {} and result final_value {} '.format(tt,N,final_value))    
-    # print('time expenditure: {}'.format(end - start))
-    return final_value    
+
+    low_1     =  low_bound*de_PT  - exp_value_S
+    high_1    =  up_bound*de_PT - exp_value_S
+    low_sum = np.square((low_1>0)*1*low_1)
+    high_sum = np.square((high_1<0)*1*high_1)
+    high_sum[0]=0
+    low_sum[1] =low_sum[1]*N 
+    high_sum[1] = high_sum[1] * N 
+    sum_value = np.sum(low_sum)/(2*N)+np.sum(high_sum)/(2*N)
+    return sum_value
+ 
