@@ -34,7 +34,7 @@ import numpy as np
 import pandas as pd
 from Update_rule2 import Update_rule
 from Util import *
-from Est_parallel2 import *
+from Est_parallel_HS import *
 from ENV import ENV
 from scipy.optimize import minimize
 import copy ,time,datetime
@@ -80,11 +80,11 @@ def GMM_Ineq(Theta0,Est_data,d_struct,xi_n):
     Theta={
     "comm_mu":Theta0[0],
     # "epsilon_mu":Theta0[1], # change from private mu to epsilon_mu
-    "comm_var":Theta0[1],
-    "priv_var":Theta0[2],
-    "epsilon_var":Theta0[3],
+    "beta":Theta0[1],
+    "comm_var":Theta0[2],
+    "priv_var":Theta0[3],
+    "epsilon_var":Theta0[4],
     }
-    
 
     rng=np.random.RandomState(d_struct['rng_seed'])
     
@@ -185,7 +185,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[0.01422,	0.053803,	0.0570,	0.12089]
+    Theta=[0.01422,0.1,	0.053803,	0.0570,	0.12089]
     start = time.time()
     now = datetime.datetime.now()
 

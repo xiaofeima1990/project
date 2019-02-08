@@ -301,7 +301,7 @@ class Update_rule:
         Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
         Delta_k =self.vi_sigma2 * np.eye(self.N)+np.ones((self.N,self.N)) * self.comm_var - np.eye(self.N) * self.comm_var  
         x_drop=np.array([])
-        drop_price_v=np.array([])
+        drop_price_v=[]
         drop_price_round=[]
         for k in range(0,self.N-1):
             # mu 
@@ -330,15 +330,15 @@ class Update_rule:
             if k>0:
                 Sigma_inv_k2 = Sigma_inv[self.N-k:,:] 
                 DD_k = (Delta_k @ (Sigma_inv_k2.T))
-                drop_price= x_s +DD_k @ x_drop +CC_k
+                drop_price= np.exp(x_s +DD_k @ x_drop +CC_k)
             else:
-                drop_price= x_s  + CC_k
+                drop_price= np.exp(x_s  + CC_k)
 
             x_drop=np.append(x_s[self.N-1 - k],x_drop)
-            drop_price_round.append(drop_price)
-            drop_price_v=np.append(drop_price[-1],drop_price)
+            drop_price_round.append(drop_price[0:-1].tolist())
+            drop_price_v=np.append(drop_price_v,drop_price[-1])
             
-        return [drop_price_round,drop_price_v]
+        return [drop_price_v, drop_price_round]
 
 
     def truc_x(self,Mu,Sigma,lower,upper):

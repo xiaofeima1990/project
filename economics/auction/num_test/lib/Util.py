@@ -151,16 +151,20 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     X_bar = X_bar.reshape(1,N)
     check_flag = x_signal >= X_bar
     check_flag_v=np.prod(check_flag, axis=1)
-    check_flag2 = x_signal <= X_up
-    check_flag_v2=np.prod(check_flag2, axis=1)
+    # check_flag2 = x_signal <= X_up
+    # check_flag_v2=np.prod(check_flag2, axis=1)
 
-    check_flag_v=check_flag_v*check_flag_v2
+    # check_flag_v=check_flag_v*check_flag_v2
     check_flag_v=check_flag_v.astype(bool)
     x_signal=x_signal[check_flag_v,]
 
-    x_check_f=np.apply_along_axis(is_sorted3,1,x_signal)
+    # x_check_f=np.apply_along_axis(is_sorted3,1,x_signal)
+    # x_signal=x_signal[x_check_f,]
 
-    return x_signal[x_check_f,]
+    if x_signal.shape[0] >150:
+        x_signal=x_signal[np.random.choice(x_signal.shape[0], 150, replace=False), :]
+
+    return x_signal
 
 
 
@@ -201,10 +205,10 @@ def pre_data(Est_data,max_N=10):
     Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
     Est_data['price_norm'] = Est_data['bidder_price']/Est_data['evaluation_price']
     # delete the abnormal point
-    Est_data=Est_data.reset_index(drop=True)
-    Est_data=Est_data.drop(Est_data.index[537])
-    Est_data=Est_data.reset_index(drop=True)
-    Est_data=Est_data[Est_data['real_num_bidder']>=6]
+    # Est_data=Est_data.reset_index(drop=True)
+    # Est_data=Est_data.drop(Est_data.index[537])
+    # Est_data=Est_data.reset_index(drop=True)
+    # Est_data=Est_data[Est_data['real_num_bidder']>=6]
     return Est_data[col_name]
                 
 

@@ -30,9 +30,9 @@ data_path= os.path.dirname(PATH) + '/data/Est/'
 
 import numpy as np
 import pandas as pd
-from simu import Simu,data_struct
+# from simu import Simu,data_struct
 from Update_rule2 import Update_rule
-from Est_parallel2 import *
+from Est_parallel_HS import *
 from Util import *
 from ENV import ENV
 from scipy.optimize import minimize
@@ -153,7 +153,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     
     ## save the parameters and objective value 
     
-    with open('para_est-Nelder.txt', 'a+') as f:
+    with open('para_estHS-Nelder.txt', 'a+') as f:
         for item in Theta0:
             f.write("%f\t" % item)
             
@@ -168,10 +168,7 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, xi_n, Data_struct):
     
     # print(" id: {} , is dealing the auction with {} bidder ".format(threading.get_ident(),pub[2]))
     
-    
-    
-    
-    
+
     TT,_=Data_struct.shape
 
     print("the length of the auction is {}".format(TT))
@@ -215,7 +212,7 @@ if __name__ == '__main__':
     # set up the hyper parameters
     rng_seed=1234
     max_N = 10
-    JJ    = 10000
+    JJ    = 5000
     
     d_struct={
             'rng_seed':rng_seed,
