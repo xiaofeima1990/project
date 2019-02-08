@@ -30,9 +30,9 @@ data_path= os.path.dirname(PATH) + '/data/Est/'
 
 import numpy as np
 import pandas as pd
-from simu import Simu,data_struct
-from Update_rule import Update_rule
-from Est_parallel import *
+# from simu import Simu,data_struct
+from Update_rule2 import Update_rule
+from Est_parallel2 import *
 from Util import *
 from ENV import ENV
 from scipy.optimize import minimize
@@ -133,7 +133,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     results=[]
     try:
         
-        func=partial(para_fun_est,Theta,rng,xi_n)
+        func=partial(para_fun_est,Theta,rng,xi_n,d_struct['h'])
         pool = ProcessPoolExecutor(max_workers=cpu_num)
         results= pool.map(func, zip(range(0,TT), DATA_STRUCT['bidder_state'],DATA_STRUCT['bidder_pos'],DATA_STRUCT['price_norm'],DATA_STRUCT[Pub_col].values.tolist()))
         
@@ -179,14 +179,13 @@ if __name__ == '__main__':
     # set up the hyper parameters
     rng_seed=1234
     max_N = 10
-    JJ    = 20000
+    JJ    = 8000
     
     d_struct={
             'rng_seed':rng_seed,
             "max_N":max_N,
+            'h':0.05,
             }
-    
-    
     # Theta={
     #     "comm_mu":1, # comman value mu
     #     "priv_mu":0, # private value mu
@@ -196,7 +195,7 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[0.1,0.15,0.1,0.1]
+    Theta=[0.01422,	0.053803,	0.0570,	0.12089]
     
     start = time.time()
     now = datetime.datetime.now()

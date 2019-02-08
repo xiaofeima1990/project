@@ -26,8 +26,8 @@ data_path= os.path.dirname(PATH) + '/data/Est/'
 import numpy as np
 import pandas as pd
 from simu import Simu,data_struct
-from Update_rule import Update_rule
-from Est_parallel import *
+from Update_rule2 import Update_rule
+from Est_parallel2 import *
 from Util import *
 from ENV import ENV
 from scipy.optimize import minimize,basinhopping
@@ -166,7 +166,7 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct,xi_n, Data_struct):
     results=[]
     try:
         
-        func=partial(para_fun_est,Theta,rng,xi_n)
+        func=partial(para_fun_est,Theta,rng,xi_n,d_struct['h'])
 
         pool = ProcessPoolExecutor(max_workers=cpu_num)
         
@@ -201,12 +201,13 @@ if __name__ == '__main__':
     # set up the hyper parameters
     rng_seed=1234
     max_N = 10
-    JJ    = 15000
+    JJ    = 8000
     
     d_struct={
             'rng_seed':rng_seed,
             "max_N":max_N,
-   
+            'h':0.05,
+            }
     
     # Theta={
     #     "comm_mu":1, # comman value mu
@@ -217,7 +218,7 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[0.28,0.15,0.2,0.10]
+    Theta=[0.01422,	0.053803,	0.0570,	0.12089]
 
     start = time.time()
     now = datetime.datetime.now()
