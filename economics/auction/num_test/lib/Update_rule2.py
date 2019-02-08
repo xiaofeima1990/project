@@ -158,9 +158,10 @@ class Update_rule:
         ## all the rivals bidding price is known
         p_k=p_low.reshape(p_low.size,1)
         # mu_k
-        x_drop=np.zeros(self.N)
+        x_drop=np.zeros(self.N-1)
         Sigma_inv = inv(self.SIGMA2)
         MU = self.MU
+        x_d=np.array([])
         for k in range(self.N-1):
             
             mu_k = np.append(self.vi_mu, self.vi_rival_mu)
@@ -191,11 +192,13 @@ class Update_rule:
             if k>0:
                 Sigma_inv_k2 = Sigma_inv[self.N-k:,:]
                 DD_k = inv(Delta_k @ (Sigma_inv_k1.T)) @ (Delta_k @ (Sigma_inv_k2.T))
-                x_d = x_drop[self.N-k:]
+                x_drop[(self.N-1)-k-1] = AA_k[-1]*(p_k[(self.N-1)-k-1]) - np.dot( DD_k[-1,:],  x_d) - CC_k[-1]
+                
             else:
                 DD_k = np.zeros([1,1])
-                x_d = 0
-            x_drop[self.N-k-1] = AA_k[-1]*np.log(p_k[self.N-k-1]) - np.dot( DD_k[-1,:],  x_d) - CC_k[-1]
+                x_drop[(self.N-1)-k-1] = AA_k[-1]*(p_k[(self.N-1)-k-1]) - CC_k[-1]
+
+            x_d = np.append(x_drop[(self.N-1)-k-1],x_d)
         
         return x_drop.reshape(1,x_drop.size)
 
@@ -255,22 +258,24 @@ class Update_rule:
         calculate the expected value from the first "round" to last "round"
         '''
         E_post=np.array([])
-        E_value_list=np.array([])
-        for k in range(0,self.N-1): # number of "round"
+        E_value_list=[]
+        for k in range(0,self.N): # number of "round"
             # deal with the bidding state 
             temp_state = state_p_l_bound[self.N-1 -k,: ]
             temp_E_value=[]            
             for i in range(0,self.N-k): # the "remaining bidder"
-                temp_state_i = copy.deep(temp_state)
+                temp_state_i = copy.deepcopy(temp_state)
                 temp_state_i = np.delete(temp_state_i,i)
                 E_value_i=self.bid_vector1(xi_v[i],temp_state_i,i)
+                E_value_i=E_value_i.flatten()
                 # save the expected highest posting expectection for that round
                 if i == self.N-k-1:
-                    E_post=np.array(E_value_i,E_post)
-                # save all the remaining bidders
-                temp_E_value.append(E_value_i)
+                    E_post=np.append(E_post,E_value_i)
+                else:
+                    # save all the remaining bidders except for last one
+                    temp_E_value.append(E_value_i)
 
-            E_value_list=np.append(temp_E_value,E_value_list)
+            E_value_list.append(temp_E_value)
 
         return  [E_post,E_value_list]   
 
@@ -346,3 +351,50 @@ class Update_rule:
         result = Mu+Sigma*(temp_no / temp_de)
         
         return result 
+
+    def bound(self, p_low):
+        # still I have to calculate the signal recurisively
+
+        ## all the rivals bidding price is known
+        p_k=p_low.reshape(p_low.size,1)
+        # mu_k
+        x_drop=np.zeros(self.N)
+        Sigma_inv = inv(self.SIGMA2)
+        MU = self.MU
+        for k in range(self.N):
+            
+            mu_k = np.append(self.vi_mu, self.vi_rival_mu)
+            mu_k = mu_k[0:self.N-k]
+            mu_k=mu_k.reshape(mu_k.size,1)
+            
+            l_k  = np.ones((self.N-k,1))
+            
+            Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
+            Gamma_k = Gamma_k[0:self.N-k]
+            Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
+            
+            
+            Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2)-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
+            Delta_k=Delta_k[:,0:self.N-k].T
+            
+            
+            Sigma_inv_k1 = Sigma_inv[0:self.N-k,:] # N-1+1 all the rest of the 
+
+
+            AA_k = inv(Delta_k @ Sigma_inv_k1.T) @ l_k
+            temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
+            temp_diag=temp_diag.reshape(temp_diag.size,1)
+            
+            CC_k = 0.5*inv(Delta_k @ Sigma_inv_k1.T) @ (Gamma_k - temp_diag + 2*mu_k -2* Delta_k @ Sigma_inv @ MU)
+
+            
+            if k>0:
+                Sigma_inv_k2 = Sigma_inv[self.N-k:,:]
+                DD_k = inv(Delta_k @ (Sigma_inv_k1.T)) @ (Delta_k @ (Sigma_inv_k2.T))
+                x_d = x_drop[self.N-k:]
+            else:
+                DD_k = np.zeros([1,1])
+                x_d = 0
+            x_drop[self.N-k-1] = AA_k[-1]*np.log(p_k[self.N-k-1]) - np.dot( DD_k[-1,:],  x_d) - CC_k[-1]
+        
+        return x_drop.reshape(1,x_drop.size)

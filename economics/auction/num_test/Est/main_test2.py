@@ -32,9 +32,9 @@ data_path= os.path.dirname(PATH) + '/data/Est/'
 
 import numpy as np
 import pandas as pd
-from Update_rule import Update_rule
+from Update_rule2 import Update_rule
 from Util import *
-from Est_parallel import *
+from Est_parallel2 import *
 from ENV import ENV
 from scipy.optimize import minimize
 import copy ,time,datetime
@@ -127,7 +127,7 @@ def GMM_Ineq(Theta0,Est_data,d_struct,xi_n):
         '''
         serial testing 
         '''
-        func=partial(para_fun_est,Theta,rng,xi_n)
+        func=partial(para_fun_est,Theta,rng,xi_n,d_struct['h'])
         results=[]
         pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
         for arg_data_ele in zip(range(0,TT),Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[pub_col].values.tolist()):
@@ -176,15 +176,16 @@ if __name__ == '__main__':
     # set up the hyper parameters
     rng_seed=789
     max_N = 10
-    JJ    = 10000
+    JJ    = 1000
     
     d_struct={
             'rng_seed':rng_seed,
             "max_N":max_N,
+            'h':0.1,
             }
     
 
-    Theta=[0.131422,	0.103803,	0.001270,	0.162089]
+    Theta=[0.131422,	0.103803,	0.1270,	0.162089]
     start = time.time()
     now = datetime.datetime.now()
 

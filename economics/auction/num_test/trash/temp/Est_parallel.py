@@ -89,7 +89,7 @@ def map_integ_final(arg_data):
     high_sum = np.square((high_1<0)*1*high_1)
     return (low_sum,high_sum)
 
-def para_fun_est(Theta,rng, ,arg_data):
+def para_fun_est(Theta,rng,xi_n,arg_data):
     tt,data_state,data_pos,price_v,pub_info=arg_data
     info_flag=pub_info[3]
     N        =int(pub_info[2])

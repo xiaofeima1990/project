@@ -14,8 +14,8 @@ sys.path.append('/storage/work/g/gum27/system/pkg/')
 
 
 import numpy as np
-from simu import Simu,data_struct
-from Update_rule import Update_rule
+# from simu import Simu,data_struct
+# from Update_rule2 import Update_rule
 import scipy.linalg as LAA
 from functools import partial
 from scipy.stats import norm,truncnorm
@@ -103,7 +103,7 @@ def balance_data(DATA_STRUCT,n_work):
 
     return [data_struct(ele) for ele in Data_Struct_c ]
 
-def rng_generate(rng,JJ=10000,N_max=10,loc=0.9):
+def rng_generate(rng,JJ=10000,N_max=10,loc=-0.1):
     # I believe I have to use truncated stanard normal to generate the results 
     xi_n = truncnorm.rvs(0,1,loc,size=int(JJ*N_max))
     xi_n = xi_n.reshape(JJ,N_max)
@@ -113,8 +113,8 @@ def rng_generate(rng,JJ=10000,N_max=10,loc=0.9):
     # order
     x_check_f=np.apply_along_axis(is_sorted,1,xi_n)
     xi_n=xi_n[x_check_f,]
-    x_check_f=np.apply_along_axis(is_sorted2,1,xi_n)
-    xi_n=xi_n[x_check_f,]
+    # x_check_f=np.apply_along_axis(is_sorted2,1,xi_n)
+    # xi_n=xi_n[x_check_f,]
     x_check_f=np.apply_along_axis(is_sorted3,1,xi_n)
     xi_n=xi_n[x_check_f,]
 
@@ -157,16 +157,9 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     check_flag_v=check_flag_v*check_flag_v2
     check_flag_v=check_flag_v.astype(bool)
     x_signal=x_signal[check_flag_v,]
-    x_check_f=np.apply_along_axis(is_sorted,1,x_signal)
-    # x_signal =x_signal[x_check_f,]
-    # x_check_f=np.apply_along_axis(is_sorted3,1,x_signal)
-    if N>2 :
-        x_signal =x_signal[x_check_f,]
-        x_check_f=np.apply_along_axis(is_sorted2,1,x_signal)
-        
 
 
-    return x_signal[x_check_f,]
+    return x_signal
 
 
 
@@ -210,7 +203,7 @@ def pre_data(Est_data,max_N=10):
     Est_data=Est_data.reset_index(drop=True)
     Est_data=Est_data.drop(Est_data.index[537])
     Est_data=Est_data.reset_index(drop=True)
-    # Est_data=Est_data[Est_data['real_num_bidder']>=6]
+    Est_data=Est_data[Est_data['real_num_bidder']>=6]
     return Est_data[col_name]
                 
 

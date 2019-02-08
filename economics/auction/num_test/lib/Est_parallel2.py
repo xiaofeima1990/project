@@ -13,7 +13,7 @@ from functools import partial
 from collections import defaultdict,OrderedDict
 import time,datetime
 import numpy as np
-from Update_rule import Update_rule
+from Update_rule2 import Update_rule
 from ENV import ENV
 from Util import *
 import copy
@@ -27,54 +27,6 @@ def list_duplicates(seq):
     return ((key,locs) for key,locs in tally.items() if len(locs)>=1)
 
 
-
-
-
-def map_integ(price_v,x_signal_i,s_state,Update_bid,arg_data):
-    i,bid,high_bid,low_bid=arg_data
-    state=s_state[i]
-
-    exp_value = Update_bid.bid_vector(x_signal_i[:,i],bid,state,price_v,i)
-    # I just realized that I have to take integration inside 
-    # like Hong and Shum 2003 SNLS, because x_signal is unkown and simulated. 
-    # not like CT 2009 , their X can be observed
-
-    exp_value_M = np.mean(exp_value)
-
-    low_case  = low_bid  - exp_value_M
-    high_case = high_bid - exp_value_M
-
-    low_sum = np.square((low_case>0)*1*low_case)
-    high_sum = np.square((high_case<0)*1*high_case)
-    return (low_sum,high_sum)
-
-
-def map_integ_new(price_v,x_signal_i,low_state,high_bound,Update_bid,arg_data):
-    i,bid,high_bid,low_bid=arg_data
-    # calculate lower bound
-    exp_value1 = Update_bid.bid_vector_low(x_signal_i[:,i],bid,low_state[i],price_v,i)
-
-    (exp_value2,w_n2) = Update_bid.bid_vector_high(x_signal_i[:,i],high_bound,price_v,i)
-
-    # count the criterion
-    low_case  = 1*(low_bid  <= exp_value1) # this lower bound should be one of the criterion
-    # high_case = 1*(high_bid >= exp_value2)
-    low_case=low_case.flatten()
-    # question ~~~ how can I add w_n2
-    final_w=w_n2*low_case
-    
-    return (exp_value2.flatten(),final_w)
-
-def map_integ_final(arg_data):
-    high_bid,low_bid,exp_value = arg_data
-    exp_value_S= np.mean(exp_value)
-    
-    low_1     =  low_bid  - exp_value_S
-    high_1    =  high_bid - exp_value_S
-    low_sum = np.square((low_1>0)*1*low_1)
-    high_sum = np.square((high_1<0)*1*high_1)
-    return (low_sum,high_sum)
-
 def map_E(N,h,state_p_l_bound,Update_bid,x_signal):
     '''
     1 calcuate the expected value at each "round"
@@ -83,12 +35,12 @@ def map_E(N,h,state_p_l_bound,Update_bid,x_signal):
     2 construct the "m"
     '''
     # calcualte the expected value at each "round"
-    [E_post,E_value_list] = Update_bid.post_E_value(state_p_l_bound,xi_v)
+    [E_post,E_value_list] = Update_bid.post_E_value(state_p_l_bound,x_signal)
 
     # construct m in (35) Hong and Shum 2003
     # m denominator
     phi_v=np.array([])
-    for kk in range(N-1):
+    for kk in range(N):
         # loop from round k =0 to N-2 
         
         # consider the remaining bidder from 0 (highest) to N-kk -1 
@@ -97,7 +49,7 @@ def map_E(N,h,state_p_l_bound,Update_bid,x_signal):
 
         diff  = (p_k_j - p_k )/h
 
-        phi   = norm.pdf(diff)
+        phi   = norm.cdf(diff)
         phi_v   = np.append(np.prod(phi),phi_v)
 
       
@@ -111,11 +63,7 @@ def map_E(N,h,state_p_l_bound,Update_bid,x_signal):
 
 
 
-
-
-
-
-def para_fun_est(Theta,rng, ,arg_data):
+def para_fun_est(Theta,rng,xi_n,h,arg_data):
     tt,data_state,data_pos,price_v,pub_info=arg_data
     info_flag=pub_info[3]
     N        =int(pub_info[2])
@@ -172,10 +120,15 @@ def para_fun_est(Theta,rng, ,arg_data):
     # now I need to calculate empirical integ 
     # start = time.time()
 
+    # re-order each bidder's bidding history
+    bidder_bid_history=[data_pos[int(ord_index[i])] for i in range(len(ord_index))]
+    bid_v   = data_state[ord_index]
+
     low_state=np.zeros((N,N))
 
     # get the bidder's lower bound state for calculation
     for i in range(0,N):
+        temp_s=[]
         for j in range(0,N):
             try:
                 bid_post=bidder_bid_history[j][1]
@@ -185,7 +138,10 @@ def para_fun_est(Theta,rng, ,arg_data):
                 else: 
                     temp_p=[x for x in bid_post if x < bid_v[i] ]
                     temp_p.sort()
-                    temp_s.append(temp_p[-1])
+                    if len(temp_p)>=1:
+                        temp_s.append(temp_p[-1])
+                    else:
+                        temp_s.append(0)
             except Exception as e:
                 print(e)
                 print(data_pos)
@@ -196,10 +152,10 @@ def para_fun_est(Theta,rng, ,arg_data):
                 input('wait for check')
                 
         low_state[i,:] = temp_s
-
+    low_state=low_state.astype(int)
     state_p_l_bound= price_v[low_state]
     # 1 calculate the complicated expected value at each "round" for all remaining bidders
-    map_func=partial(map_E,N,h,state_p_l_bound,Update_bid)
+    map_func=partial(map_E,N,h,np.log(state_p_l_bound),Update_bid)
     m_k_s=list(map(map_func,x_signal))
     m_k_s_1 = np.array([x[0] for x in m_k_s])
     m_k_s_2 = np.array([x[1] for x in m_k_s])
@@ -212,9 +168,10 @@ def para_fun_est(Theta,rng, ,arg_data):
     low_bound   = price_v[data_state[ord_index]]
     up_bound    = low_bound[0]*np.ones(N)
 
-
-    low_1     =  low_bound*de_PT  - exp_value_S
-    high_1    =  up_bound*de_PT - exp_value_S
+    # personally I think if I multiply de_PT, the objective function would be very small
+    # 
+    low_1     =  low_bound  - mk_v/de_PT
+    high_1    =  up_bound   - mk_v/de_PT
     low_sum = np.square((low_1>0)*1*low_1)
     high_sum = np.square((high_1<0)*1*high_1)
     high_sum[0]=0
