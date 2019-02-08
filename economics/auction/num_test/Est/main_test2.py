@@ -176,16 +176,16 @@ if __name__ == '__main__':
     # set up the hyper parameters
     rng_seed=789
     max_N = 10
-    JJ    = 1000
+    JJ    = 5000
     
     d_struct={
             'rng_seed':rng_seed,
             "max_N":max_N,
-            'h':0.1,
+            'h':0.05,
             }
     
 
-    Theta=[0.131422,	0.103803,	0.1270,	0.162089]
+    Theta=[0.01422,	0.053803,	0.0570,	0.12089]
     start = time.time()
     now = datetime.datetime.now()
 

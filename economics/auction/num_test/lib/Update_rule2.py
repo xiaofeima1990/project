@@ -230,7 +230,7 @@ class Update_rule:
         return [E_const.flatten(),up_bound,AA_i.flatten(),AA_j.flatten()]
 
 
-    def bid_vector1(self,xi_v,state_p,i_id):
+    def bid_vector1(self,xi_v,state_p,no_flag,i_id):
         '''
         xi_v vectors for xi private signal
         state_p normalized bidding price under the coresponding bidding history
@@ -243,17 +243,18 @@ class Update_rule:
         # I have to go back to normal price
         [E_const,x_j_upper,AA_i,AA_j]=self.real_bid_calc_new(i_id)
         # ladder=np.log(price_v[-1]) - np.log(price_v[-2])
-        xi_v = xi_v.reshape(xi_v.size,1)
+        xi_v = xi_v.flatten()
         x_j_lower = self.l_bound_xj(state_p)
-        AA_j=AA_j.reshape(AA_j.size, 1 )
-        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,10) @ AA_j
+        AA_j=AA_j.flatten()
+        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,10) * AA_j
+        E_j = np.sum(E_j.flatten() * (1-no_flag) )
 
         exp_value= AA_i*xi_v + E_j + E_const 
         return np.exp(exp_value)
 
 
         
-    def post_E_value(self,state_p_l_bound,xi_v):
+    def post_E_value(self,state_p_l_bound,no_flag,xi_v):
         '''
         calculate the expected value from the first "round" to last "round"
         '''
@@ -262,11 +263,13 @@ class Update_rule:
         for k in range(0,self.N): # number of "round"
             # deal with the bidding state 
             temp_state = state_p_l_bound[self.N-1 -k,: ]
+            no_flag_temp = no_flag[self.N-1 -k,:]
             temp_E_value=[]            
             for i in range(0,self.N-k): # the "remaining bidder"
                 temp_state_i = copy.deepcopy(temp_state)
                 temp_state_i = np.delete(temp_state_i,i)
-                E_value_i=self.bid_vector1(xi_v[i],temp_state_i,i)
+                no_flag_temp_i = np.delete(no_flag_temp,i)
+                E_value_i=self.bid_vector1(xi_v[i],temp_state_i,no_flag_temp_i,i)
                 E_value_i=E_value_i.flatten()
                 # save the expected highest posting expectection for that round
                 if i == self.N-k-1:
@@ -274,12 +277,10 @@ class Update_rule:
                 else:
                     # save all the remaining bidders except for last one
                     temp_E_value.append(E_value_i)
-
-            E_value_list.append(temp_E_value)
+            if k < self.N-1:
+                E_value_list.append(temp_E_value)
 
         return  [E_post,E_value_list]   
-
-
 
 
 

@@ -27,7 +27,7 @@ def list_duplicates(seq):
     return ((key,locs) for key,locs in tally.items() if len(locs)>=1)
 
 
-def map_E(N,h,state_p_l_bound,Update_bid,x_signal):
+def map_E(N,h,state_p_l_bound,no_flag,Update_bid,x_signal):
     '''
     1 calcuate the expected value at each "round"
     for all bidders (active) as in Hong and Shum 2003
@@ -35,12 +35,12 @@ def map_E(N,h,state_p_l_bound,Update_bid,x_signal):
     2 construct the "m"
     '''
     # calcualte the expected value at each "round"
-    [E_post,E_value_list] = Update_bid.post_E_value(state_p_l_bound,x_signal)
+    [E_post,E_value_list] = Update_bid.post_E_value(state_p_l_bound,no_flag,x_signal)
 
     # construct m in (35) Hong and Shum 2003
     # m denominator
     phi_v=np.array([])
-    for kk in range(N):
+    for kk in range(N-1):
         # loop from round k =0 to N-2 
         
         # consider the remaining bidder from 0 (highest) to N-kk -1 
@@ -55,8 +55,9 @@ def map_E(N,h,state_p_l_bound,Update_bid,x_signal):
       
     m_denominator = np.prod(phi_v)
     
-    # m nominator from 0 to N-2 round 
-    m_nominator = m_denominator * E_post
+    # m nominator from last round to the first round 
+    # I have to match with the upper and lower bound 
+    m_nominator = m_denominator * E_post[::-1]
 
     return [m_nominator,m_denominator]
 
@@ -153,16 +154,17 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
                 
         low_state[i,:] = temp_s
     low_state=low_state.astype(int)
+    no_flag=(low_state<1)*1
     state_p_l_bound= price_v[low_state]
     # 1 calculate the complicated expected value at each "round" for all remaining bidders
-    map_func=partial(map_E,N,h,np.log(state_p_l_bound),Update_bid)
+    map_func=partial(map_E,N,h,np.log(state_p_l_bound),no_flag,Update_bid)
     m_k_s=list(map(map_func,x_signal))
     m_k_s_1 = np.array([x[0] for x in m_k_s])
     m_k_s_2 = np.array([x[1] for x in m_k_s])
 
     # take mean for m_k_s_1 and m_k_s_2 to calculate the m_k
     de_PT = np.mean(m_k_s_2)
-    mk_v = np.mean(m_k_s_1,axis=1)
+    mk_v = np.mean(m_k_s_1,axis=0)
     
     # lower bound and upper bound 
     low_bound   = price_v[data_state[ord_index]]
@@ -175,8 +177,10 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
     low_sum = np.square((low_1>0)*1*low_1)
     high_sum = np.square((high_1<0)*1*high_1)
     high_sum[0]=0
-    low_sum[1] =low_sum[1]*N 
-    high_sum[1] = high_sum[1] * N 
-    sum_value = np.sum(low_sum)/(2*N)+np.sum(high_sum)/(2*N)
+    # low_sum[1] =low_sum[1]*N 
+    # high_sum[1] = high_sum[1] *N  
+    # sum_value = np.sum(low_sum)/(2*N)+np.sum(high_sum)/(2*N)
+    sum_value = np.sum(low_sum) + np.sum(high_sum)
+    sum_value =sum_value/0.01
     return sum_value
  

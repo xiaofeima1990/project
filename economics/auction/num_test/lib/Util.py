@@ -105,7 +105,7 @@ def balance_data(DATA_STRUCT,n_work):
 
 def rng_generate(rng,JJ=10000,N_max=10,loc=-0.1):
     # I believe I have to use truncated stanard normal to generate the results 
-    xi_n = truncnorm.rvs(0,1,loc,size=int(JJ*N_max))
+    xi_n = truncnorm.rvs(0,1,loc,size=int(JJ*N_max),random_state=rng)
     xi_n = xi_n.reshape(JJ,N_max)
     # [xi_n,w_n]=qe.quad.qnwequi(int(JJ*N_max),np.zeros(N_max),np.ones(N_max),kind='N',random_state=rng )
     # a_n= norm.ppf(xi_n)
@@ -115,8 +115,8 @@ def rng_generate(rng,JJ=10000,N_max=10,loc=-0.1):
     xi_n=xi_n[x_check_f,]
     # x_check_f=np.apply_along_axis(is_sorted2,1,xi_n)
     # xi_n=xi_n[x_check_f,]
-    x_check_f=np.apply_along_axis(is_sorted3,1,xi_n)
-    xi_n=xi_n[x_check_f,]
+    # x_check_f=np.apply_along_axis(is_sorted3,1,xi_n)
+    # xi_n=xi_n[x_check_f,]
 
     return xi_n
 
@@ -158,8 +158,9 @@ def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     check_flag_v=check_flag_v.astype(bool)
     x_signal=x_signal[check_flag_v,]
 
+    x_check_f=np.apply_along_axis(is_sorted3,1,x_signal)
 
-    return x_signal
+    return x_signal[x_check_f,]
 
 
 
