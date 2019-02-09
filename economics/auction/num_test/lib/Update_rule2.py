@@ -297,23 +297,25 @@ class Update_rule:
         # signal
         x_s = x_s.reshape(x_s.size,1)
         # info_struct=np.concatenate((self.xi_rival_mu,self.xi_rival_sigma2,self.vi_rival_mu,self.vi_rival_sigma2),axis=1)
-        mu_k = np.append(self.vi_mu, self.vi_rival_mu)
-        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
-        Delta_k =self.vi_sigma2 * np.eye(self.N)+np.ones((self.N,self.N)) * self.comm_var - np.eye(self.N) * self.comm_var  
+        
+        
         x_drop=np.array([])
         drop_price_v=[]
         drop_price_round=[]
-        for k in range(0,self.N-1):
+        for k in range(0,self.N):
             # mu 
+            mu_k = np.append(self.vi_mu, self.vi_rival_mu)
             mu_k = mu_k[0:self.N-k]
             mu_k=mu_k.reshape(mu_k.size,1)
             # l
             l_k  = np.ones((self.N-k,1))
             # gamma
+            Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
             Gamma_k = Gamma_k[0:self.N-k]
             Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
             
             # Delta
+            Delta_k =self.vi_sigma2 * np.eye(self.N)+np.ones((self.N,self.N)) * self.comm_var - np.eye(self.N) * self.comm_var  
             Delta_k=Delta_k[:,0:self.N-k].T
             
             # sigma_inv
@@ -330,14 +332,16 @@ class Update_rule:
             if k>0:
                 Sigma_inv_k2 = Sigma_inv[self.N-k:,:] 
                 DD_k = (Delta_k @ (Sigma_inv_k2.T))
-                drop_price= np.exp(x_s +DD_k @ x_drop +CC_k)
+                drop_price= np.exp(x_s[:self.N - k] +DD_k @ x_drop +CC_k)
             else:
                 drop_price= np.exp(x_s  + CC_k)
 
             x_drop=np.append(x_s[self.N-1 - k],x_drop)
+            x_drop=x_drop.reshape(x_drop.size,1)
+            drop_price=drop_price.flatten()
             drop_price_round.append(drop_price[0:-1].tolist())
             drop_price_v=np.append(drop_price_v,drop_price[-1])
-            
+        drop_price_round.pop()    
         return [drop_price_v, drop_price_round]
 
 
