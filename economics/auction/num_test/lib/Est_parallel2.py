@@ -51,7 +51,6 @@ def map_E(N,h,state_p_l_bound,no_flag,Update_bid,x_signal):
 
         phi   = norm.cdf(diff)
         phi_v   = np.append(np.prod(phi),phi_v)
-
       
     m_denominator = np.prod(phi_v)
     
@@ -90,17 +89,13 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
         else:
             i_id = 1
     r     =pub_info[-1]
-
     
     Env=ENV(N, Theta)
     # argument for info_struct info_flag,ord_index,res
     para=Env.info_struct(info_v,iden_index,r)
 
-    
     ladder=pub_info[0]
     Update_bid=Update_rule(para,r)
-
-    
 
     # add whether it is informed or not informed  
     Update_bid.setup_para(i_id)
@@ -113,8 +108,6 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
     if x_signal.shape[0]<15:
         print("t is {}".format(tt) )
         return 100000
-
-
 
 
     price_v=np.append(price_v,np.linspace(1,4,4)*ladder+price_v[-1])

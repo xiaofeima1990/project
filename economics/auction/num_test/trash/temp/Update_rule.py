@@ -437,7 +437,7 @@ class Update_rule:
         
         
         #-------------------------------------------------
-        # new part: pulg in the bid price for the remainning guy
+        # new part: plug in the bid price for the remainning bidder
         #-------------------------------------------------        
         bid_price= self.T_p[bid]
         pos     = bid*np.ones(self.N-1)
@@ -466,7 +466,6 @@ class Update_rule:
             
             
         return drop_info_jj
-
   
                 
     # this can support vectorize
@@ -476,10 +475,9 @@ class Update_rule:
         a = (lower-Mu)/(Sigma)
         b = (upper-Mu)/(Sigma)
         
-        temp_de = norm.cdf(b) - norm.cdf(a)+10**(-10)
+        temp_de = norm.cdf(b) - norm.cdf(a)+10**(-20)
         temp_no = norm.pdf(a) - norm.pdf(b)
         result = Mu+Sigma*(temp_no / temp_de)
-
 
         # if sum(upper) == -1:
         #     result = Mu + Sigma * norm.pdf( a)/(1-norm.pdf( a))
@@ -488,8 +486,7 @@ class Update_rule:
         #     if lower == -1:
         #         result = Mu-Sigma*norm.pdf(b)/(1-norm.cdf(b))
         #     else:
-        #         result = Mu+Sigma*(norm.pdf(a) - norm.pdf(b) ) /(norm.cdf(b) - norm.cdf(a)) 
-            
+        #         result = Mu+Sigma*(norm.pdf(a) - norm.pdf(b) ) /(norm.cdf(b) - norm.cdf(a))             
             
         return result
         
@@ -500,8 +497,8 @@ class Update_rule:
         a = (lower-Mu)/(Sigma)
         b = (upper-Mu)/(Sigma)
 
-        partA = (a * norm.pdf(a) -b*norm.pdf(b)) / (norm.cdf(b) - norm.cdf(a) + 10**(-10)) 
-        partB = (norm.pdf(a) - norm.pdf(b))**2 / (norm.cdf(b) - norm.cdf(a) + 10**(-10))**2 
+        partA = (a * norm.pdf(a) -b*norm.pdf(b)) / (norm.cdf(b) - norm.cdf(a) + 10**(-20)) 
+        partB = (norm.pdf(a) - norm.pdf(b))**2 / (norm.cdf(b) - norm.cdf(a) + 10**(-20))**2 
        
         return Sigma**2 * (1+ partA + partB  )
         

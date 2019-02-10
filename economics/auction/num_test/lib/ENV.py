@@ -58,6 +58,7 @@ class ENV:
 
     def info_struct(self,info_flag,ord_index=None,res=1):
         self.info_st['N']=self.N
+        self.info_st["beta"] = self.beta
         self.info_st['comm_var'] =self.comm_var 
         self.info_st['comm_mu']  =self.comm_mu + self.beta*np.log(res)
         # self.info_st['beta']  =self.beta
@@ -151,12 +152,12 @@ class Info_result(object):
         '''
         return self.info_dict['vi_sigma2']
     
-    @property 
-    def x_info_sigma2(self):
-        '''
-        return v i simga squre
-        '''
-        return self.info_dict['x_info_sigma2']
+    # @property 
+    # def x_info_sigma2(self):
+    #     '''
+    #     return v i simga squre
+    #     '''
+    #     return self.info_dict['x_info_sigma2']
         
     @property 
     def N(self):

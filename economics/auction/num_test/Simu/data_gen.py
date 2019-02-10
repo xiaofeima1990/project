@@ -43,14 +43,6 @@ from simu import Simu
 import numpy as np
 from scipy import stats
 
-Simu_para_dict={
-
-        "comm_mu":-0.4,
-        "epsilon_mu":0,
-        "comm_var":0.3,
-        "priv_var":0.25,
-        "epsilon_var":0.4,
-        }
 
 
 
@@ -107,29 +99,45 @@ def Gen_Simu_data1(N,T,Simu_para_dict,info_flag=0,rng_seed=123):
 if __name__ == '__main__':
     
 
-    mode_flag2=0
-    mode_flag=1 # 1 -> run the simulation ; 0 -> read the data
+    mode_flag2=0 # 1-> run the moment sensitivity test; 0-> only generate the data
+    mode_flag=1  # 1-> run the simulation with the fixed number of bidders;
+                 # 2-> run the simulation with a range of number of bidders;  
     
     '''
     case 1 : fix the number of bidders and calculate the equiblirum bidding premium:
     bid price difference with and without the informed bidder 
 
     '''
-    if mode_flag == 1 :
-    ## parameters
-        N= 8
-        SS= 1000
-        Rng_seed= 12456
-        # info_flag=0
-        # simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
+    Simu_para_dict={
 
-        # with open( data_path + "simu_data_10.pkl", "wb") as f : 
-        #     pk.dump(simu_data_1, f)
-        #print('info case')
-        info_flag=1
+        "comm_mu":0.005,
+        "beta":0.25,
+        "epsilon_mu":0,
+        "comm_var":0.001,
+        "priv_var":0.003,
+        "epsilon_var":0.035,
+        }
+
+
+
+
+    if mode_flag == 1 :
+        ## fix the number of bidders  
+        ## parameters
+        N = 8
+        SS= 100
+        Rng_seed= 12456
+        info_flag=0
         simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
-        with open( data_path + "simu_data_11.pkl", "wb") as f : 
-           pk.dump(simu_data_1, f)
+
+        with open( data_path + "simu_data_10.pkl", "wb") as f : 
+            pk.dump(simu_data_1, f)
+
+        #print('info case')
+        # info_flag=1
+        # simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
+        # with open( data_path + "simu_data_11.pkl", "wb") as f : 
+        #    pk.dump(simu_data_1, f)
 
     elif mode_flag==2:
     

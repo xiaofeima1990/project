@@ -96,11 +96,8 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
     # argument for info_struct info_flag,ord_index,res
     para=Env.info_struct(info_v,iden_index,r)
 
-    
     ladder=pub_info[0]
     Update_bid=Update_rule(para,r)
-
-    
 
     # add whether it is informed or not informed  
     Update_bid.setup_para(i_id)
@@ -117,12 +114,8 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
 
     price_v=np.append(price_v,np.linspace(1,4,4)*ladder+price_v[-1])
 
-
     # now I need to calculate empirical integ 
     # start = time.time()
-
-
-
 
     # 1 calculate the complicated expected value at each "round" for all remaining bidders
     map_func=partial(map_E,N,h,Update_bid)
@@ -143,5 +136,6 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
     low_sum = np.square(low_1)
     sum_value = np.nansum(low_sum)
     sum_value =sum_value/0.01
+    
     return sum_value
  

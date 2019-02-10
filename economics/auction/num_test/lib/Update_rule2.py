@@ -62,7 +62,11 @@ class Update_rule:
         '''
 
         ## all the rivals bidding price is known
-        p_k=p_low.reshape(p_low.size,1)
+        ## I have to re order the p_low for correct calculation 
+        ## since under symmetric case, I do not need to worry about the varicne order
+        ## I can do this simplification
+        p_k=np.sort(p_low)[::-1]
+        p_k=p_low.reshape(p_k.size,1)
         # mu_k
         x_drop=np.zeros(self.N)
         Sigma_inv = inv(self.SIGMA2)
@@ -156,7 +160,8 @@ class Update_rule:
         # still I have to calculate the signal recurisively
 
         ## all the rivals bidding price is known
-        p_k=p_low.reshape(p_low.size,1)
+        p_k=np.sort(p_low)[::-1]
+        p_k=p_low.reshape(p_k.size,1)
         # mu_k
         x_drop=np.zeros(self.N-1)
         Sigma_inv = inv(self.SIGMA2)
@@ -230,7 +235,7 @@ class Update_rule:
         return [E_const.flatten(),up_bound,AA_i.flatten(),AA_j.flatten()]
 
 
-    def bid_vector1(self,xi_v,state_p,no_flag,i_id):
+    def bid_vector1(self,xi_v,state_p, ,i_id):
         '''
         xi_v vectors for xi private signal
         state_p normalized bidding price under the coresponding bidding history
@@ -351,7 +356,7 @@ class Update_rule:
         a = (lower-Mu)/(Sigma)
         b = (upper-Mu)/(Sigma)
         
-        temp_de = norm.cdf(b) - norm.cdf(a)+10**(-10)
+        temp_de = norm.cdf(b) - norm.cdf(a)+10**(-20)
         temp_no = norm.pdf(a) - norm.pdf(b)
         result = Mu+Sigma*(temp_no / temp_de)
         
@@ -361,7 +366,8 @@ class Update_rule:
         # still I have to calculate the signal recurisively
 
         ## all the rivals bidding price is known
-        p_k=p_low.reshape(p_low.size,1)
+        p_k=np.sort(p_low)[::-1]
+        p_k=p_low.reshape(p_k.size,1)
         # mu_k
         x_drop=np.zeros(self.N)
         Sigma_inv = inv(self.SIGMA2)
