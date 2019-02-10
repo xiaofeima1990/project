@@ -39,8 +39,10 @@ import multiprocessing
 from concurrent.futures import ThreadPoolExecutor,ProcessPoolExecutor
 import threading
 from contextlib import contextmanager
-import pickle as pk
 from numpy import linalg as LA
+
+Pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
+
 
 @contextmanager
 def poolcontext(*args, **kwargs):
@@ -53,7 +55,7 @@ def subsample_data(Est_data,size=300):
     return Est_data.loc[np.random.choice(Est_data.index, size, replace=False),]
 
 
-def parallel_work(Est_data,Theta,xi_n):
+def parallel_work(Est_data,Theta,xi_n,d_struct):
     num_works = 5
     work_pool = ThreadPoolExecutor(max_workers=num_works)
     
@@ -72,6 +74,7 @@ def parallel_work(Est_data,Theta,xi_n):
     
     end = time.time()
     print('total time consuming for subsampling is {}'.format((end-start)/60))
+
 
 def Opt_min(Theta,d_struct,xi_n,cpu_num,i_subsample,est_data_sub):
     start = time.time()
@@ -95,8 +98,7 @@ def Opt_min(Theta,d_struct,xi_n,cpu_num,i_subsample,est_data_sub):
             
 
 
-
-def GMM_Ineq(Theta0,d_struct,xi_n,cpu_num,i_subsample,Data_struct):
+def GMM_Ineq(Theta0,Data_struct,d_struct,xi_n,cpu_num,i_subsample):
     Theta={
     "comm_mu":Theta0[0],
     # "epsilon_mu":Theta0[1], # change from private mu to epsilon_mu
@@ -108,26 +110,19 @@ def GMM_Ineq(Theta0,d_struct,xi_n,cpu_num,i_subsample,Data_struct):
 
     rng=np.random.RandomState(d_struct['rng_seed'])
     
-
     start = time.time()
-    print('--------------------------------------------------------')
+    print('-----------------------------------------------------------')
     print('current parameter set are :')
     print(Theta)
-#    print('# of auctions: '+str(TT) )
-    
-    # DATA_STRUCT_c = balance_data_est(Est_data,4)
-   
-    TT,_=Data_struct.shape    
-    
+
+    TT=Data_struct.shape[0]    
+    print("total data size is {}".format(TT))
     try:
-        
         func=partial(para_fun_est,Theta,rng,xi_n,d_struct['h'])
 
         pool = ProcessPoolExecutor(max_workers=cpu_num)
         
-        
         results= pool.map(func, zip(range(0,TT), Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[Pub_col].values.tolist()))
-        
         
         MoM=np.nanmean(list(results))
         auction_result=MoM
@@ -138,14 +133,6 @@ def GMM_Ineq(Theta0,d_struct,xi_n,cpu_num,i_subsample,Data_struct):
         else:
             print(err)
             exit(1)
-
-    # '''
-    # serial testing for map 
-    # '''
-    # func=partial(para_fun,para,info_flag,rng,T_end,int(JJ*N),x_signal,w_x)
-    # results=list(map(func, zip(range(0,TT), Data_struct.data_act,Data_struct.data_state,Data_struct.pub_info) ))
-    
-    # MoM=sum(results)/TT
     
     end = time.time()
     
@@ -191,4 +178,4 @@ if __name__ == '__main__':
     Theta=[0.001422,0.8,0.033803,0.0170,0.09089] 
     xi_n =rng_generate(np.random.RandomState(rng_seed),JJ,max_N)
 
-    parallel_work(est_data,Theta,xi_n)
+    parallel_work(est_data,Theta,xi_n,d_struct)

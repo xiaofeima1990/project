@@ -334,3 +334,4 @@ class Update_rule:
         this is used for generating endogenous entry for the number of bidders 
 
         '''
+        

@@ -111,52 +111,6 @@ class Simu:
         return [x_signal[0,],ladder]
 
 
-
-    def signal_DGP(self,N,flag_ID=0,flag_mode=0):
-        g_m = -0.02 + (0.02+0.02)*self.rng.rand() 
-        # common value in public
-        
-        if flag_mode == 0 :
-           # fix everything 
-            pub_mu = self.comm_mu
-            r =  0.7 
-        elif flag_mode == 1:
-             # fix pub_mu and randomize r 
-            pub_mu = self.comm_mu                
-            r =  0.7 + 0.3*self.rng.rand() 
-        elif flag_mode == 2: 
-            # fix the r and randomize pub_mu
-            pub_mu = self.comm_mu + g_m
-            r =  0.7 
-        else:
-            # randomize everything
-            pub_mu = self.comm_mu + g_m
-            r =  0.7 + 0.3*self.rng.rand()
-        
-        SIGMA2 = self.info_para.SIGMA2
-        
-        x_signal=np.ones(N)
-        EVX=self.info_para.vi_mu+(self.info_para.comm_var/self.info_para.xi_sigma2)*(min(x_signal)-self.info_para.xi_mu)
-        while EVX < r*pub_mu:
-        
-            x_signal=self.rng.multivariate_normal(np.ones(N) *(pub_mu*r*1.1),SIGMA2)
-            EVX=self.info_para.vi_mu+(self.info_para.comm_var/self.info_para.xi_sigma2)*(min(x_signal)-self.info_para.xi_mu)
-            
-        #        self.info_para.MU=np.ones([N,1])*pub_mu*r*1.1
-        #        self.info_para.vi_mu=pub_mu*r*1.1
-        #        
-        if flag_ID==1:        
-            info_index=1
-        else:
-            info_index=0
-
-        
-        ladder=0.015 + 0.02*self.rng.rand()
-        
-        return [pub_mu,x_signal,r,info_index,ladder]
-    
-    
-    
     def signal_DGP_mul(self,N,SS,flag_ID=0,flag_mode=0):
         g_m = -1 + (1+1)*self.rng.rand(SS)
         
@@ -199,13 +153,11 @@ class Simu:
             
         ladder=0.02 + 0.02*self.rng.rand()
         return [pub_mu,x_signal,r,info_index,ladder]
-    
-    
+
 
     def Data_simu(self,N,SS,info_flag=0,T_end=70):
         # functions for simulating the bidding path given the numebr of simualted times
         
- 
 
         # prepared vector
         Sim_df=pd.DataFrame(columns=Col_name)

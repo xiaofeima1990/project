@@ -47,9 +47,6 @@ from numpy import linalg as LA
 
 
 
-
-
-
 Est_para_dict={
 
         "comm_mu":0.1,
@@ -75,25 +72,19 @@ def poolcontext(*args, **kwargs):
     pool.terminate()
 
 
-
-
-
 def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     Theta={
     "comm_mu":Theta0[0],
     # "epsilon_mu":Theta0[1], # change from private mu to epsilon_mu
-    # "beta":Theta0[2],
-    "comm_var":Theta0[1],
-    "priv_var":Theta0[2],
-    "epsilon_var":Theta0[3],
+    "beta":Theta0[1],
+    "comm_var":Theta0[2],
+    "priv_var":Theta0[3],
+    "epsilon_var":Theta0[4],
     }
-
 
     rng=np.random.RandomState(d_struct['rng_seed'])
     
-
     start = time.time()
-    
     
     print('--------------------------------------------------------')
     print('current parameter set are :')
@@ -218,7 +209,7 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[0.01422,	0.053803,	0.0570,	0.12089]
+    Theta=[0.01422,	0.033803,	0.0170,	0.09089]
 
     start = time.time()
     now = datetime.datetime.now()

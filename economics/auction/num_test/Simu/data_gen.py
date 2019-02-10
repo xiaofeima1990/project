@@ -22,8 +22,6 @@ In the data generating process, we will generate a couple of simulated data set 
 4. pi justicification test
 
 
-
-
 """
 
 
@@ -115,7 +113,7 @@ if __name__ == '__main__':
         "epsilon_mu":0,
         "comm_var":0.03,
         "priv_var":0.01,
-        "epsilon_var":0.035,
+        "epsilon_var":0.09,
         }
 
 
@@ -125,7 +123,7 @@ if __name__ == '__main__':
         ## fix the number of bidders  
         ## parameters
         N = 8
-        SS= 100
+        SS= 150
         Rng_seed= 12456
         info_flag=0
         simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
