@@ -110,11 +110,11 @@ if __name__ == '__main__':
     '''
     Simu_para_dict={
 
-        "comm_mu":0.005,
+        "comm_mu":0.05,
         "beta":0.25,
         "epsilon_mu":0,
-        "comm_var":0.001,
-        "priv_var":0.003,
+        "comm_var":0.03,
+        "priv_var":0.01,
         "epsilon_var":0.035,
         }
 

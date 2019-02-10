@@ -15,7 +15,7 @@ from scipy.stats import norm
 import warnings
 import math,copy
 from scipy.optimize import minimize
-
+import scipy.stats as ss
 
 
 
@@ -65,7 +65,7 @@ class Update_rule:
         ## I have to re order the p_low for correct calculation 
         ## since under symmetric case, I do not need to worry about the varicne order
         ## I can do this simplification
-        p_k=np.sort(p_low)[::-1]
+        p_k=np.sort(p_low)
         p_k=p_low.reshape(p_k.size,1)
         # mu_k
         x_drop=np.zeros(self.N)
@@ -158,10 +158,20 @@ class Update_rule:
 
     def l_bound_xj(self, p_low):
         # still I have to calculate the signal recurisively
-
+        # partial finished the order issues
         ## all the rivals bidding price is known
-        p_k=np.sort(p_low)[::-1]
-        p_k=p_low.reshape(p_k.size,1)
+
+        # Reorder p_k from second to last 
+        ord_ind1=np.argsort(p_low)
+        ord_ind2=np.argsort(p_low)[::-1]
+        
+        ori_ind=ss.rankdata(p_low)
+        ori_ind=ori_ind-1
+        ori_ind=ori_ind.astype(int)
+
+        p_k=p_low[ord_ind2]
+        p_k=p_k.reshape(p_k.size,1)
+
         # mu_k
         x_drop=np.zeros(self.N-1)
         Sigma_inv = inv(self.SIGMA2)
@@ -204,7 +214,7 @@ class Update_rule:
                 x_drop[(self.N-1)-k-1] = AA_k[-1]*(p_k[(self.N-1)-k-1]) - CC_k[-1]
 
             x_d = np.append(x_drop[(self.N-1)-k-1],x_d)
-        
+        x_drop=x_drop[::-1][ori_ind]
         return x_drop.reshape(1,x_drop.size)
 
         
@@ -235,7 +245,7 @@ class Update_rule:
         return [E_const.flatten(),up_bound,AA_i.flatten(),AA_j.flatten()]
 
 
-    def bid_vector1(self,xi_v,state_p, ,i_id):
+    def bid_vector1(self,xi_v,state_p,no_flag,i_id):
         '''
         xi_v vectors for xi private signal
         state_p normalized bidding price under the coresponding bidding history
@@ -249,6 +259,7 @@ class Update_rule:
         [E_const,x_j_upper,AA_i,AA_j]=self.real_bid_calc_new(i_id)
         # ladder=np.log(price_v[-1]) - np.log(price_v[-2])
         xi_v = xi_v.flatten()
+        # state_p is just the only dropout part N-1 length
         x_j_lower = self.l_bound_xj(state_p)
         AA_j=AA_j.flatten()
         E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,10) * AA_j

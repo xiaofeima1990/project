@@ -65,48 +65,48 @@ class Update_rule:
     def bound(self, p_low):
         # still I have to calculate the signal recurisively
         ## all the rivals bidding price is known
-        ## but first of all, I have to reorder the "dropout price" 
-        p_k=p_low.reshape(p_low.size,1)
-        self.setup_para(0)
+        ## but first of all, I have to reorder the "dropout price" from second to last (ignore the first)
+        ## the function who invoke the bound already define the i_id
+        
         pre_MU    =self.MU.flatten()
         pre_SIGMA2=np.diag(self.SIGMA2)
 
-        ord_ind1=np.argsort(p_k)
-        ord_ind2=np.argsort(p_k)[::-1]
-        ori_ind=ss.rankdata(p_k)
-        
+        # Reorder p_k from second to last 
+        ord_ind1=np.argsort(p_low[1:])
+        ord_ind2=np.argsort(p_low[1:])[::-1]
+
+        ori_ind=ss.rankdata(p_low[1:])
+        ori_ind=ori_ind-1
+        ori_ind=ori_ind.astype(int)
+
+        p_k=np.append(p_low[0],p_low[1:][ord_ind2])
+        p_k=p_k.reshape(p_k.size,1)
+
+        # MU and SIGMA2
+        post_SIGMA2=np.append(pre_SIGMA2[0],pre_SIGMA2[1:][ord_ind2])
+        post_SIGMA2=np.ones([self.N,self.N])*self.comm_var + np.diag(post_SIGMA2)-np.eye(self.N)*self.comm_var
+        Sigma_inv = inv(post_SIGMA2)
+        MU = np.append(pre_MU[0],pre_MU[1:][ord_ind2])
+        MU = MU.reshape(MU.size,1)
 
         # mu_k
         x_drop=np.zeros(self.N)
-        # MU and SIGMA GAMMA
-        post_SIGMA2=pre_SIGMA2[ord_ind2]
-        post_SIGMA2=np.ones([self.N,self.N])*self.comm_var + np.diag(post_SIGMA2)-np.eye(self.N)*self.comm_var
-        Sigma_inv = inv(post_SIGMA2)
-        MU = pre_MU[ord_ind2]
-        
 
         # vi xi
-        
-        post_mu_k = np.append(self.vi_mu, self.vi_rival_mu)
-        post_Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2) 
-
-
-
-
         for k in range(self.N):
              
-            mu_k = np.append(self.vi_mu, self.vi_rival_mu)
+            mu_k = np.append(self.vi_mu, self.vi_rival_mu[ord_ind2])
             mu_k = mu_k[0:self.N-k]
             mu_k=mu_k.reshape(mu_k.size,1)
             
             l_k  = np.ones((self.N-k,1))
             
-            Gamma_k = np.append(self. , self.vi_rival_sigma2)
+            Gamma_k = np.append(self.vi_sigma2 , self.vi_rival_sigma2[ord_ind2])
             Gamma_k = Gamma_k[0:self.N-k]
             Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
             
             
-            Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2)-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
+            Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
             Delta_k=Delta_k[:,0:self.N-k].T
             
             
@@ -128,7 +128,58 @@ class Update_rule:
                 x_d = 0
             x_drop[self.N-k-1] = AA_k[-1]*np.log(p_k[self.N-k-1]) - np.dot( DD_k[-1,:],  x_d) - CC_k[-1]
         
+        x_drop=np.append(x_drop[0],x_drop[1:][::-1][ori_ind])
         return x_drop.reshape(1,x_drop.size)
+
+
+    def bound_simple(self, p_low):
+        pre_MU    =self.MU.flatten()
+        pre_SIGMA2=np.diag(self.SIGMA2)
+
+        # Reorder p_k from second to last 
+        ord_ind1=np.argsort(p_low[1:])
+        ord_ind2=np.argsort(p_low[1:])[::-1]
+
+        ori_ind=ss.rankdata(p_low[1:])
+        ori_ind=ori_ind-1
+        ori_ind=ori_ind.astype(int)
+
+        p_k=np.append(p_low[0],p_low[1:][ord_ind2])
+        p_k=p_k.reshape(p_k.size,1)
+
+        # MU and SIGMA2
+        post_SIGMA2=np.append(pre_SIGMA2[0],pre_SIGMA2[1:][ord_ind2])
+        post_SIGMA2=np.ones([self.N,self.N])*self.comm_var + np.diag(post_SIGMA2)-np.eye(self.N)*self.comm_var
+        Sigma_inv = inv(post_SIGMA2)
+        MU = np.append(pre_MU[0],pre_MU[1:][ord_ind2])
+        MU = MU.reshape(MU.size,1)
+
+        # mu_k
+        x_drop=np.zeros(self.N)
+
+        # ---------------------------------------
+        mu_k = np.append(self.vi_mu, self.vi_rival_mu[ord_ind2])
+        mu_k=mu_k.reshape(mu_k.size,1)
+        
+        l_k  = np.ones((self.N,1))
+        
+        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])
+        Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
+        
+        Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
+        
+        Sigma_inv = inv(self.SIGMA2)
+        # Sigma_inv_k1 = Sigma_inv[0:self.N,:] # N-1+1 all the rest of the 
+        MU        = self.MU
+        AA_k = inv(Delta_k @ Sigma_inv.T) @ l_k
+        temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
+        temp_diag=temp_diag.reshape(temp_diag.size,1)
+        CC_k = 0.5*inv(Delta_k @ (Sigma_inv.T)) @ (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@MU)
+
+        x_drop = AA_k*np.log(p_k) - CC_k
+
+        x_drop=np.append(x_drop[0],x_drop[1:][::-1][ori_ind])
+        return x_drop
 
     def entry_threshold(self,res):
         # initial point for uninformed 
@@ -189,9 +240,9 @@ class Update_rule:
 
         return [Pure_value,E_win_revenue,flag]
 
-    def real_bid(self,xi,state_p,bid_price,no_flag):
-        x_j_lower = self.bound(state_p)
-        x_j_lower = x_j_lower.flatten()[0:self.N-1]
+    def real_bid(self,xi,state_p,bid_price,no_flag,i_id):
+        x_j_lower = self.bound_simple(state_p)
+        x_j_lower = x_j_lower.flatten()[1:]
 
         # Constat part 
         Sigma_inv = inv(self.SIGMA2)
@@ -210,8 +261,8 @@ class Update_rule:
         if self.rule_flag ==0:
             x_j_upper = 5*np.ones(self.N-1)
         else :
-            x_j_upper = self.bound(bid_price)
-            x_j_upper = x_j_upper.flatten()[0:self.N-1]
+            x_j_upper = self.bound_simple(bid_price)
+            x_j_upper = x_j_upper.flatten()[1:]
             if self.rule_flag ==2:
                 x_j_upper = ( 1*( x_j_lower < xi*np.ones(self.N-1) ) ) * xi + ( 1*( xi*np.ones(self.N-1) <= x_j_lower))* 5
 

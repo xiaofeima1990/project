@@ -296,7 +296,7 @@ class Simu:
                         ss_state = [ii]
                         ss_state = ss_state + temp_state.tolist()
                         # convert state to the history price 
-                        ss_state_p = np.array([self.reserve + t_ele*ladder for t_ele in ss_state]) 
+                        ss_state_p = np.array([self.reserve + max(t_ele,0)*ladder for t_ele in ss_state ]) 
 
                         bid = max(ss_state)+1
                         # next posting price 
@@ -305,7 +305,7 @@ class Simu:
                         bid_price = self.reserve + bid * ladder
                         no_flag =  1*(np.array(ss_state)>-1)[1:] 
                         if i != info_index:
-                            result = Update_bid.real_bid(x_signal[i],ss_state_p,bid_price,no_flag)
+                            result = Update_bid.real_bid(x_signal[i],ss_state_p,bid_price,no_flag,i)
                         else:
                             result = Update_bid.real_info_bid(x_signal[i],bid_price)
                         
