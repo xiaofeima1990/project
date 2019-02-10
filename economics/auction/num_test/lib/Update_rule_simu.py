@@ -15,7 +15,6 @@ I can just use the ladder*t + reserve price to represent the bidding price
 2. add the upper bound -> treat next period as upper bound
 3. add the upper bound -> treat bidder i's private signal as upper bound 
 
-
 """
 
 import numpy as np
@@ -330,3 +329,8 @@ class Update_rule:
             
         return result
 
+    def Endog_num_bidder(self,para,info_flag):
+        '''
+        this is used for generating endogenous entry for the number of bidders 
+
+        '''
