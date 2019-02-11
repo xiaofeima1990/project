@@ -77,8 +77,6 @@ def Gen_Simu_data2(start_n,end_n,T,T_end,Simu_para_dict,info_mode=0,rng_seed=123
             SIMU=Simu(rng_seed,Simu_para_dict)
             simu_data.append(SIMU.Data_simu(n,T,info_mode,T_end))
             
-            
-            
 
     return simu_data
 
@@ -89,7 +87,6 @@ def Gen_Simu_data1(N,T,Simu_para_dict,info_flag=0,rng_seed=123):
     
     [simu_data,simu_mom]=SIMU.Data_simu(N,T,info_flag)
     return [simu_data,simu_mom]
-
 
 
 
@@ -106,36 +103,35 @@ if __name__ == '__main__':
     bid price difference with and without the informed bidder 
 
     '''
+
     Simu_para_dict={
 
         "comm_mu":0.05,
         "beta":0.25,
         "epsilon_mu":0,
-        "comm_var":0.03,
+        "comm_var":0.02,
         "priv_var":0.01,
         "epsilon_var":0.09,
         }
 
 
-
-
     if mode_flag == 1 :
         ## fix the number of bidders  
         ## parameters
-        N = 8
+        N = 2
         SS= 150
         Rng_seed= 12456
-        info_flag=0
-        simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
-
-        with open( data_path + "simu_data_10.pkl", "wb") as f : 
-            pk.dump(simu_data_1, f)
-
-        #print('info case')
-        # info_flag=1
+        # info_flag=0
         # simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
-        # with open( data_path + "simu_data_11.pkl", "wb") as f : 
-        #    pk.dump(simu_data_1, f)
+
+        # with open( data_path + "simu_data_10.pkl", "wb") as f : 
+        #     pk.dump(simu_data_1, f)
+
+        print('info case')
+        info_flag=1
+        simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
+        with open( data_path + "simu_data_11.pkl", "wb") as f : 
+           pk.dump(simu_data_1, f)
 
     elif mode_flag==2:
     

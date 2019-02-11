@@ -329,9 +329,39 @@ class Update_rule:
             
         return result
 
-    def Endog_num_bidder(self,para,info_flag):
-        '''
-        this is used for generating endogenous entry for the number of bidders 
 
-        '''
+    def get_exp(self, x_s):
+
+        # signal
+        x_s = x_s.reshape(x_s.size,1)
+        # info_struct=np.concatenate((self.xi_rival_mu,self.xi_rival_sigma2,self.vi_rival_mu,self.vi_rival_sigma2),axis=1)
+        k=0
+        # mu 
+        mu_k = np.append(self.vi_mu, self.vi_rival_mu)
+        mu_k = mu_k[0:self.N-k]
+        mu_k=mu_k.reshape(mu_k.size,1)
+        # l
+        l_k  = np.ones((self.N-k,1))
+        # gamma
+        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
+        Gamma_k = Gamma_k[0:self.N-k]
+        Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
         
+        # Delta
+        Delta_k =self.vi_sigma2 * np.eye(self.N)+np.ones((self.N,self.N)) * self.comm_var - np.eye(self.N) * self.comm_var  
+        Delta_k=Delta_k[:,0:self.N-k].T
+        
+        # sigma_inv
+        Sigma_inv = inv(self.SIGMA2)        
+        Sigma_inv_k1 = Sigma_inv[0:self.N-k,:]
+            
+        # the main 
+        # AA_k = inv(Delta_k @ Sigma_inv_k1.T) @ l_k
+        temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
+        temp_diag=temp_diag.reshape(temp_diag.size,1)
+        CC_k = 0.5*  (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@self.MU)
+                        
+        drop_price= np.exp(x_s  + CC_k)        
+
+        drop_price=drop_price.flatten()  
+        return drop_price

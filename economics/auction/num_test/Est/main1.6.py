@@ -44,7 +44,6 @@ from scipy.stats import norm
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor,ProcessPoolExecutor
 import threading
-from functools import partial
 from contextlib import contextmanager
 import pickle as pk
 import quantecon  as qe
