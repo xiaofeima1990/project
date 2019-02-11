@@ -45,7 +45,7 @@ from scipy import stats
 
 
 ## generate simulation data for testing 
-def Gen_Simu_data2(start_n,end_n,T,T_end,Simu_para_dict,info_mode=0,rng_seed=123):
+def Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,info_mode=0,rng_seed=123):
     '''
     start_n : start number of bidders 
     end_n   : end number of bidders 
@@ -65,7 +65,7 @@ def Gen_Simu_data2(start_n,end_n,T,T_end,Simu_para_dict,info_mode=0,rng_seed=123
         for n in range(start_n, end_n+1):
             
             SIMU=Simu(rng_seed,Simu_para_dict)
-            simu_data.append(SIMU.Data_simu(n,T,T_end,info_mode))
+            simu_data.append(SIMU.Data_simu(n,T,info_mode))
         
         
     else:
@@ -75,7 +75,7 @@ def Gen_Simu_data2(start_n,end_n,T,T_end,Simu_para_dict,info_mode=0,rng_seed=123
         for n in range(start_n, end_n+1):
             
             SIMU=Simu(rng_seed,Simu_para_dict)
-            simu_data.append(SIMU.Data_simu(n,T,info_mode,T_end))
+            simu_data.append(SIMU.Data_simu(n,T,info_mode))
             
 
     return simu_data
@@ -94,9 +94,9 @@ def Gen_Simu_data1(N,T,Simu_para_dict,info_flag=0,rng_seed=123):
 if __name__ == '__main__':
     
 
-    mode_flag2=0 # 1-> run the moment sensitivity test; 0-> only generate the data
-    mode_flag=1  # 1-> run the simulation with the fixed number of bidders;
-                 # 2-> run the simulation with a range of number of bidders;  
+    mode_flag2 =1 # 1-> run the moment sensitivity test; 0-> only generate the data
+    mode_flag  =2 # 1-> run the simulation with the fixed number of bidders;
+                  # 2-> run the simulation with a range of number of bidders;  
     
     '''
     case 1 : fix the number of bidders and calculate the equiblirum bidding premium:
@@ -107,40 +107,37 @@ if __name__ == '__main__':
     Simu_para_dict={
 
         "comm_mu":0.05,
-        "beta":0.25,
+        "beta":0.90,
         "epsilon_mu":0,
-        "comm_var":0.02,
-        "priv_var":0.01,
-        "epsilon_var":0.09,
+        "comm_var":0.022,
+        "priv_var":0.009,
+        "epsilon_var":0.095,
         }
-
 
     if mode_flag == 1 :
         ## fix the number of bidders  
         ## parameters
-        N = 2
-        SS= 150
-        Rng_seed= 12456
-        # info_flag=0
+        N        = 5
+        SS       = 150
+        Rng_seed = 12456
+        info_flag= 0
+        simu_data_1 = Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
+
+        with open( data_path + "simu_data_10.pkl", "wb") as f : 
+            pk.dump(simu_data_1, f)
+
+        # print('info case')
+        # info_flag=1
         # simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
-
-        # with open( data_path + "simu_data_10.pkl", "wb") as f : 
-        #     pk.dump(simu_data_1, f)
-
-        print('info case')
-        info_flag=1
-        simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
-        with open( data_path + "simu_data_11.pkl", "wb") as f : 
-           pk.dump(simu_data_1, f)
+        # with open( data_path + "simu_data_11.pkl", "wb") as f : 
+        #    pk.dump(simu_data_1, f)
 
     elif mode_flag==2:
-    
-    
+
         '''
         case 2: moment sensitivity test
         1. loop the number of bidders from 2 to 10, and generate the data set
         2. with or without the informed bidders 
-        
         '''
         # setup the environment paramers
         start_n=2

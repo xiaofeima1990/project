@@ -31,6 +31,8 @@ import scipy.linalg as LAA
 import copy
 import random
 import scipy.stats as ss
+import warnings
+warnings.filterwarnings('error')
 
 para_dict={
         "comm_mu":0.2,
@@ -162,7 +164,7 @@ class Simu:
         # prepared vector
         Sim_df=pd.DataFrame(columns=Col_name)
 
-        data_act=np.ones((SS,T_end),dtype=int)*(-1)  # bidding path 
+        # data_act_v=np.ones((SS,T_end),dtype=int)*(-1)  # bidding path 
         
         data_bid_freq= [] # each bidders bidding times 
         data_win     = np.zeros((SS,1))
@@ -321,7 +323,13 @@ class Simu:
                 order_ind=np.argsort(State)
                 i_ed = order_ind[-2]
                 i_rest =order_ind[:-2]
-                temp_pos=(State[i_ed] - np.array(State[i_rest]))
+                if N>3:
+                    temp_pos=(State[i_ed] - np.array(State[i_rest]))
+                    # third highest winning price (relative)
+                    third_win_i[s] = self.reserve + State[order_ind[-3]]*ladder  
+                else:
+                    third_win_i[s] = np.nan
+                    temp_pos=1
                 
                 sec_diff_i1[s]= np.mean(temp_pos)
                 sec_diff_i2[s]= np.std(temp_pos)
@@ -349,19 +357,14 @@ class Simu:
                 ID_i[s] = s
                 ## find real bidding bidders
                 # pub_info[1]=int(sum((State>0)*1))
-                # third highest winning price (relative)
                 
-                if N>=3:
-                    third_win_i[s] = self.reserve + State[order_ind[-3]]*ladder  
-                else:
-                    third_win_i[s] = np.nan
                 
                 # who wins 
                 data_win_pos[s] = order_ind[-1]
 
             except Exception as e:
                 print(e)
-                print('s:{},State:{},act:{}'.format(s,State,data_act[s,]))
+                print('s:{},State:{},act:{}'.format(s,State,data_act))
             # Col_name=['ID', 'bidder_act', 'len_act','info_bidder_ID', 'bidder_state','bidder_price','ladder_norm',
             #   'real_num_bidder','win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
             State_PP = [self.reserve + s_ele*ladder for s_ele in State] 
