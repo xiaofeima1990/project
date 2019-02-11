@@ -1,0 +1,15 @@
+% optimal reserve price 
+
+%% the parameter set
+comm_mu = 0.07;
+beta    = 0.905;
+epsilon_mu = 0;
+comm_var = 0.025;
+priv_var = 0.005;
+epsilon_var = 0.036;
+
+reserve=0.8;
+
+MU    = 0.07 + log(reserve)*beta;
+SIGMA = comm_var + priv_var + epsilon_var;
+

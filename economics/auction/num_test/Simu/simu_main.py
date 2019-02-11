@@ -70,12 +70,6 @@ if __name__ == '__main__':
     df_1_c=df_1[df_1['data_win']<tile]
 
 
-
-
-
-
-
-
     # -------------------------------------------------------------
     # 1: used for calculating equilibrium bidding premium a la Dionne et al 2009
     # 1.1 all the prices 
@@ -136,19 +130,77 @@ while ii>=2:
     mean_dif = np.mean(diff, axis=0)
     print(per_50)
     ii -=1 
+    
     # -------------------------------------------------------------
     # 2: used for generating the value distribution under informed and 
     #    uninformed case. 
     # 2.1 fixed # of bidders: winning bid, bid freqency, 
 	# 2.2 use possion process to randomize # of bidders. 
 	# -------------------------------------------------------------
+    PATH= 'E:/github/Project/economics/auction/num_test/data/Simu/'
+    # without the informed bidder 
+    with open( PATH + "simu_data_2_uninfo.pkl", "rb") as f :
+        simu_data_0=pk.load( f)
+    # with the informed bidder
+    with open( PATH + "simu_data_2_info.pkl", "rb") as f :
+        simu_data_1=pk.load( f)
 
+
+    # clean the data 
+    df_0=simu_data_0[0]
+    
+    temp_df=simu_data_0[1]
+    temp_df=temp_df.reset_index()
+    temp_df.rename(columns={'index':'ID'},inplace= True)
+    
+    df_0=df_0.merge(temp_df,on='ID',how='inner')
+    
+    
+    df_1=simu_data_1[0]
+    temp_df=simu_data_1[1]
+    temp_df=temp_df.reset_index()
+    temp_df.rename(columns={'index':'ID'},inplace= True)
+    
+    df_1=df_1.merge(temp_df,on='ID',how='inner')
+
+
+    # clean data
+    tile = df_0['data_win'].quantile(.95)
+    df_0_c=df_0[df_0['data_win']<tile]
+    tile = df_1['data_win'].quantile(.95)
+    df_1_c=df_1[df_1['data_win']<tile]
+
+
+
+
+    # fix the number of bidder : 
+    # winning bid 
+
+    xx1 = np.sort(df_0_c['data_win'])
+    xx1 =xx1.astype(float) 
+    density1 = ss.kde.gaussian_kde(xx1)
+    xx2 = np.sort(df_1_c['data_win'])
+    xx2 =xx2.astype(float)
+    density2 = ss.kde.gaussian_kde(xx2)
+    
+    x1 = np.arange(0.7, 2, 0.001)
+    x2 = np.arange(0.7, 2, 0.001)
+    
+    _ = plt.plot(x1,density1(x1),label = "without informed bidder")
+    _ = plt.plot(x2,density2(x2),label = "with informed bidder")
+    _ = plt.xlabel("winning price / reserve price")
+    _ = plt.ylabel("Density")
+    _ = plt.title("Simulated Distribution of Winning Bid")
+    _ = plt.margins(0.02)
+    _ = plt.legend(loc='upper right')
+    _ = plt.grid(True)    
 
 
 
     # -------------------------------------------------------------
     # 3: try to find way to decompose the channels for the learning effect, 
     #    private value, and competitive effect.
+    # fix the number of bidders
     # -------------------------------------------------------------
     
     

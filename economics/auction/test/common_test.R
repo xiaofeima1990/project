@@ -57,19 +57,19 @@ for (i in seq(2, 6, by=2)){
 
 # plot the ecdf 
 
-sp1= sample_c[sample_c$num_bidder==2,'win_norm']
-sp2= sample_c[sample_c$num_bidder==4,'win_norm']
+sp1= sample_c[sample_c$num_bidder==4,'win_norm']
+sp2= sample_c[sample_c$num_bidder==5,'win_norm']
 sp3= sample_c[sample_c$num_bidder==6,'win_norm']
 
 
-e_dist_1 = ori_cdf_v(ecdf(sp1)(sp1),2)
-e_dist_2 = ori_cdf_v(ecdf(sp2)(sp2),4)
+e_dist_1 = ori_cdf_v(ecdf(sp1)(sp1),4)
+e_dist_2 = ori_cdf_v(ecdf(sp2)(sp2),5)
 e_dist_3 = ori_cdf_v(ecdf(sp3)(sp3),6)
 
 df <- data.frame(x = c(e_dist_1,e_dist_2,e_dist_3), ggg=factor(rep(1:3, c(length(e_dist_1),length(e_dist_2),length(e_dist_3)))))
 ggplot(df, aes(x, colour = ggg)) + 
   stat_ecdf()+
-  scale_colour_hue(name="", labels=c('N=2','N=4', 'N=6')) + 
+  scale_colour_hue(name="", labels=c('N=4','N=5', 'N=6')) + 
   ylab("ecdf") +
   xlab("quantile of winning price / reserve price")+
   ggtitle("ECDF Across Different Number of Bidders")

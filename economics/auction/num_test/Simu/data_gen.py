@@ -106,12 +106,12 @@ if __name__ == '__main__':
 
     Simu_para_dict={
 
-        "comm_mu":0.05,
-        "beta":0.90,
+        "comm_mu":0.07,
+        "beta":0.905,
         "epsilon_mu":0,
-        "comm_var":0.022,
-        "priv_var":0.009,
-        "epsilon_var":0.095,
+        "comm_var":0.025,
+        "priv_var":0.005,
+        "epsilon_var":0.036,
         }
 
     if mode_flag == 1 :
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     '''
 
     if mode_flag2==1:
-        N_chunk=len(simu_data_1)
+        N_chunk=len(simu_data_2)
         
         # check the moments
         cmp_list=['data_win','sec_diff_i1','sec_freq_i1','low_freq_ratio_i','freq_i1']

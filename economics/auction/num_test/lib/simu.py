@@ -217,7 +217,10 @@ class Simu:
 
             Update_bid.setup_para(i_id)
             X_bar = Update_bid.entry_threshold(self.reserve*np.ones([N,1]))
+            # select highest x_bar as entry conditions 
+            X_bar = max(X_bar)*np.ones([1,N])
             X_up  = Update_bid.entry_simu_up(X_bar.flatten(),2.5)
+            
             [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,X_bar,X_up*np.ones([1,N]))
             pub_info=[self.reserve,N,info_index,ladder]
             
