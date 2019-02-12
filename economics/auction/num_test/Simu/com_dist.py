@@ -27,9 +27,10 @@ data_path= os.path.dirname(PATH) + '/data/Simu/'
 
 
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 import pickle as pk
-from simu import Simu
+# from simu import Simu
 import numpy as np
 from scipy import stats
 import scipy.stats as ss
@@ -82,12 +83,12 @@ if __name__ == '__main__':
     end_n=10
     
     
-    PATH= 'E:/github/Project/economics/auction/num_test/simu'
+    PATH= 'G:/github/Project/economics/auction/num_test/simu'
     # without the informed bidder 
-    with open( data_path + "simu_data_2_uninfo-rand.pkl", "rb") as f :
+    with open( data_path + "simu_data_2_uninfo.pkl", "rb") as f :
         simu_data_0=pk.load( f)
     # with the informed bidder
-    with open( data_path + "simu_data_2_info-rand.pkl", "rb") as f :
+    with open( data_path + "simu_data_2_info.pkl", "rb") as f :
         simu_data_1=pk.load( f)
 
 
@@ -135,6 +136,21 @@ if __name__ == '__main__':
     sim_1_df=sim_1_df[sim_1_df['data_win']<tile]
 
 
+    # get the bidding info 
+    for i in range(0,N_chunk):
+        temp_sim_0=simu_data_0[i][0]
+        temp_sim_1=simu_data_1[i][0]
+        sim_0_list=[]
+        sim_1_list=[]
+        if i ==0:
+            sim_00_df=temp_sim_0
+            sim_11_df=temp_sim_1
+        else:
+            sim_00_df=sim_00_df.append(temp_sim_0,ignore_index=True)
+            sim_11_df=sim_11_df.append(temp_sim_1,ignore_index=True)
+        print('for N = {} auctions'.format(i+2))
+
+
 
         
     '''
@@ -171,9 +187,10 @@ if __name__ == '__main__':
     
     
 
+    '''
     # fix the number of bidder : 
-    # winning bid 
-
+    # winning bid
+    '''
 
     # sim_0_df.loc[sim_0_df['num_i']==4,'data_win']
     xx1 = np.sort(sim_0_df['data_win'])
@@ -194,6 +211,34 @@ if __name__ == '__main__':
     _ = plt.margins(0.02)
     _ = plt.legend(loc='upper right')
     _ = plt.grid(True)    
+
+    '''
+    # get the bidding efficiency
+    # signal_max_ID winning_ID
+    '''
+
+    
+    # the uninformed case : 
+    sim_00_df['effiency']=sim_00_df['signal_max_ID']-sim_00_df['winning_ID']
+    df_00_group=sim_00_df.groupby("real_num_bidder")
+    df1=df_00_group.effiency.count().reset_index(name='count_total')
+    # get the correct part 
+    df2=df_00_group.effiency.apply(lambda x: (x==0).sum()).reset_index(name='count_right')
+    
+    df_result0=pd.merge(df1,df2,on="real_num_bidder")
+    df_result0['eff_rate']=df_result['count_right']/df_result['count_total']
+    
+    # the informed case : 
+    sim_11_df['effiency']=sim_11_df['signal_max_ID']-sim_11_df['winning_ID']
+    sim_11_df = sim_11_df[sim_11_df['real_num_bidder']>1]
+    df_11_group=sim_11_df.groupby("real_num_bidder")
+    df1=df_11_group.effiency.count().reset_index(name='count_total')
+    # get the correct part 
+    df2=df_11_group.effiency.apply(lambda x: (x==0).sum()).reset_index(name='count_right')
+    
+    df_result1=pd.merge(df1,df2,on="real_num_bidder")
+    df_result1['eff_rate']=df_result['count_right']/df_result['count_total']
+
 
 
 

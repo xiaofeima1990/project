@@ -47,6 +47,7 @@ para_dict={
 
 Col_name=['ID', 'bidder_act', 'len_act','info_bidder_ID', 'bidder_state','bidder_price','ladder_norm',
               'real_num_bidder','win_norm', 'num_bidder','winning_ID','res_norm','signal_max_ID']
+Col_name_pre=['ID','info_bidder_ID','winning_ID','dict_para','post_price','ladder_norm','signal_max_ID','real_num','win_norm','win2_norm']
 
 class Simu:
     def __init__(self,rng_seed=123,dict_para=para_dict,bidding_mode=0,eq_premium=0):
@@ -264,7 +265,12 @@ class Simu:
                                 curr_bidder=info_index
                         elif self.bidding_mode ==2 and info_index in index:
                             index.remove(info_index)
-                            curr_bidder   = self.rng.choice(index,size=1)
+                            if len(index)>0:
+                                curr_bidder   = self.rng.choice(index,size=1)
+                            else:
+                                auction_flag=False
+                                break
+
 
                         Data_act.append(int(curr_bidder)) 
                         State[curr_bidder] = bid
@@ -372,8 +378,58 @@ class Simu:
 
         return [Sim_df,Sim_MoM_df]
 
+    def Data_premium(self,N,SS,info_flag=1):
+        premium_df=pd.DataFrame(columns=Col_name_pre)
+        
+        for s in range(0,SS):
+            # select simualtion mode 
+            # 1-> random parameter set
+            # 2-> fix the parameter set
+            # 3-> fix the reserve price 
 
+            # random parameter set in each time 
+            # dict_para = self.randomize_para()
+            # Env=ENV(N, dict_para)
+
+            # fix the parameter set
+            self.rand_reserve(0)
+            dict_para=self.randomize_para
+            Env=ENV(N,dict_para)
+
+            # ordered index for the bidders remove
+            rank_index=np.ones(N)
+            # informed or not informed
+            info_index_v= np.ones(N)
+            i_id = 0 
+            if info_flag==1:            
+                info_index  = int(np.random.randint(0,N,size=1))
+                info_index_v[info_index]=0
+                
+            else:
+                info_index = -1
+
+            # argument for info_struct info_index,ord_index,res
+            para=Env.info_struct(info_index_v,rank_index,1)
+
+            X_bar = (-10)*np.ones([1,N])
+            X_up  = (10)*np.ones([1,N])
             
+            [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,X_bar,X_up)
+
+            # initialize updating rule
+            Update_bid=Update_rule(para)
+            [price_vector,~]=Update_bid.get_HS_drop_p(x_signal)
+
+            win_bid       = max(price_vector)
+            win_bid_2     =np.sort(price_vector)[-2]
+            win_bid_id    = np.argsort(price_vector)[-1]
+            x_signal_id   = np.argsort(x_signal)[-1]
+            # Col_name_pre=['ID','info_bidder_ID','winning_ID','dict_para','post_price','ladder_norm','signal_max_ID','real_num','win_norm','win2_norm']
+
+            temp_series=pd.Series([s,info_index,win_bid_id,dict_para,price_vector,ladder,x_signal_id,N,win_bid,win_bid_2], index=Col_name )
+            premium_df=premium_df.append(temp_series, ignore_index=True)
+            
+            return premium_df
 class data_struct:
     def __init__(self,data_dict):
         self.data_dict=data_dict
