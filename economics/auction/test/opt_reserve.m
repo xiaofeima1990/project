@@ -1,5 +1,5 @@
 % optimal reserve price 
-
+% it is very sensitive to the beta!!!
 %% the parameter set
 comm_mu = 0.07;
 beta    = 0.955;

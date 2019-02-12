@@ -83,13 +83,20 @@ if __name__ == '__main__':
     end_n=10
     
     
-    PATH= 'G:/github/Project/economics/auction/num_test/simu'
+    PATH= 'E:/github/Project/economics/auction/num_test/simu'
     # without the informed bidder 
-    with open( data_path + "simu_data_2_uninfo.pkl", "rb") as f :
+    with open( data_path + "simu_data_2_uninfo-0.pkl", "rb") as f :
         simu_data_0=pk.load( f)
     # with the informed bidder
-    with open( data_path + "simu_data_2_info.pkl", "rb") as f :
+    with open( data_path + "simu_data_2_info-0.pkl", "rb") as f :
         simu_data_1=pk.load( f)
+    # prepare for comparison
+    with open( data_path + "simu_data_2_info-1.pkl", "rb") as f :
+        simu_data_11=pk.load( f)
+    with open( data_path + "simu_data_2_info-2.pkl", "rb") as f :
+        simu_data_12=pk.load( f)
+
+
 
 
     '''
@@ -212,6 +219,80 @@ if __name__ == '__main__':
     _ = plt.legend(loc='upper right')
     _ = plt.grid(True)    
 
+
+    '''
+    get the three different case for comparison
+    '''
+    PATH= 'E:/github/Project/economics/auction/num_test/simu'
+    # without the informed bidder 
+    with open( data_path + "simu_data_2_uninfo-0.pkl", "rb") as f :
+        simu_data_0=pk.load( f)
+    # with the informed bidder
+    with open( data_path + "simu_data_2_info-0.pkl", "rb") as f :
+        simu_data_1=pk.load( f)
+    # prepare for comparison
+    with open( data_path + "simu_data_2_info-1.pkl", "rb") as f :
+        simu_data_11=pk.load( f)
+    with open( data_path + "simu_data_2_info-2.pkl", "rb") as f :
+        simu_data_12=pk.load( f)
+    
+    for i in range(0,N_chunk):
+        temp_sim_0=simu_data_0[i][0]
+        temp_sim_1=simu_data_1[i][0]
+        temp_sim_11=simu_data_11[i][0]
+        temp_sim_12=simu_data_12[i][0]
+        sim_0_list=[]
+        sim_1_list=[]
+        sim_11_list=[]
+        sim_12_list=[]
+        if i ==0:
+            sim_0_df=temp_sim_0
+            sim_1_df=temp_sim_1
+            sim_11_df=temp_sim_11
+            sim_12_df=temp_sim_12
+        else:
+            sim_0_df=sim_0_df.append(temp_sim_0,ignore_index=True)
+            sim_1_df=sim_1_df.append(temp_sim_1,ignore_index=True)
+            sim_11_df=sim_11_df.append(temp_sim_11,ignore_index=True)
+            sim_12_df=sim_12_df.append(temp_sim_12,ignore_index=True)
+        print('for N = {} auctions'.format(i+2))
+        
+        
+    xx1 = np.sort(sim_0_df['data_win'])
+    xx1 =xx1.astype(float) 
+    density1 = ss.kde.gaussian_kde(xx1)
+    xx2 = np.sort(sim_1_df['data_win'])
+    xx2 =xx2.astype(float)
+    density2 = ss.kde.gaussian_kde(xx2)
+    xx3 = np.sort(sim_11_df['data_win'])
+    xx3 =xx3.astype(float)
+    density3 = ss.kde.gaussian_kde(xx3)
+    xx4 = np.sort(sim_12_df['data_win'])
+    xx4 =xx4.astype(float)
+    density4 = ss.kde.gaussian_kde(xx4)
+
+    
+    x1 = np.arange(0.7, 2, 0.001)
+    x2 = np.arange(0.7, 2, 0.001)
+    x3 = np.arange(0.7, 2, 0.001)
+    x4 = np.arange(0.7, 2, 0.001)
+    
+    _ = plt.plot(x1,density1(x1),label = "without informed")
+    _ = plt.plot(x2,density2(x2),label = "with informed - normal")
+    _ = plt.plot(x3,density3(x3),label = "with informed - active")
+    _ = plt.plot(x4,density4(x4),label = "with informed - not show")
+    _ = plt.xlabel("winning price / reserve price")
+    _ = plt.ylabel("Density")
+    _ = plt.title("Simulated Distribution of Winning Bid")
+    _ = plt.margins(0.02)
+    _ = plt.legend(loc='upper right')
+    _ = plt.grid(True)    
+
+
+
+
+
+
     '''
     # get the bidding efficiency
     # signal_max_ID winning_ID
@@ -226,18 +307,18 @@ if __name__ == '__main__':
     df2=df_00_group.effiency.apply(lambda x: (x==0).sum()).reset_index(name='count_right')
     
     df_result0=pd.merge(df1,df2,on="real_num_bidder")
-    df_result0['eff_rate']=df_result['count_right']/df_result['count_total']
+    df_result0['eff_rate']=df_result0['count_right']/df_result0['count_total']
     
     # the informed case : 
-    sim_11_df['effiency']=sim_11_df['signal_max_ID']-sim_11_df['winning_ID']
-    sim_11_df = sim_11_df[sim_11_df['real_num_bidder']>1]
-    df_11_group=sim_11_df.groupby("real_num_bidder")
+    sim_12_df['effiency']=sim_12_df['signal_max_ID']-sim_12_df['winning_ID']
+    sim_12_df = sim_12_df[sim_12_df['real_num_bidder']>1]
+    df_11_group=sim_1_df.groupby("real_num_bidder")
     df1=df_11_group.effiency.count().reset_index(name='count_total')
     # get the correct part 
     df2=df_11_group.effiency.apply(lambda x: (x==0).sum()).reset_index(name='count_right')
     
     df_result1=pd.merge(df1,df2,on="real_num_bidder")
-    df_result1['eff_rate']=df_result['count_right']/df_result['count_total']
+    df_result1['eff_rate']=df_result1['count_right']/df_result1['count_total']
 
 
 
