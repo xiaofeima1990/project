@@ -242,6 +242,9 @@ if __name__ == '__main__':
 
 
 
+
+
+
     # third winning bid
     xx1 = np.sort(sim_0_df['third_win_i'])
     xx1 =xx1.astype(float) 
