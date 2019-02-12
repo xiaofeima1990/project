@@ -45,7 +45,7 @@ from scipy import stats
 
 
 ## generate simulation data for testing 
-def Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,info_mode=0,rng_seed=123):
+def Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode=0,info_mode=0,rng_seed=123):
     '''
     start_n : start number of bidders 
     end_n   : end number of bidders 
@@ -64,7 +64,7 @@ def Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,info_mode=0,rng_seed=123):
         simu_data=[]
         for n in range(start_n, end_n+1):
             
-            SIMU=Simu(rng_seed,Simu_para_dict)
+            SIMU=Simu(rng_seed,Simu_para_dict,bidding_mode)
             simu_data.append(SIMU.Data_simu(n,T,info_mode))
         
         
@@ -81,8 +81,8 @@ def Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,info_mode=0,rng_seed=123):
     return simu_data
 
 ## generate the simulated data for equilibrium bidding premium
-def Gen_Simu_data1(N,T,Simu_para_dict,info_flag=0,rng_seed=123):
-    SIMU=Simu(rng_seed,Simu_para_dict)
+def Gen_Simu_data1(N,T,Simu_para_dict,bidding_mode=0,info_flag=0,rng_seed=123):
+    SIMU=Simu(rng_seed,Simu_para_dict,bidding_mode)
     # simu_data=[SIMU.Data_simu(N,T,info_flag) for info_flag in range(0,2)]
     
     [simu_data,simu_mom]=SIMU.Data_simu(N,T,info_flag)
@@ -95,8 +95,8 @@ if __name__ == '__main__':
     
 
     mode_flag2 =1 # 1-> run the moment sensitivity test; 0-> only generate the data
-    mode_flag  =2 # 1-> run the simulation with the fixed number of bidders;
-                  # 2-> run the simulation with a range of number of bidders;  
+    mode_flag  =1 # 1-> run the simulation with the fixed number of bidders;
+                  # 2-> run the simulation with a range of number of bidders;    
     
     '''
     case 1 : fix the number of bidders and calculate the equiblirum bidding premium:
@@ -120,17 +120,24 @@ if __name__ == '__main__':
         N        = 5
         SS       = 150
         Rng_seed = 12456
-        info_flag= 0
-        simu_data_1 = Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
+        # informed bidder bidding strategy
+        # 0
+        bidding_mode = 0 
+        # info_flag= 0
+        # simu_data_1 = Gen_Simu_data1(N,SS,Simu_para_dict,bidding_mode,info_flag,Rng_seed)
 
-        with open( data_path + "simu_data_10.pkl", "wb") as f : 
-            pk.dump(simu_data_1, f)
+        # with open( data_path + "simu_data_10.pkl", "wb") as f : 
+        #     pk.dump(simu_data_1, f)
 
         # print('info case')
-        # info_flag=1
-        # simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,info_flag,Rng_seed)
-        # with open( data_path + "simu_data_11.pkl", "wb") as f : 
-        #    pk.dump(simu_data_1, f)
+        # informed bidder bidding strategy
+        # 0 normal, 1 aggresive, 2 never bid
+        bidding_mode = 2
+        
+        info_flag=1
+        simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,bidding_mode,info_flag,Rng_seed)
+        with open( data_path + "simu_data_11.pkl", "wb") as f : 
+           pk.dump(simu_data_1, f)
 
     elif mode_flag==2:
 
@@ -146,20 +153,24 @@ if __name__ == '__main__':
         
         Rng_seed=123
         info_flag=0 # has the informed bidder (1) or not (0)
-        simu_data_2= Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,info_flag)
+                # informed bidder bidding strategy
+        # 0 normal, 1 aggresive, 2 never bid
+        bidding_mode = 1
+        simu_data_2= Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode,info_flag)
         with open( data_path + "simu_data_2_uninfo.pkl", "wb") as f : 
             pk.dump(simu_data_2, f)
 
 
-        info_flag=1 # has the informed bidder (1) or not (0)
-        simu_data_2= Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,info_flag)
+        info_flag=0 # has the informed bidder (1) or not (0)
+        simu_data_2= Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode,info_flag)
         with open( data_path + "simu_data_2_info.pkl", "wb") as f : 
             pk.dump(simu_data_2, f)
 
     # # load the uninformed case 
     # with open( data_path + "simu_data_uninfo.pkl", "rb") as f :
     #     simu_data_0=pk.load( f)
- 
+
+
     
     '''
 ------------------------------------------------------------------------------------

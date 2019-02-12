@@ -71,7 +71,6 @@ class Update_rule:
         pre_SIGMA2=np.diag(self.SIGMA2)
 
         # Reorder p_k from second to last 
-        ord_ind1=np.argsort(p_low[1:])
         ord_ind2=np.argsort(p_low[1:])[::-1]
 
         ori_ind=ss.rankdata(p_low[1:])
