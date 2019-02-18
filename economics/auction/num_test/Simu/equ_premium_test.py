@@ -33,6 +33,7 @@ sys.path.append(lib_path)
 data_path= os.path.dirname(PATH) + '/data/Simu/'
 
 import pickle as pk
+import pandas as pd
 from simu import Simu
 import numpy as np
 from scipy import stats
@@ -41,7 +42,7 @@ def Gen_Simu_data1(N,T,Simu_para_dict,info_flag=0,rng_seed=123):
     SIMU=Simu(rng_seed,Simu_para_dict)
     # simu_data=[SIMU.Data_simu(N,T,info_flag) for info_flag in range(0,2)]
     
-    [simu_data,simu_mom]=SIMU.Data_simu(N,T,info_flag)
+    [simu_data,simu_mom]=SIMU.Data_premium(N,T,info_flag)
     return [simu_data,simu_mom]
 
 def Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode=0,info_mode=0,rng_seed=123):
@@ -82,32 +83,30 @@ if __name__ == '__main__':
     
 
     info_flag=1
-    n_start = 4
+    n_start = 3
     n_end   = 8
 
-    # stage 1 
+    # stage 1 find the winner of informed bidder
     T=300
     
     Rng_seed=123
     info_flag=1 # has the informed bidder (1) or not (0)
-    # informed bidder bidding strategy
-    # 0 normal, 1 aggresive, 2 never bid
-    bidding_mode = 0
-    simu_data_1= Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode,info_flag)
+
+    bidding_mode = 1
+    simu_data_1= Gen_Simu_data2(n_start,n_end,T,Simu_para_dict,bidding_mode,info_flag)
     with open( data_path + "simu_data_pre1.pkl", "wb") as f : 
         pk.dump(simu_data_1, f)
 
-    # stage 2 
-    info_flag=0 # has the informed bidder (1) or not (0)
-    # informed bidder bidding strategy
-    # 0 normal, 1 aggresive, 2 never bid
+    # stage 2 find the winner of uninformed bidder
+    info_flag=0 
     bidding_mode = 0
     simu_data_0= Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode,info_flag)
     with open( data_path + "simu_data_pre0.pkl", "wb") as f : 
         pk.dump(simu_data_0, f)
     
 
-    # select the wining bid 
+    # stage 3 cacluate the premium 
+    # merge the data
     N_chunk=len(simu_data_1)
     for i in range(0,N_chunk):
         temp_sim_0=simu_data_0[i]
@@ -122,14 +121,12 @@ if __name__ == '__main__':
             sim_11_df=sim_11_df.append(temp_sim_1,ignore_index=True)
     
 
-
+    # select the wining bid 
     sim_11_df['info_win']=sim_11_df['info_bidder_ID']-sim_11_df['winning_ID']
     sim_11_df_c=sim_11_df[sim_11_df['info_win']==0]
-
-
-    sim_00_df['info_win']=sim_00_df['info_bidder_ID']-sim_00_df['winning_ID']
     sim_00_df_c=sim_00_df[sim_11_df['info_win']==0]
 
+    # claculate the premium
     col_name=[['ID','info_win','win','dict_para','post_price','ladder_norm','signal_max_ID','real_num','win_norm','win2_norm']]
     prem_df = pd.merge(sim_11_df_c,sim_00_df_c,on='ID',left_index =col_name,right_index=col_name)
     prem_df['premium']=prem_df['win2_norm_x']-prem_df['win2_norm_y']
