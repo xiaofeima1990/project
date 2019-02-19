@@ -433,7 +433,7 @@ class Simu:
             # initialize updating rule
             Update_bid=Update_rule(para)
             Update_bid.setup_para(0)
-            [price_vector,_]=Update_bid.get_HS_drop_p(x_signal)
+            price_vector=Update_bid.get_HS_drop_p(x_signal)
             # add the T1 criterion that any bid not satifying the bidding sequence should be abandoned 
             # but it would be difficult to apply 
 

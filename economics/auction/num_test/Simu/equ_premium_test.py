@@ -92,19 +92,19 @@ if __name__ == '__main__':
     n_end   = 10
 
     # stage 1 find the winner of informed bidder
-    T=1000
+    T=100
     
     Rng_seed=123
     info_flag=1 # has the informed bidder (1) or not (0)
 
-    bidding_mode = 0
-    simu_data_1= Gen_Simu_data2(n_start,n_end,T,Simu_para_dict,bidding_mode,info_flag)
-    with open( data_path + "simu_data_pre1.pkl", "wb") as f : 
-        pk.dump(simu_data_1, f)
+    # bidding_mode = 0
+    # simu_data_1= Gen_Simu_data2(n_start,n_end,T,Simu_para_dict,bidding_mode,info_flag)
+    # with open( data_path + "simu_data_pre1.pkl", "wb") as f : 
+    #     pk.dump(simu_data_1, f)
 
     # stage 2 find the winner of uninformed bidder
-    # with open( data_path + "simu_data_pre1.pkl", "rb") as f :
-    #     simu_data_1=pk.load( f)
+    with open( data_path + "simu_data_pre1.pkl", "rb") as f :
+        simu_data_1=pk.load( f)
     info_flag=0 
     bidding_mode = 0
     Rng_seed=123
