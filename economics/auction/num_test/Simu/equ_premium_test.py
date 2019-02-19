@@ -92,7 +92,7 @@ if __name__ == '__main__':
     n_end   = 10
 
     # stage 1 find the winner of informed bidder
-    T=500
+    T=1000
     
     Rng_seed=123
     info_flag=1 # has the informed bidder (1) or not (0)
