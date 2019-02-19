@@ -45,7 +45,7 @@ def Gen_Simu_data1(N,T,Simu_para_dict,info_flag=0,rng_seed=123):
     [simu_data,simu_mom]=SIMU.Data_premium(N,T,info_flag)
     return [simu_data,simu_mom]
 
-def Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode=0,info_mode=0,rng_seed=123):
+def Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode=0,info_mode=0,simu_df=None,rng_seed=123):
     '''
     start_n : start number of bidders 
     end_n   : end number of bidders 
@@ -54,8 +54,9 @@ def Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode=0,info_mode=0,rng
     info mode whether it is uninformed case or informed case
                     0: uninformed case 
                     1: informed case
-    flag_mode whether it is fix reservation or fix the pub-evaulation or randomize everything
-                    0: fix the pub 1: fix the reservation 2: randomize everything
+    bidding_mode whether it is the inoformed case or uninformed for replication
+                    0: informed case
+                    1: uninformed case
     
     '''
   
@@ -64,9 +65,13 @@ def Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode=0,info_mode=0,rng
     for n in range(start_n, end_n+1):
         
         SIMU=Simu(rng_seed,Simu_para_dict,bidding_mode)
+        if info_mode==0:   
+            SIMU.setup_para(simu_df[n-start_n])
         simu_data.append(SIMU.Data_premium(n,T,info_mode))
 
     return simu_data
+
+
 
 Simu_para_dict={
 
@@ -87,7 +92,7 @@ if __name__ == '__main__':
     n_end   = 8
 
     # stage 1 find the winner of informed bidder
-    T=300
+    T=200
     
     Rng_seed=123
     info_flag=1 # has the informed bidder (1) or not (0)
@@ -100,7 +105,8 @@ if __name__ == '__main__':
     # stage 2 find the winner of uninformed bidder
     info_flag=0 
     bidding_mode = 0
-    simu_data_0= Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode,info_flag)
+    Rng_seed=123
+    simu_data_0= Gen_Simu_data2(n_start,n_start,T,Simu_para_dict,bidding_mode,info_flag,simu_data_1)
     with open( data_path + "simu_data_pre0.pkl", "wb") as f : 
         pk.dump(simu_data_0, f)
     

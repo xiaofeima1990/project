@@ -378,9 +378,9 @@ class Simu:
 
         return [Sim_df,Sim_MoM_df]
 
-    def Data_premium(self,N,SS,info_flag=1):
+    def Data_premium(self,N,SS,info_flag=1,mode_flag=0):
         premium_df=pd.DataFrame(columns=Col_name_pre)
-        
+
         for s in range(0,SS):
             # select simualtion mode 
             # 1-> random parameter set
@@ -393,8 +393,11 @@ class Simu:
 
             # fix the parameter set
             self.rand_reserve(0)
-            dict_para=self.randomize_para
-            Env=ENV(N,dict_para)
+            if info_flag==0:
+                dict_para=self.randomize_para()
+                Env=ENV(N,dict_para)
+            else:
+                dict_para=self.dict_df[s]
 
             # ordered index for the bidders remove
             rank_index=np.ones(N)
@@ -418,7 +421,10 @@ class Simu:
 
             # initialize updating rule
             Update_bid=Update_rule(para)
-            [price_vector,~]=Update_bid.get_HS_drop_p(x_signal)
+            Update_bid.setup_para(0)
+            [price_vector,_]=Update_bid.get_HS_drop_p(x_signal)
+            # add the T1 criterion that any bid not satifying the bidding sequence should be abandoned 
+            # but it would be difficult to apply 
 
             win_bid       = max(price_vector)
             win_bid_2     =np.sort(price_vector)[-2]
@@ -426,10 +432,14 @@ class Simu:
             x_signal_id   = np.argsort(x_signal)[-1]
             # Col_name_pre=['ID','info_bidder_ID','winning_ID','dict_para','post_price','ladder_norm','signal_max_ID','real_num','win_norm','win2_norm']
 
-            temp_series=pd.Series([s,info_index,win_bid_id,dict_para,price_vector,ladder,x_signal_id,N,win_bid,win_bid_2], index=Col_name )
+            temp_series=pd.Series([s,info_index,win_bid_id,dict_para,price_vector,ladder,x_signal_id,N,win_bid,win_bid_2], index=Col_name_pre )
             premium_df=premium_df.append(temp_series, ignore_index=True)
             
-            return premium_df
+        return premium_df
+
+    def setup_para(self,data_df):
+        self.dict_df=data_df['dict_para'].tolist()
+
 class data_struct:
     def __init__(self,data_dict):
         self.data_dict=data_dict

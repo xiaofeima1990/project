@@ -416,6 +416,6 @@ class Update_rule:
             x_drop=x_drop.reshape(x_drop.size,1)
             drop_price=drop_price.flatten()
             drop_price_round.append(drop_price[0:-1].tolist())
-            drop_price_v=np.append(drop_price_v,drop_price[-1])
+            drop_price_v=np.append(drop_price[-1],drop_price_v)
         drop_price_round.pop()    
         return [drop_price_v, drop_price_round]
