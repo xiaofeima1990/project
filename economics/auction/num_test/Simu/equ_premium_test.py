@@ -88,8 +88,8 @@ if __name__ == '__main__':
     
 
     info_flag=1
-    n_start = 3
-    n_end   = 8
+    n_start = 15
+    n_end   = 20
 
     # stage 1 find the winner of informed bidder
     T=200
@@ -97,16 +97,18 @@ if __name__ == '__main__':
     Rng_seed=123
     info_flag=1 # has the informed bidder (1) or not (0)
 
-    bidding_mode = 1
+    bidding_mode = 0
     simu_data_1= Gen_Simu_data2(n_start,n_end,T,Simu_para_dict,bidding_mode,info_flag)
     with open( data_path + "simu_data_pre1.pkl", "wb") as f : 
         pk.dump(simu_data_1, f)
 
     # stage 2 find the winner of uninformed bidder
+    # with open( data_path + "simu_data_pre1.pkl", "rb") as f :
+    #     simu_data_1=pk.load( f)
     info_flag=0 
     bidding_mode = 0
     Rng_seed=123
-    simu_data_0= Gen_Simu_data2(n_start,n_start,T,Simu_para_dict,bidding_mode,info_flag,simu_data_1)
+    simu_data_0= Gen_Simu_data2(n_start,n_end,T,Simu_para_dict,bidding_mode,info_flag,simu_data_1)
     with open( data_path + "simu_data_pre0.pkl", "wb") as f : 
         pk.dump(simu_data_0, f)
     
@@ -122,7 +124,7 @@ if __name__ == '__main__':
         if i ==0:
             sim_00_df=temp_sim_0
             sim_11_df=temp_sim_1
-        else:
+        else: 
             sim_00_df=sim_00_df.append(temp_sim_0,ignore_index=True)
             sim_11_df=sim_11_df.append(temp_sim_1,ignore_index=True)
     
@@ -133,6 +135,7 @@ if __name__ == '__main__':
     sim_00_df_c=sim_00_df[sim_11_df['info_win']==0]
 
     # claculate the premium
-    col_name=[['ID','info_win','win','dict_para','post_price','ladder_norm','signal_max_ID','real_num','win_norm','win2_norm']]
-    prem_df = pd.merge(sim_11_df_c,sim_00_df_c,on='ID',left_index =col_name,right_index=col_name)
+    prem_df = pd.merge(sim_11_df_c,sim_00_df_c,on='ID')
     prem_df['premium']=prem_df['win2_norm_x']-prem_df['win2_norm_y']
+    print(prem_df['premium'].mean())
+    prem_df.loc[prem_df['real_num_x']==6,'premium'].mean()

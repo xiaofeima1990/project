@@ -87,11 +87,11 @@ class Simu:
 
     def randomize_para(self):
         dict_para={}
-        dict_para['comm_mu']     = (-0.35  + 0.5*self.rng.rand())
+        dict_para['comm_mu']     = (-0.15  + 0.3*self.rng.rand())
         dict_para['beta']        = 0
-        dict_para['comm_var']    = (0.005 + 0.1*self.rng.rand())
-        dict_para['priv_var']    = (0.005 + 0.1*self.rng.rand())
-        dict_para['epsilon_var'] = (0.005 + 0.1*self.rng.rand())
+        dict_para['comm_var']    = (0.2*self.rng.rand())
+        dict_para['priv_var']    = (0.2*self.rng.rand())
+        dict_para['epsilon_var'] = (0.2*self.rng.rand())
         return dict_para
         
     def signal_DGP_simu(self, para,rng,N,X_bar,X_up, JJ=10):
@@ -392,13 +392,12 @@ class Simu:
             # Env=ENV(N, dict_para)
 
             # fix the parameter set
-            self.rand_reserve(0)
-            if info_flag==0:
+            self.reserve=1
+            if info_flag==1:
                 dict_para=self.randomize_para()
-                Env=ENV(N,dict_para)
             else:
                 dict_para=self.dict_df[s]
-
+            Env=ENV(N,dict_para)
             # ordered index for the bidders remove
             rank_index=np.ones(N)
             # informed or not informed
@@ -418,6 +417,18 @@ class Simu:
             X_up  = (10)*np.ones([1,N])
             
             [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,X_bar,X_up)
+            # reorder the x_singal! 
+            # rank order of x_signal
+            if info_flag==1:
+                ri_ind       = ss.rankdata(x_signal)
+                ri_ind       = ri_ind-1
+                info_index_v = np.ones(N)
+                info_index   = (N-1)-ri_ind[int(info_index)]
+                info_index_v[int(info_index)]=0
+
+            Env  =ENV(N,dict_para)
+            para =Env.info_struct(info_index_v,rank_index,1)
+            x_signal=np.sort(x_signal)[::-1]
 
             # initialize updating rule
             Update_bid=Update_rule(para)
@@ -427,12 +438,12 @@ class Simu:
             # but it would be difficult to apply 
 
             win_bid       = max(price_vector)
-            win_bid_2     =np.sort(price_vector)[-2]
+            win_bid_2     = np.sort(price_vector)[-2]
             win_bid_id    = np.argsort(price_vector)[-1]
             x_signal_id   = np.argsort(x_signal)[-1]
             # Col_name_pre=['ID','info_bidder_ID','winning_ID','dict_para','post_price','ladder_norm','signal_max_ID','real_num','win_norm','win2_norm']
 
-            temp_series=pd.Series([s,info_index,win_bid_id,dict_para,price_vector,ladder,x_signal_id,N,win_bid,win_bid_2], index=Col_name_pre )
+            temp_series   = pd.Series([s,info_index,win_bid_id,dict_para,price_vector,ladder,x_signal_id,N,win_bid,win_bid_2], index=Col_name_pre )
             premium_df=premium_df.append(temp_series, ignore_index=True)
             
         return premium_df
