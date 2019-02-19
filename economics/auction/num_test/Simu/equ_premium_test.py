@@ -88,11 +88,11 @@ if __name__ == '__main__':
     
 
     info_flag=1
-    n_start = 15
-    n_end   = 20
+    n_start = 4
+    n_end   = 10
 
     # stage 1 find the winner of informed bidder
-    T=200
+    T=500
     
     Rng_seed=123
     info_flag=1 # has the informed bidder (1) or not (0)

@@ -47,7 +47,7 @@ para_dict={
 
 Col_name=['ID', 'bidder_act', 'len_act','info_bidder_ID', 'bidder_state','bidder_price','ladder_norm',
               'real_num_bidder','win_norm', 'num_bidder','winning_ID','res_norm','signal_max_ID']
-Col_name_pre=['ID','info_bidder_ID','winning_ID','dict_para','post_price','ladder_norm','signal_max_ID','real_num','win_norm','win2_norm']
+Col_name_pre=['ID','info_bidder_ID','winning_ID','dict_para','x_v','post_price','ladder_norm','signal_max_ID','real_num','win_norm','win2_norm']
 
 class Simu:
     def __init__(self,rng_seed=123,dict_para=para_dict,bidding_mode=0,eq_premium=0):
@@ -397,6 +397,8 @@ class Simu:
                 dict_para=self.randomize_para()
             else:
                 dict_para=self.dict_df[s]
+                x_signal =self.x_v[s]
+                ladder   =self.l_ladder[s]
             Env=ENV(N,dict_para)
             # ordered index for the bidders remove
             rank_index=np.ones(N)
@@ -407,25 +409,23 @@ class Simu:
                 info_index  = int(np.random.randint(0,N,size=1))
                 info_index_v[info_index]=0
                 
-            else:
-                info_index = -1
+                # argument for info_struct info_index,ord_index,res
+                para=Env.info_struct(info_index_v,rank_index,1)
 
-            # argument for info_struct info_index,ord_index,res
-            para=Env.info_struct(info_index_v,rank_index,1)
+                X_bar = (-10)*np.ones([1,N])
+                X_up  = (10)*np.ones([1,N])
+                
+                [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,X_bar,X_up)
+                # reorder the x_singal! 
+                # rank order of x_signal
 
-            X_bar = (-10)*np.ones([1,N])
-            X_up  = (10)*np.ones([1,N])
-            
-            [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,X_bar,X_up)
-            # reorder the x_singal! 
-            # rank order of x_signal
-            if info_flag==1:
                 ri_ind       = ss.rankdata(x_signal)
                 ri_ind       = ri_ind-1
                 info_index_v = np.ones(N)
                 info_index   = (N-1)-ri_ind[int(info_index)]
                 info_index_v[int(info_index)]=0
-
+            else:
+                info_index = -1
             Env  =ENV(N,dict_para)
             para =Env.info_struct(info_index_v,rank_index,1)
             x_signal=np.sort(x_signal)[::-1]
@@ -441,15 +441,17 @@ class Simu:
             win_bid_2     = np.sort(price_vector)[-2]
             win_bid_id    = np.argsort(price_vector)[-1]
             x_signal_id   = np.argsort(x_signal)[-1]
-            # Col_name_pre=['ID','info_bidder_ID','winning_ID','dict_para','post_price','ladder_norm','signal_max_ID','real_num','win_norm','win2_norm']
+            # Col_name_pre=['ID','info_bidder_ID','winning_ID','dict_para','x_v','post_price','ladder_norm','signal_max_ID','real_num','win_norm','win2_norm']
 
-            temp_series   = pd.Series([s,info_index,win_bid_id,dict_para,price_vector,ladder,x_signal_id,N,win_bid,win_bid_2], index=Col_name_pre )
+            temp_series   = pd.Series([s,info_index,win_bid_id,dict_para,x_signal,price_vector,ladder,x_signal_id,N,win_bid,win_bid_2], index=Col_name_pre )
             premium_df=premium_df.append(temp_series, ignore_index=True)
             
         return premium_df
 
     def setup_para(self,data_df):
         self.dict_df=data_df['dict_para'].tolist()
+        self.x_v    =data_df['x_v'].tolist()
+        self.l_ladder = data_df['ladder_norm'].tolist()
 
 class data_struct:
     def __init__(self,data_dict):
