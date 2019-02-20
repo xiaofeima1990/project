@@ -38,6 +38,10 @@ def make_colormap(seq):
             cdict['blue'].append([item, b1, b2])
     return mcolors.LinearSegmentedColormap('CustomMap', cdict)
 
+'''
+English Auction
+'''
+
 data_df=pd.read_csv("demo_data.csv",sep='\t')
 
 
@@ -80,9 +84,9 @@ plt.ylim(1000, 3200)
 #y1=np.ones(19)*1650
 
 plt.plot( 'bid_path', 'bidder_1_ex', data=data_df, marker='', color='orange',alpha=0.5, linewidth=2, linestyle='dashed', label="bidder 1")
-plt.plot( 'bid_path', 'bidder_2_ex', data=data_df, marker='', color='aqua',alpha=0.5, linewidth=2, linestyle='dashed', label="bidder 2")
-plt.plot( 'bid_path', 'bidder_3_ex', data=data_df, marker='', color='red',alpha=0.5, linewidth=2, linestyle='dashed', label="bidder 3")
-plt.plot( 'bid_path', 'bidder_4_ex', data=data_df, marker='', color='blue',alpha=0.5, linewidth=2, linestyle='dashed', label="bidder 4")
+plt.plot( 'bid_path', 'bidder_2_ex', data=data_df, marker='', color='aqua',  alpha=0.5, linewidth=2, linestyle='dashed', label="bidder 2")
+plt.plot( 'bid_path', 'bidder_3_ex', data=data_df, marker='', color='red',   alpha=0.5, linewidth=2, linestyle='dashed', label="bidder 3")
+plt.plot( 'bid_path', 'bidder_4_ex', data=data_df, marker='', color='blue',  alpha=0.5, linewidth=2, linestyle='dashed', label="bidder 4")
 plt.legend(loc='upper left')
 #plt.legend(legend_elements,loc='upper left')
 
@@ -360,7 +364,7 @@ for i in range(4,17+1):
         
         
         if i == 13:
-            text_content='At higher price,some bidders will\nstop updating bidding price.\nThe updating process will be slower'
+            text_content='At higher price,low valued bidders will\nstop submitting new bid.\nThe updating process will be slower'
             # these are matplotlib.patch.Patch properties
             props = dict(boxstyle='round', alpha=0.5)
             plt.annotate(text_content, xy=(11,3120), xytext=(7, 2400),fontsize=11,

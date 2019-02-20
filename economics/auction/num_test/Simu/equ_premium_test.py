@@ -37,6 +37,8 @@ import pandas as pd
 from simu import Simu
 import numpy as np
 from scipy import stats
+import scipy.stats as ss
+import matplotlib.pyplot as plt
 
 def Gen_Simu_data1(N,T,Simu_para_dict,info_flag=0,rng_seed=123):
     SIMU=Simu(rng_seed,Simu_para_dict)
@@ -92,19 +94,19 @@ if __name__ == '__main__':
     n_end   = 10
 
     # stage 1 find the winner of informed bidder
-    T=100
+    T=1000
     
     Rng_seed=123
     info_flag=1 # has the informed bidder (1) or not (0)
 
-    # bidding_mode = 0
-    # simu_data_1= Gen_Simu_data2(n_start,n_end,T,Simu_para_dict,bidding_mode,info_flag)
-    # with open( data_path + "simu_data_pre1.pkl", "wb") as f : 
-    #     pk.dump(simu_data_1, f)
+    bidding_mode = 0
+    simu_data_1= Gen_Simu_data2(n_start,n_end,T,Simu_para_dict,bidding_mode,info_flag)
+    with open( data_path + "simu_data_pre1.pkl", "wb") as f : 
+        pk.dump(simu_data_1, f)
 
     # stage 2 find the winner of uninformed bidder
-    with open( data_path + "simu_data_pre1.pkl", "rb") as f :
-        simu_data_1=pk.load( f)
+#    with open( data_path + "simu_data_pre1.pkl", "rb") as f :
+#        simu_data_1=pk.load( f)
     info_flag=0 
     bidding_mode = 0
     Rng_seed=123
@@ -130,12 +132,86 @@ if __name__ == '__main__':
     
 
     # select the wining bid 
+    # first merge and select 
     sim_11_df['info_win']=sim_11_df['info_bidder_ID']-sim_11_df['winning_ID']
-    sim_11_df_c=sim_11_df[sim_11_df['info_win']==0]
-    sim_00_df_c=sim_00_df[sim_11_df['info_win']==0]
-
-    # claculate the premium
-    prem_df = pd.merge(sim_11_df_c,sim_00_df_c,on='ID')
+    # use index for merging
+    sim_00_df=sim_00_df.reset_index()
+    sim_11_df=sim_11_df.reset_index()
+    
+    prem_df = sim_11_df.merge(sim_00_df,on='index',how='inner')
     prem_df['premium']=prem_df['win2_norm_x']-prem_df['win2_norm_y']
+    prem_df = prem_df[prem_df['info_win']==0]
+
+
     print(prem_df['premium'].mean())
     prem_df.loc[prem_df['real_num_x']==6,'premium'].mean()
+    prem_df['premium'].hist()
+    with open( data_path + "prem_data4-10.pkl", "wb") as f : 
+        pk.dump(prem_df, f)
+
+    '''
+    ---------------------------------------------------------------------------
+    doing analysis
+    ---------------------------------------------------------------------------
+    '''
+    PATH= 'E:/github/Project/economics/auction/num_test/simu'
+#    with open( data_path + "simu_data_pre1.pkl", "rb") as f :
+#        simu_data_1=pk.load( f)
+#    with open( data_path + "simu_data_pre0.pkl", "rb") as f :
+#        simu_data_0=pk.load( f)
+
+    with open( data_path + "prem_data4-10.pkl", "rb") as f :
+        prem_df=pk.load( f)
+        
+
+
+
+    '''
+    hist for price premium
+    '''
+    x = prem_df['premium']
+    _ = plt.hist(x, normed=False, bins=20)
+
+    _ = plt.xlabel("premium")
+    _ = plt.ylabel("frequency")
+    _ = plt.title("Simulated Distribution of Price Premium")
+    _ = plt.margins(0.02)
+#    _ = plt.legend(loc='upper right')
+    _ = plt.grid(True)    
+
+
+    '''
+    density for each number of bidder 
+    '''
+
+
+#    tile = prem_df['premium'].quantile(.99)
+#    prem_df=prem_df[prem_df['premium']<tile]
+#    tile = prem_df['premium'].quantile(.01)
+#    prem_df=prem_df[prem_df['premium']>tile]
+    # group by number of bidders : 
+    prem_df_g=prem_df.groupby("real_num_x")
+    
+    float_formatter = lambda x: "%.4f" % x
+    # sim_0_df.loc[sim_0_df['num_i']==4,'data_win']
+    for name, group in prem_df_g:
+        
+        xx1 = np.sort(group['premium'])
+        xx1 =xx1.astype(float) 
+        density1 = ss.kde.gaussian_kde(xx1)
+        
+
+        x1 = np.arange(-0.1, 1, 0.001)
+        mean_1=xx1.mean()
+    
+        _ = plt.plot(x1,density1(x1),label = "N = "+str(name)+" : "+float_formatter(mean_1))
+
+    
+    
+    _ = plt.xlabel("premium")
+    _ = plt.ylabel("Density")
+    _ = plt.title("Simulated Distribution of Price Premium")
+    _ = plt.margins(0.02)
+    _ = plt.legend(loc='upper right')
+    _ = plt.grid(True)    
+
