@@ -20,12 +20,18 @@ But I want to use this to generate :
 informed bidder's bidding status 
 the distribution of number of bidders
 
+--02-24-2019--
+I found where is the problem for informed case has lower wining price:
+Is the the threshold of the informed bidder. The feasibility constraint is lower than uninformed bidder. 
+In that case, we need to consider the incentive constraint
+
 """
 
 import numpy as np
 import pandas as pd
 from Update_rule_simu import Update_rule
 from scipy.interpolate import interpn
+from scipy.stats import norm,truncnorm
 from ENV import ENV 
 import scipy.linalg as LAA
 import copy
@@ -82,7 +88,7 @@ class Simu:
         if mode == 0:
             self.reserve = 0.8
         else:
-            self.reserve =   0.7 + 0.3*self.rng.rand() 
+            self.reserve = 0.7 + 0.3*self.rng.rand() 
         
 
     def randomize_para(self):
@@ -94,7 +100,7 @@ class Simu:
         dict_para['epsilon_var'] = (0.2*self.rng.rand())
         return dict_para
         
-    def signal_DGP_simu(self, para,rng,N,X_bar,X_up, JJ=10):
+    def signal_DGP_simu(self,para,rng,N,X_bar,X_up,JJ=10):
         # generate the random vectors for simulation 
         # is_sorted = lambda a: np.all(a[:-1] <= a[1:])
         MU       =para.MU[0] 
@@ -104,7 +110,9 @@ class Simu:
         flag=True
         while flag:
             # check 
-            x_signal=self.rng.multivariate_normal(MU,SIGMA2,int(JJ*N))
+            x_signal     = self.rng.multivariate_normal(MU,SIGMA2,int(JJ*N))
+            # x_signal = truncnorm.rvs(MU,SIGMA2,X_bar,size=int(JJ*N),random_state=rng)
+            # x_signal = x_signal.reshape(JJ,N)
 
             # entry selection 
             check_flag   = x_signal  > X_bar.reshape(1,X_bar.size)
@@ -119,7 +127,7 @@ class Simu:
                 flag=False
         
         # bidding ladder
-        ladder=0.015 + 0.015*self.rng.rand()
+        ladder=0.01 + 0.015*self.rng.rand()
         
         return [x_signal[0,],ladder]
 
@@ -188,7 +196,7 @@ class Simu:
             X_up  = Update_bid.entry_simu_up(X_bar.flatten(),2.5)
             
             [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,X_bar,X_up*np.ones([1,N]))
-            pub_info=[self.reserve,N,info_index,ladder]
+            # pub_info=[self.reserve,N,info_index,ladder]
             
             # notice that actually, I do not need to vectorize the bidding price
             # I can just use the bidding ladder and reserve price to represent posting 

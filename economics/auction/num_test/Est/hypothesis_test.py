@@ -4,6 +4,9 @@ Created on Sun Feb 10 16:48:00 2019
 
 @author: xiaofeima
 This is for hypothesis testing of the information asymmetry
+1 use the estimated parameters to calculate X_bar and lambda 
+2 lambda can be calculated by MLE 
+3 compare the lambda under pi=0 and pi=1
 
 """
 import os,sys
@@ -48,12 +51,13 @@ if __name__ == '__main__':
     Est_data=pre_data(Est_data)
 
 
-    reserve = 0.8
-    stage_1=Entry_stage(Est_para_dict,reserve)
+    
+    stage_1=Entry_stage(Est_para_dict)
 
-    # uninformed case 
+    # uninformed case reserve price can be random 
+    # lambda determines the X_bar, so just do the MLE for lambda  
     info_flag = 0
     P_lambda  = 5
-    un_X_r = stage_1.entry_threshold(reserve,info_flag,P_lambda)
-    
-    lambda_est = stage_1.MLE_lambda(un_X_r,Est_data['num_bidder'],info_flag)
+    # un_X_r = stage_1.entry_threshold(reserve,info_flag,P_lambda)
+    Est_data_can=Est_data[['res_norm','real_num_bidder']]
+    lambda_est = stage_1.MLE_lambda(Est_data_can,info_flag)

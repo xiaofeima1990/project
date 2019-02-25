@@ -15,6 +15,8 @@ I can just use the ladder*t + reserve price to represent the bidding price
 2. add the upper bound -> treat next period as upper bound
 3. add the upper bound -> treat bidder i's private signal as upper bound 
 
+should add the incentive constraint for the informed bidders
+
 """
 
 import numpy as np
@@ -73,7 +75,7 @@ class Update_rule:
         # Reorder p_k from second to last 
         ord_ind2=np.argsort(p_low[1:])[::-1]
 
-        o 
+        ori_ind=ss.rankdata(p_low[1:])
         ori_ind=ori_ind-1
         ori_ind=ori_ind.astype(int)
 
@@ -202,6 +204,9 @@ class Update_rule:
         x_drop = AA_k*np.log(res) - CC_k
 
         return x_drop.reshape(1,x_drop.size)
+
+    def entry_threshold_info(self,res,info_index):
+        pass
 
 
     def entry_simu_up(self,x_bar,up):
