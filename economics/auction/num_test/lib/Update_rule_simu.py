@@ -206,7 +206,46 @@ class Update_rule:
         return x_drop.reshape(1,x_drop.size)
 
     def entry_threshold_info(self,res,info_index):
-        pass
+        x_ini=max(self.entry_threshold(res))
+        X_r_est=minimize(self.thres_func,[x_ini,x_ini],args=(res,info_index))
+        return X_r_est.x
+    
+    def thres_func(self,X_r,log_res,info_index):
+
+        x_s=X_r[0]*np.ones([self.N,1])
+        x_s[info_index]=X_r[1]
+
+        # feasibility constraint
+        eq1 = X_r[1] - log_res
+
+        # feasibility constraint 
+        mu_k = self.vi_mu
+        # simga_i^2
+        Gamma_k = self.vi_sigma2
+        
+        # cov i  Delta
+        Delta_k =self.comm_var * np.ones(self.N)
+        Delta_k[0] = self.vi_sigma2
+        Delta_k=Delta_k.reshape(self.N,1)
+        
+        # sigma_inv
+        Sigma_inv = inv(self.SIGMA2)        
+        Sigma_inv_k1 = Sigma_inv[0:self.N,:]
+        
+
+        # the main 
+        AA_k = Delta_k.T @ Sigma_inv_k1.T
+        CC_k = 0.5*  (Gamma_k - Delta_k.T @ Sigma_inv @ Delta_k) + mu_k - Delta_k.T @Sigma_inv@self.MU
+                    
+        E_x0 = (AA_k @ x_s  + CC_k)
+        # feasibliity constraint
+        eq0  = E_x0 - log_res
+
+        # incentive constraint 
+        eq2 = X_r[1] - E_x0
+
+        return (eq2 < 0)*eq2**2*10 + (eq1<0)*eq1**2 + (eq0)*eq0**2 
+
 
 
     def entry_simu_up(self,x_bar,up):
@@ -364,8 +403,8 @@ class Update_rule:
         temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
         temp_diag=temp_diag.reshape(temp_diag.size,1)
         CC_k = 0.5*  (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@self.MU)
-                        
-        drop_price= np.exp(x_s  + CC_k)        
+        AA_k = Delta_k.T @ Sigma_inv_k1.T                
+        drop_price= np.exp(AA_k @ x_s  + CC_k)        
 
         drop_price=drop_price.flatten()  
         return drop_price

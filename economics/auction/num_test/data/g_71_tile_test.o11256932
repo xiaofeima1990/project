@@ -1,0 +1,1129 @@
+the var_i varaible is
+2
+the current flag is 
+2 1 -1
+Using cuDNN version 5110 on context None
+Mapped name None to device cuda: Tesla P100-PCIE-12GB (0000:03:00.0)
+this is Fold : 2
+this is pure corss-validation test
+starting epoch 0; end epoch 5000 ; lambda_2 0.000000; drop_prob 0.000000; min_delta -1.000000
+input x shape is : (1211, 320, 320, 3)
+input y shape is : (1211, 160, 160)
+tiles to test are : 1211
+batch_size to test are : 32
+num of epochs need to run 20
+
+... building the model
+o1
+
+... calculating loss
+Traceback (most recent call last):
+  File "71_tile_test.py", line 121, in <module>
+    TestModel(PATH,args, input_x_stack[test_index],input_y_stack[test_index],n_bands, Fold_ID,mean_subtraction = True)
+  File "/storage/work/g/gum27/slums/reg_GPU/code/lib/testing.py", line 136, in TestModel
+    ave_loss = ave_loss + evaluate_loss()
+  File "/opt/aci/sw/python/2.7.14_anaconda-5.0.1/lib/python2.7/site-packages/theano/compile/function_module.py", line 898, in __call__
+    storage_map=getattr(self.fn, 'storage_map', None))
+  File "/opt/aci/sw/python/2.7.14_anaconda-5.0.1/lib/python2.7/site-packages/theano/gof/link.py", line 325, in raise_with_op
+    reraise(exc_type, exc_value, exc_trace)
+  File "/opt/aci/sw/python/2.7.14_anaconda-5.0.1/lib/python2.7/site-packages/theano/compile/function_module.py", line 884, in __call__
+    self.fn() if output_subset is None else\
+ValueError: GpuReshape: trying to reshape an array of total size 104857600 into an array of total size 262144000.
+Apply node that caused the error: GpuReshape{2}(GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray>.0, TensorConstant{[819200    320]})
+Toposort index: 413
+Inputs types: [GpuArrayType<None>(float32, (False, False, False, False)), TensorType(int64, vector)]
+Inputs shapes: [(32, 160, 160, 128), (2,)]
+Inputs strides: [(13107200, 640, 4, 102400), (8,)]
+Inputs values: ['not shown', array([819200,    320])]
+Inputs type_num: [11, 7]
+Outputs clients: [[GpuSubtensor{int64}(GpuReshape{2}.0, Constant{0}), GpuCrossentropySoftmaxArgmax1HotWithBias(GpuReshape{2}.0, GpuElemwise{second,no_inplace}.0, <GpuArrayType<None>(int32, (False,))>)]]
+
+Debugprint of the apply node: 
+GpuReshape{2} [id A] <GpuArrayType<None>(float32, (False, False))> ''   
+ |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id B] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |InplaceGpuDimShuffle{0,2,3,1} [id C] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | | |GpuDnnPool{mode='max'} [id D] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |GpuContiguous [id E] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   | |GpuDnnConv{algo='small', inplace=True} [id F] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |GpuContiguous [id G] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   | |GpuJoin [id H] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   |TensorConstant{1} [id I] <TensorType(int8, scalar)>
+ | |   |   |   |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id J] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | |GpuDnnPool{mode='max'} [id K] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |GpuContiguous [id L] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |GpuSubtensor{::, ::, int64:int64:, int64:int64:} [id M] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   |GpuDnnConv{algo='small', inplace=True} [id N] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | |GpuContiguous [id O] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | | |InplaceGpuDimShuffle{0,3,1,2} [id P] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | |   |GpuReshape{4} [id Q] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | |     |<GpuArrayType<None>(float32, (False, False))> [id R] <GpuArrayType<None>(float32, (False, False))>
+ | |   |   |   | | |   | |     |TensorConstant{[ 32 320 320   3]} [id S] <TensorType(int64, vector)>
+ | |   |   |   | | |   | |GpuContiguous [id T] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | | |<GpuArrayType<None>(float32, (False, False, False, False))> [id U] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |   | | |   | |GpuAllocEmpty{dtype='float32', context_name=None} [id V] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id W] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | | | |Shape_i{0} [id X] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | | | | |GpuContiguous [id O] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | | | |Elemwise{ge,no_inplace} [id Y] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | |   | | |   |Shape_i{0} [id X] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[1] < 0).'} [id BA] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | | | |Shape_i{0} [id BB] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | | | | |GpuContiguous [id T] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | | | |Elemwise{ge,no_inplace} [id BC] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | |   | | |   |Shape_i{0} [id BB] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id BD] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id BE] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | | | | |Shape_i{2} [id BF] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | | | | | |GpuContiguous [id O] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | | | | |Shape_i{2} [id BH] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | | | | | |GpuContiguous [id T] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | | | |Elemwise{gt,no_inplace} [id BK] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | |   | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id BE] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id BL] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id BM] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | |   | |Shape_i{3} [id BN] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | |   | | |GpuContiguous [id O] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | |   | |Shape_i{3} [id BO] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | |   | | |GpuContiguous [id T] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | |   |Elemwise{gt,no_inplace} [id BP] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | |   | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id BM] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |   | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | |   | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id BQ] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |   | | |   | | |Shape [id BR] <TensorType(int64, vector)> ''   
+ | |   |   |   | | |   | |   |GpuContiguous [id T] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | |   | |Constant{1.0} [id BS] <float32>
+ | |   |   |   | | |   | |Constant{0.0} [id BT] <float32>
+ | |   |   |   | | |   |Constant{2} [id BU] <int64>
+ | |   |   |   | | |   |Constant{-2} [id BV] <int64>
+ | |   |   |   | | |   |Constant{2} [id BU] <int64>
+ | |   |   |   | | |   |Constant{-2} [id BV] <int64>
+ | |   |   |   | | |TensorConstant{(2,) of 2} [id BW] <TensorType(int64, vector)>
+ | |   |   |   | | |TensorConstant{(2,) of 2} [id BW] <TensorType(int64, vector)>
+ | |   |   |   | | |TensorConstant{(2,) of 0} [id BX] <TensorType(int64, vector)>
+ | |   |   |   | |InplaceGpuDimShuffle{x,0,x,x} [id BY] <GpuArrayType<None>(float32, (True, False, True, True))> ''   
+ | |   |   |   | | |<GpuArrayType<None>(float32, (False,))> [id BZ] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |   | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |   | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |   |GpuReshape{4} [id CB] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | |GpuSubtensor{::, ::, int64:int64:} [id CC] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | |GpuDnnConv{algo='small', inplace=True} [id CD] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |GpuContiguous [id CE] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | |GpuSubtensor{::, ::, ::, int64:int64:} [id CF] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   |GpuDnnConv{algo='small', inplace=True} [id CG] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | |GpuContiguous [id CH] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | | |InplaceGpuDimShuffle{0,x,1,2} [id CI] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | |   |GpuReshape{3} [id CJ] <GpuArrayType<None>(float32, (False, False, False))> ''   
+ | |   |   |   | | | |   | |     |GpuIncSubtensor{Set;::, ::, int64:int64:int64, int64:int64:int64} [id CK] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | |<GpuArrayType<None>(float32, (False, False, False, False))> [id CL] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |   | | | |   | |     | |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id CM] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | |GpuDnnPool{mode='max'} [id CN] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |GpuContiguous [id CO] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | | |GpuSubtensor{::, ::, int64:int64:, int64:int64:} [id CP] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   |GpuDnnConv{algo='small', inplace=True} [id CQ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | |GpuContiguous [id CR] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id J] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | |GpuContiguous [id CS] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |<GpuArrayType<None>(float32, (False, False, False, False))> [id CT] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |   | | | |   | |     | | | |   | |GpuAllocEmpty{dtype='float32', context_name=None} [id CU] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id CV] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | |Shape_i{0} [id CW] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | |GpuContiguous [id CR] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | |Elemwise{ge,no_inplace} [id CX] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |Shape_i{0} [id CW] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[1] < 0).'} [id CY] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | |Shape_i{0} [id CZ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | |GpuContiguous [id CS] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | |Elemwise{ge,no_inplace} [id DA] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |Shape_i{0} [id CZ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id DB] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id DC] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | |Shape_i{2} [id DD] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | | |GpuContiguous [id CR] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | | |Shape_i{2} [id DE] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | | |GpuContiguous [id CS] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | |Elemwise{gt,no_inplace} [id DF] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id DC] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id DG] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id DH] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   | |Shape_i{3} [id DI] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   | | |GpuContiguous [id CR] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   | |Shape_i{3} [id DJ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   | | |GpuContiguous [id CS] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   |Elemwise{gt,no_inplace} [id DK] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id DH] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id DL] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |Shape [id DM] <TensorType(int64, vector)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   |GpuContiguous [id CS] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | |Constant{1.0} [id BS] <float32>
+ | |   |   |   | | | |   | |     | | | |   | |Constant{0.0} [id BT] <float32>
+ | |   |   |   | | | |   | |     | | | |   |Constant{2} [id BU] <int64>
+ | |   |   |   | | | |   | |     | | | |   |Constant{-2} [id BV] <int64>
+ | |   |   |   | | | |   | |     | | | |   |Constant{2} [id BU] <int64>
+ | |   |   |   | | | |   | |     | | | |   |Constant{-2} [id BV] <int64>
+ | |   |   |   | | | |   | |     | | | |TensorConstant{(2,) of 2} [id BW] <TensorType(int64, vector)>
+ | |   |   |   | | | |   | |     | | | |TensorConstant{(2,) of 2} [id BW] <TensorType(int64, vector)>
+ | |   |   |   | | | |   | |     | | | |TensorConstant{(2,) of 0} [id BX] <TensorType(int64, vector)>
+ | |   |   |   | | | |   | |     | | |InplaceGpuDimShuffle{x,0,x,x} [id DN] <GpuArrayType<None>(float32, (True, False, True, True))> ''   
+ | |   |   |   | | | |   | |     | | | |<GpuArrayType<None>(float32, (False,))> [id DO] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |   | | | |   | |     | | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |   | | | |   | |     | | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |   | | | |   | |     | |Constant{0} [id DP] <int64>
+ | |   |   |   | | | |   | |     | |Constant{160} [id DQ] <int64>
+ | |   |   |   | | | |   | |     | |Constant{2} [id BU] <int64>
+ | |   |   |   | | | |   | |     | |Constant{0} [id DP] <int64>
+ | |   |   |   | | | |   | |     | |Constant{160} [id DQ] <int64>
+ | |   |   |   | | | |   | |     | |Constant{2} [id BU] <int64>
+ | |   |   |   | | | |   | |     |TensorConstant{[2240  160  160]} [id DR] <TensorType(int64, vector)>
+ | |   |   |   | | | |   | |GpuContiguous [id DS] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | | |InplaceGpuDimShuffle{x,x,x,0} [id DT] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | |   |<GpuArrayType<None>(float32, (False,))> [id DU] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |   | | | |   | |GpuAllocEmpty{dtype='float32', context_name=None} [id DV] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id DW] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | |Shape_i{0} [id DX] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | | |GpuContiguous [id CH] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | | | |Elemwise{ge,no_inplace} [id DY] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | | |   |Shape_i{0} [id DX] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | |Shape_i{0} [id DZ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | |GpuContiguous [id DS] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id EA] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id EB] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | | |Shape_i{2} [id EC] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | | | |GpuContiguous [id CH] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | | | |Shape_i{2} [id ED] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | | | |GpuContiguous [id DS] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | | |Elemwise{gt,no_inplace} [id EE] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id EB] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id EF] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id EG] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |   | |Shape_i{3} [id EH] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |   | | |GpuContiguous [id CH] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |   | |Shape_i{3} [id EI] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |   | | |GpuContiguous [id DS] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |   |Elemwise{gt,no_inplace} [id EJ] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id EG] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id EK] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |   | | | |   | | |Shape [id EL] <TensorType(int64, vector)> ''   
+ | |   |   |   | | | |   | |   |GpuContiguous [id DS] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | |Constant{1.0} [id BS] <float32>
+ | |   |   |   | | | |   | |Constant{0.0} [id BT] <float32>
+ | |   |   |   | | | |   |Constant{1} [id EM] <int64>
+ | |   |   |   | | | |   |Constant{-1} [id EN] <int64>
+ | |   |   |   | | | |GpuContiguous [id EO] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | | |InplaceGpuDimShuffle{x,x,0,x} [id EP] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | |   |<GpuArrayType<None>(float32, (False,))> [id DU] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |   | | | |GpuAllocEmpty{dtype='float32', context_name=None} [id EQ] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id ER] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | |Shape_i{0} [id ES] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | |GpuContiguous [id CE] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | | |Elemwise{ge,no_inplace} [id ET] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | | |   |Shape_i{0} [id ES] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | | |Shape_i{0} [id EU] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | |GpuContiguous [id EO] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id EV] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id EW] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | |Shape_i{2} [id EX] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | | |GpuContiguous [id CE] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |Shape_i{2} [id EY] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | | |GpuContiguous [id EO] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | |Elemwise{gt,no_inplace} [id EZ] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id EW] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id FA] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id FB] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |Shape_i{3} [id FC] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | |GpuContiguous [id CE] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |Shape_i{3} [id FD] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | |GpuContiguous [id EO] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   |Elemwise{gt,no_inplace} [id FE] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id FB] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id FF] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |   | | | | |Shape [id FG] <TensorType(int64, vector)> ''   
+ | |   |   |   | | | |   |GpuContiguous [id EO] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | |Constant{1.0} [id BS] <float32>
+ | |   |   |   | | | |Constant{0.0} [id BT] <float32>
+ | |   |   |   | | |Constant{1} [id EM] <int64>
+ | |   |   |   | | |Constant{-1} [id EN] <int64>
+ | |   |   |   | |TensorConstant{[ 32  70 160 160]} [id FH] <TensorType(int64, vector)>
+ | |   |   |   |GpuReshape{4} [id FI] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | |GpuSubtensor{::, ::, int64:int64:} [id FJ] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | |GpuDnnConv{algo='small', inplace=True} [id FK] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |GpuContiguous [id FL] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | |GpuSubtensor{::, ::, ::, int64:int64:} [id FM] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   |GpuDnnConv{algo='small', inplace=True} [id FN] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | |GpuContiguous [id FO] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | | |InplaceGpuDimShuffle{0,x,1,2} [id FP] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | |   |GpuReshape{3} [id FQ] <GpuArrayType<None>(float32, (False, False, False))> ''   
+ | |   |   |   | | | |   | |     |GpuIncSubtensor{Set;::, ::, int64:int64:int64, int64:int64:int64} [id FR] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | |<GpuArrayType<None>(float32, (False, False, False, False))> [id FS] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |   | | | |   | |     | |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id FT] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | |GpuDnnPool{mode='max'} [id FU] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |GpuContiguous [id FV] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | | |GpuSubtensor{::, ::, int64:int64:, int64:int64:} [id FW] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   |GpuDnnConv{algo='small', inplace=True} [id FX] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | |GpuContiguous [id FY] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id CM] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | |GpuContiguous [id FZ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |<GpuArrayType<None>(float32, (False, False, False, False))> [id GA] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |   | | | |   | |     | | | |   | |GpuAllocEmpty{dtype='float32', context_name=None} [id GB] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id GC] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | |Shape_i{0} [id GD] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | |GpuContiguous [id FY] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | |Elemwise{ge,no_inplace} [id GE] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |Shape_i{0} [id GD] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[1] < 0).'} [id GF] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | |Shape_i{0} [id GG] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | |GpuContiguous [id FZ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | |Elemwise{ge,no_inplace} [id GH] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |Shape_i{0} [id GG] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id GI] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id GJ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | |Shape_i{2} [id GK] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | | |GpuContiguous [id FY] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | | |Shape_i{2} [id GL] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | | |GpuContiguous [id FZ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | | |Elemwise{gt,no_inplace} [id GM] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id GJ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id GN] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id GO] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   | |Shape_i{3} [id GP] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   | | |GpuContiguous [id FY] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   | |Shape_i{3} [id GQ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   | | |GpuContiguous [id FZ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |   |Elemwise{gt,no_inplace} [id GR] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id GO] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |     | | | |   | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id GS] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |   | | | |   | |     | | | |   | | |Shape [id GT] <TensorType(int64, vector)> ''   
+ | |   |   |   | | | |   | |     | | | |   | |   |GpuContiguous [id FZ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |   | |     | | | |   | |Constant{1.0} [id BS] <float32>
+ | |   |   |   | | | |   | |     | | | |   | |Constant{0.0} [id BT] <float32>
+ | |   |   |   | | | |   | |     | | | |   |Constant{1} [id EM] <int64>
+ | |   |   |   | | | |   | |     | | | |   |Constant{-1} [id EN] <int64>
+ | |   |   |   | | | |   | |     | | | |   |Constant{1} [id EM] <int64>
+ | |   |   |   | | | |   | |     | | | |   |Constant{-1} [id EN] <int64>
+ | |   |   |   | | | |   | |     | | | |TensorConstant{(2,) of 2} [id BW] <TensorType(int64, vector)>
+ | |   |   |   | | | |   | |     | | | |TensorConstant{(2,) of 2} [id BW] <TensorType(int64, vector)>
+ | |   |   |   | | | |   | |     | | | |TensorConstant{(2,) of 0} [id BX] <TensorType(int64, vector)>
+ | |   |   |   | | | |   | |     | | |InplaceGpuDimShuffle{x,0,x,x} [id GU] <GpuArrayType<None>(float32, (True, False, True, True))> ''   
+ | |   |   |   | | | |   | |     | | | |<GpuArrayType<None>(float32, (False,))> [id GV] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |   | | | |   | |     | | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |   | | | |   | |     | | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |   | | | |   | |     | |Constant{2} [id BU] <int64>
+ | |   |   |   | | | |   | |     | |Constant{160} [id DQ] <int64>
+ | |   |   |   | | | |   | |     | |Constant{4} [id GW] <int64>
+ | |   |   |   | | | |   | |     | |Constant{2} [id BU] <int64>
+ | |   |   |   | | | |   | |     | |Constant{160} [id DQ] <int64>
+ | |   |   |   | | | |   | |     | |Constant{4} [id GW] <int64>
+ | |   |   |   | | | |   | |     |TensorConstant{[3200  160  160]} [id GX] <TensorType(int64, vector)>
+ | |   |   |   | | | |   | |GpuContiguous [id GY] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | | |InplaceGpuDimShuffle{x,x,x,0} [id GZ] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | |   |<GpuArrayType<None>(float32, (False,))> [id HA] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |   | | | |   | |GpuAllocEmpty{dtype='float32', context_name=None} [id HB] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id HC] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | |Shape_i{0} [id HD] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | | |GpuContiguous [id FO] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | | | |Elemwise{ge,no_inplace} [id HE] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | | |   |Shape_i{0} [id HD] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | |Shape_i{0} [id HF] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | |GpuContiguous [id GY] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id HG] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id HH] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | | |Shape_i{2} [id HI] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | | | |GpuContiguous [id FO] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | | | |Shape_i{2} [id HJ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | | | | |GpuContiguous [id GY] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | | |Elemwise{gt,no_inplace} [id HK] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id HH] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id HL] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id HM] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |   | |Shape_i{3} [id HN] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |   | | |GpuContiguous [id FO] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |   | |Shape_i{3} [id HO] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |   | | |GpuContiguous [id GY] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |   |Elemwise{gt,no_inplace} [id HP] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |   | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id HM] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id HQ] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |   | | | |   | | |Shape [id HR] <TensorType(int64, vector)> ''   
+ | |   |   |   | | | |   | |   |GpuContiguous [id GY] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |   | |Constant{1.0} [id BS] <float32>
+ | |   |   |   | | | |   | |Constant{0.0} [id BT] <float32>
+ | |   |   |   | | | |   |Constant{3} [id HS] <int64>
+ | |   |   |   | | | |   |Constant{-3} [id HT] <int64>
+ | |   |   |   | | | |GpuContiguous [id HU] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | | |InplaceGpuDimShuffle{x,x,0,x} [id HV] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | |   |<GpuArrayType<None>(float32, (False,))> [id HA] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |   | | | |GpuAllocEmpty{dtype='float32', context_name=None} [id HW] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id HX] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | |Shape_i{0} [id HY] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | |GpuContiguous [id FL] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | | |Elemwise{ge,no_inplace} [id HZ] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | | |   |Shape_i{0} [id HY] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | | |Shape_i{0} [id IA] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | |GpuContiguous [id HU] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id IB] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id IC] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | |Shape_i{2} [id ID] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | | |GpuContiguous [id FL] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |Shape_i{2} [id IE] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | | |GpuContiguous [id HU] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | |Elemwise{gt,no_inplace} [id IF] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id IC] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id IG] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id IH] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |Shape_i{3} [id II] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | |GpuContiguous [id FL] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |Shape_i{3} [id IJ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | |GpuContiguous [id HU] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   |Elemwise{gt,no_inplace} [id IK] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id IH] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id IL] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |   | | | | |Shape [id IM] <TensorType(int64, vector)> ''   
+ | |   |   |   | | | |   |GpuContiguous [id HU] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | |Constant{1.0} [id BS] <float32>
+ | |   |   |   | | | |Constant{0.0} [id BT] <float32>
+ | |   |   |   | | |Constant{3} [id HS] <int64>
+ | |   |   |   | | |Constant{-3} [id HT] <int64>
+ | |   |   |   | |TensorConstant{[ 32 100 160 160]} [id IN] <TensorType(int64, vector)>
+ | |   |   |   |GpuReshape{4} [id IO] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | |GpuSubtensor{::, ::, int64:int64:} [id IP] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | |GpuDnnConv{algo='small', inplace=True} [id IQ] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |GpuContiguous [id IR] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | |InplaceGpuDimShuffle{0,x,1,2} [id IS] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   |GpuReshape{3} [id IT] <GpuArrayType<None>(float32, (False, False, False))> ''   
+ | |   |   |   | | | |     |GpuSubtensor{::, ::, ::, int64:int64:} [id IU] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |     | |GpuDnnConv{algo='small', inplace=True} [id IV] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |     | | |GpuContiguous [id IW] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |     | | | |InplaceGpuDimShuffle{0,x,1,2} [id IX] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |     | | |   |GpuReshape{3} [id IY] <GpuArrayType<None>(float32, (False, False, False))> ''   
+ | |   |   |   | | | |     | | |     |GpuIncSubtensor{Set;::, ::, int64:int64:int64, int64:int64:int64} [id IZ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | |<GpuArrayType<None>(float32, (False, False, False, False))> [id JA] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |   | | | |     | | |     | |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id JB] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | |GpuDnnPool{mode='max'} [id JC] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |GpuContiguous [id JD] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | | |GpuSubtensor{::, ::, int64:int64:, int64:int64:} [id JE] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   |GpuDnnConv{algo='small', inplace=True} [id JF] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |GpuContiguous [id JG] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id FT] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |GpuContiguous [id JH] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | |<GpuArrayType<None>(float32, (False, False, False, False))> [id JI] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |   | | | |     | | |     | | | |   | |GpuAllocEmpty{dtype='float32', context_name=None} [id JJ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id JK] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | |Shape_i{0} [id JL] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | | |GpuContiguous [id JG] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | |Elemwise{ge,no_inplace} [id JM] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | |   |Shape_i{0} [id JL] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[1] < 0).'} [id JN] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | |Shape_i{0} [id JO] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | | |GpuContiguous [id JH] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | |Elemwise{ge,no_inplace} [id JP] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | |   |Shape_i{0} [id JO] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id JQ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id JR] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | | |Shape_i{2} [id JS] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | | | |GpuContiguous [id JG] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | | | | |Shape_i{2} [id JT] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | | | |GpuContiguous [id JH] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | | | |Elemwise{gt,no_inplace} [id JU] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id JR] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id JV] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id JW] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |   | |Shape_i{3} [id JX] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |   | | |GpuContiguous [id JG] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | |   | |Shape_i{3} [id JY] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |   | | |GpuContiguous [id JH] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | |   |Elemwise{gt,no_inplace} [id JZ] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id JW] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |     | | | |   | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id KA] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |   | | | |     | | |     | | | |   | | |Shape [id KB] <TensorType(int64, vector)> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |   |GpuContiguous [id JH] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | | | |     | | |     | | | |   | |Constant{1.0} [id BS] <float32>
+ | |   |   |   | | | |     | | |     | | | |   | |Constant{0.0} [id BT] <float32>
+ | |   |   |   | | | |     | | |     | | | |   |Constant{1} [id EM] <int64>
+ | |   |   |   | | | |     | | |     | | | |   |Constant{-1} [id EN] <int64>
+ | |   |   |   | | | |     | | |     | | | |   |Constant{1} [id EM] <int64>
+ | |   |   |   | | | |     | | |     | | | |   |Constant{-1} [id EN] <int64>
+ | |   |   |   | | | |     | | |     | | | |TensorConstant{(2,) of 2} [id BW] <TensorType(int64, vector)>
+ | |   |   |   | | | |     | | |     | | | |TensorConstant{(2,) of 2} [id BW] <TensorType(int64, vector)>
+ | |   |   |   | | | |     | | |     | | | |TensorConstant{(2,) of 0} [id BX] <TensorType(int64, vector)>
+ | |   |   |   | | | |     | | |     | | |InplaceGpuDimShuffle{x,0,x,x} [id KC] <GpuArrayType<None>(float32, (True, False, True, True))> ''   
+ | |   |   |   | | | |     | | |     | | | |<GpuArrayType<None>(float32, (False,))> [id KD] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |   | | | |     | | |     | | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |   | | | |     | | |     | | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |   | | | |     | | |     | |Constant{3} [id HS] <int64>
+ | |   |   |   | | | |     | | |     | |Constant{160} [id DQ] <int64>
+ | |   |   |   | | | |     | | |     | |Constant{8} [id KE] <int64>
+ | |   |   |   | | | |     | | |     | |Constant{3} [id HS] <int64>
+ | |   |   |   | | | |     | | |     | |Constant{160} [id DQ] <int64>
+ | |   |   |   | | | |     | | |     | |Constant{8} [id KE] <int64>
+ | |   |   |   | | | |     | | |     |TensorConstant{[4800  160  160]} [id KF] <TensorType(int64, vector)>
+ | |   |   |   | | | |     | | |GpuContiguous [id KG] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |     | | | |InplaceGpuDimShuffle{x,x,x,0} [id KH] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |     | | |   |<GpuArrayType<None>(float32, (False,))> [id KI] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |   | | | |     | | |GpuAllocEmpty{dtype='float32', context_name=None} [id KJ] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |     | | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id KK] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | | | |Shape_i{0} [id KL] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | | | | |GpuContiguous [id IW] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |     | | | | |Elemwise{ge,no_inplace} [id KM] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |     | | | |   |Shape_i{0} [id KL] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | | |Shape_i{0} [id KN] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | | | |GpuContiguous [id KG] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |     | | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id KO] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id KP] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | | | | |Shape_i{2} [id KQ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | | | | | |GpuContiguous [id IW] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |     | | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | | | | |Shape_i{2} [id KR] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | | | | | |GpuContiguous [id KG] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |     | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |     | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | | | |Elemwise{gt,no_inplace} [id KS] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |     | | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id KP] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id KT] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id KU] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |   | |Shape_i{3} [id KV] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |   | | |GpuContiguous [id IW] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |     | | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |   | |Shape_i{3} [id KW] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |   | | |GpuContiguous [id KG] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |     | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |     | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |   |Elemwise{gt,no_inplace} [id KX] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |     | | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id KU] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     | | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |     | | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id KY] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |   | | | |     | | | |Shape [id KZ] <TensorType(int64, vector)> ''   
+ | |   |   |   | | | |     | | |   |GpuContiguous [id KG] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |   | | | |     | | |Constant{1.0} [id BS] <float32>
+ | |   |   |   | | | |     | | |Constant{0.0} [id BT] <float32>
+ | |   |   |   | | | |     | |Constant{7} [id LA] <int64>
+ | |   |   |   | | | |     | |Constant{-7} [id LB] <int64>
+ | |   |   |   | | | |     |TensorConstant{[4800  160  160]} [id KF] <TensorType(int64, vector)>
+ | |   |   |   | | | |GpuContiguous [id LC] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | | |InplaceGpuDimShuffle{x,x,0,x} [id LD] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | |   |<GpuArrayType<None>(float32, (False,))> [id KI] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |   | | | |GpuAllocEmpty{dtype='float32', context_name=None} [id LE] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id LF] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | |Shape_i{0} [id LG] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | |GpuContiguous [id IR] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | | |Elemwise{ge,no_inplace} [id LH] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | | |   |Shape_i{0} [id LG] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | | |Shape_i{0} [id LI] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | |GpuContiguous [id LC] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id LJ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id LK] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | |Shape_i{2} [id LL] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | | |GpuContiguous [id IR] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |Shape_i{2} [id LM] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | | | | |GpuContiguous [id LC] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | | | |Elemwise{gt,no_inplace} [id LN] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id LK] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id LO] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id LP] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | |Shape_i{3} [id LQ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | |GpuContiguous [id IR] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |   | | | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |Shape_i{3} [id LR] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |   | | |GpuContiguous [id LC] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | | | |   |Elemwise{gt,no_inplace} [id LS] <TensorType(bool, scalar)> ''   
+ | |   |   |   | | | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id LP] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |   | | | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id LT] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |   | | | | |Shape [id LU] <TensorType(int64, vector)> ''   
+ | |   |   |   | | | |   |GpuContiguous [id LC] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |   | | | |Constant{1.0} [id BS] <float32>
+ | |   |   |   | | | |Constant{0.0} [id BT] <float32>
+ | |   |   |   | | |Constant{7} [id LA] <int64>
+ | |   |   |   | | |Constant{-7} [id LB] <int64>
+ | |   |   |   | |TensorConstant{[ 32 150 160 160]} [id LV] <TensorType(int64, vector)>
+ | |   |   |   |GpuReshape{4} [id LW] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     |GpuSubtensor{::, ::, int64:int64:} [id LX] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | |GpuDnnConv{algo='small', inplace=True} [id LY] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | |GpuContiguous [id LZ] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | | |GpuSubtensor{::, ::, ::, int64:int64:} [id MA] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | |   |GpuDnnConv{algo='small', inplace=True} [id MB] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | |   | |GpuContiguous [id MC] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | |   | | |InplaceGpuDimShuffle{0,x,1,2} [id MD] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | |   | |   |GpuReshape{3} [id ME] <GpuArrayType<None>(float32, (False, False, False))> ''   
+ | |   |   |     | | |   | |     |GpuIncSubtensor{Set;::, ::, int64:int64:int64, int64:int64:int64} [id MF] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | |<GpuArrayType<None>(float32, (False, False, False, False))> [id MG] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |     | | |   | |     | |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id MH] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | |GpuDnnPool{mode='max'} [id MI] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |GpuContiguous [id MJ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | | |GpuSubtensor{::, ::, int64:int64:, int64:int64:} [id MK] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   |GpuDnnConv{algo='small', inplace=True} [id ML] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |GpuContiguous [id MM] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | | |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id MN] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   |GpuDnnPool{mode='max'} [id MO] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |GpuContiguous [id MP] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | | |GpuSubtensor{::, ::, int64:int64:, int64:int64:} [id MQ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   |GpuDnnConv{algo='small', inplace=True} [id MR] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |GpuContiguous [id MS] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id MT] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   |GpuDnnPool{mode='max'} [id MU] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |GpuContiguous [id MV] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | | |GpuSubtensor{::, ::, int64:int64:, int64:int64:} [id MW] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   |GpuDnnConv{algo='small', inplace=True} [id MX] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |GpuContiguous [id MY] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray> [id JB] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |GpuContiguous [id MZ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |<GpuArrayType<None>(float32, (False, False, False, False))> [id NA] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |GpuAllocEmpty{dtype='float32', context_name=None} [id NB] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id NC] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | |Shape_i{0} [id ND] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | |GpuContiguous [id MY] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | |Elemwise{ge,no_inplace} [id NE] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |   |Shape_i{0} [id ND] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[1] < 0).'} [id NF] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | |Shape_i{0} [id NG] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | |GpuContiguous [id MZ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | |Elemwise{ge,no_inplace} [id NH] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |   |Shape_i{0} [id NG] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id NI] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id NJ] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | |Shape_i{2} [id NK] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | | |GpuContiguous [id MY] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | |Shape_i{2} [id NL] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | | |GpuContiguous [id MZ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | | |Elemwise{gt,no_inplace} [id NM] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id NJ] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id NN] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id NO] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   | |Shape_i{3} [id NP] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   | | |GpuContiguous [id MY] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   | |Shape_i{3} [id NQ] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   | | |GpuContiguous [id MZ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   |Elemwise{gt,no_inplace} [id NR] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id NO] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id NS] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | | |Shape [id NT] <TensorType(int64, vector)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |   |GpuContiguous [id MZ] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |Constant{1.0} [id BS] <float32>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   | |Constant{0.0} [id BT] <float32>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   |Constant{1} [id EM] <int64>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   |Constant{-1} [id EN] <int64>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   |Constant{1} [id EM] <int64>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |   |Constant{-1} [id EN] <int64>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |TensorConstant{(2,) of 2} [id BW] <TensorType(int64, vector)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |TensorConstant{(2,) of 2} [id BW] <TensorType(int64, vector)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |TensorConstant{(2,) of 0} [id BX] <TensorType(int64, vector)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   |InplaceGpuDimShuffle{x,0,x,x} [id NU] <GpuArrayType<None>(float32, (True, False, True, True))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |<GpuArrayType<None>(float32, (False,))> [id NV] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |GpuContiguous [id NW] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |<GpuArrayType<None>(float32, (False, False, False, False))> [id NX] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |GpuAllocEmpty{dtype='float32', context_name=None} [id NY] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id NZ] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | |Shape_i{0} [id OA] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | |GpuContiguous [id MS] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | |Elemwise{ge,no_inplace} [id OB] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |   |Shape_i{0} [id OA] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[1] < 0).'} [id OC] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | |Shape_i{0} [id OD] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | |GpuContiguous [id NW] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | |Elemwise{ge,no_inplace} [id OE] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |   |Shape_i{0} [id OD] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id OF] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id OG] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | |Shape_i{2} [id OH] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | | |GpuContiguous [id MS] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | |Shape_i{2} [id OI] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | | |GpuContiguous [id NW] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | | |Elemwise{gt,no_inplace} [id OJ] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id OG] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id OK] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id OL] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |Shape_i{3} [id OM] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | | |GpuContiguous [id MS] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |Shape_i{3} [id ON] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | | |GpuContiguous [id NW] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   |Elemwise{gt,no_inplace} [id OO] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id OL] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id OP] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | | |Shape [id OQ] <TensorType(int64, vector)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |   |GpuContiguous [id NW] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |Constant{1.0} [id BS] <float32>
+ | |   |   |     | | |   | |     | | | |   | |   | |   | |Constant{0.0} [id BT] <float32>
+ | |   |   |     | | |   | |     | | | |   | |   | |   |Constant{1} [id EM] <int64>
+ | |   |   |     | | |   | |     | | | |   | |   | |   |Constant{-1} [id EN] <int64>
+ | |   |   |     | | |   | |     | | | |   | |   | |   |Constant{1} [id EM] <int64>
+ | |   |   |     | | |   | |     | | | |   | |   | |   |Constant{-1} [id EN] <int64>
+ | |   |   |     | | |   | |     | | | |   | |   | |TensorConstant{(2,) of 1} [id OR] <TensorType(int64, vector)>
+ | |   |   |     | | |   | |     | | | |   | |   | |TensorConstant{(2,) of 1} [id OR] <TensorType(int64, vector)>
+ | |   |   |     | | |   | |     | | | |   | |   | |TensorConstant{(2,) of 0} [id BX] <TensorType(int64, vector)>
+ | |   |   |     | | |   | |     | | | |   | |   |InplaceGpuDimShuffle{x,0,x,x} [id OS] <GpuArrayType<None>(float32, (True, False, True, True))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |<GpuArrayType<None>(float32, (False,))> [id OT] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |     | | |   | |     | | | |   | |   |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |     | | |   | |     | | | |   | |   |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |     | | |   | |     | | | |   | |GpuContiguous [id OU] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | | |<GpuArrayType<None>(float32, (False, False, False, False))> [id OV] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |     | | |   | |     | | | |   | |GpuAllocEmpty{dtype='float32', context_name=None} [id OW] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id OX] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | | |Shape_i{0} [id OY] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | | | |GpuContiguous [id MM] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | | | |Elemwise{ge,no_inplace} [id OZ] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | |   |Shape_i{0} [id OY] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[1] < 0).'} [id PA] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | | |Shape_i{0} [id PB] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | | | |GpuContiguous [id OU] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | | | |Elemwise{ge,no_inplace} [id PC] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | |   |Shape_i{0} [id PB] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id PD] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id PE] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | | | |Shape_i{2} [id PF] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | | | | |GpuContiguous [id MM] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | | | | |Shape_i{2} [id PG] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | | | | |GpuContiguous [id OU] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |     | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | | | |Elemwise{gt,no_inplace} [id PH] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id PE] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id PI] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id PJ] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |Shape_i{3} [id PK] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | | |GpuContiguous [id MM] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |Shape_i{3} [id PL] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | | |GpuContiguous [id OU] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |   |Elemwise{gt,no_inplace} [id PM] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id PJ] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     | | | |   | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |     | | | |   | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id PN] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |     | | |   | |     | | | |   | | |Shape [id PO] <TensorType(int64, vector)> ''   
+ | |   |   |     | | |   | |     | | | |   | |   |GpuContiguous [id OU] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |     | | |   | |     | | | |   | |Constant{1.0} [id BS] <float32>
+ | |   |   |     | | |   | |     | | | |   | |Constant{0.0} [id BT] <float32>
+ | |   |   |     | | |   | |     | | | |   |Constant{1} [id EM] <int64>
+ | |   |   |     | | |   | |     | | | |   |Constant{-1} [id EN] <int64>
+ | |   |   |     | | |   | |     | | | |   |Constant{1} [id EM] <int64>
+ | |   |   |     | | |   | |     | | | |   |Constant{-1} [id EN] <int64>
+ | |   |   |     | | |   | |     | | | |TensorConstant{(2,) of 1} [id OR] <TensorType(int64, vector)>
+ | |   |   |     | | |   | |     | | | |TensorConstant{(2,) of 1} [id OR] <TensorType(int64, vector)>
+ | |   |   |     | | |   | |     | | | |TensorConstant{(2,) of 0} [id BX] <TensorType(int64, vector)>
+ | |   |   |     | | |   | |     | | |InplaceGpuDimShuffle{x,0,x,x} [id PP] <GpuArrayType<None>(float32, (True, False, True, True))> ''   
+ | |   |   |     | | |   | |     | | | |<GpuArrayType<None>(float32, (False,))> [id PQ] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |     | | |   | |     | | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |     | | |   | |     | | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |   |   |     | | |   | |     | |Constant{9} [id PR] <int64>
+ | |   |   |     | | |   | |     | |Constant{160} [id DQ] <int64>
+ | |   |   |     | | |   | |     | |Constant{16} [id PS] <int64>
+ | |   |   |     | | |   | |     | |Constant{9} [id PR] <int64>
+ | |   |   |     | | |   | |     | |Constant{160} [id DQ] <int64>
+ | |   |   |     | | |   | |     | |Constant{16} [id PS] <int64>
+ | |   |   |     | | |   | |     |TensorConstant{[2240  160  160]} [id DR] <TensorType(int64, vector)>
+ | |   |   |     | | |   | |GpuContiguous [id PT] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |     | | |   | | |InplaceGpuDimShuffle{x,x,x,0} [id PU] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |     | | |   | |   |<GpuArrayType<None>(float32, (False,))> [id PV] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |     | | |   | |GpuAllocEmpty{dtype='float32', context_name=None} [id PW] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id PX] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | | | |Shape_i{0} [id PY] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | | | | |GpuContiguous [id MC] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | |   | | | |Elemwise{ge,no_inplace} [id PZ] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | | |   |Shape_i{0} [id PY] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | | |Shape_i{0} [id QA] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | | | |GpuContiguous [id PT] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |     | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id QB] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id QC] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | | | | |Shape_i{2} [id QD] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | | | | | |GpuContiguous [id MC] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | |   | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | | | | |Shape_i{2} [id QE] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | | | | | |GpuContiguous [id PT] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |     | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |     | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | | | |Elemwise{gt,no_inplace} [id QF] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id QC] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id QG] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id QH] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |   | |Shape_i{3} [id QI] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |   | | |GpuContiguous [id MC] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | |   | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |   | |Shape_i{3} [id QJ] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |   | | |GpuContiguous [id PT] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |     | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |     | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |   |Elemwise{gt,no_inplace} [id QK] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |   | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id QH] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id QL] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |     | | |   | | |Shape [id QM] <TensorType(int64, vector)> ''   
+ | |   |   |     | | |   | |   |GpuContiguous [id PT] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | |   |   |     | | |   | |Constant{1.0} [id BS] <float32>
+ | |   |   |     | | |   | |Constant{0.0} [id BT] <float32>
+ | |   |   |     | | |   |Constant{15} [id QN] <int64>
+ | |   |   |     | | |   |Constant{-15} [id QO] <int64>
+ | |   |   |     | | |GpuContiguous [id QP] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |     | | | |InplaceGpuDimShuffle{x,x,0,x} [id QQ] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |     | | |   |<GpuArrayType<None>(float32, (False,))> [id PV] <GpuArrayType<None>(float32, (False,))>
+ | |   |   |     | | |GpuAllocEmpty{dtype='float32', context_name=None} [id QR] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id QS] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | | | |Shape_i{0} [id QT] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | | | | |GpuContiguous [id LZ] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | | | |Elemwise{ge,no_inplace} [id QU] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | | |   |Shape_i{0} [id QT] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | | |Shape_i{0} [id QV] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | | | |GpuContiguous [id QP] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |     | | | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id QW] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id QX] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | | | | |Shape_i{2} [id QY] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | | | | | |GpuContiguous [id LZ] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |     | | | | | |Shape_i{2} [id QZ] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | | | | | |GpuContiguous [id QP] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |     | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |     | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | | | |Elemwise{gt,no_inplace} [id RA] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id QX] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id RB] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id RC] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | |Shape_i{3} [id RD] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | | |GpuContiguous [id LZ] <GpuArrayType<None>(float32, (False, True, False, False))> ''   
+ | |   |   |     | | |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |Shape_i{3} [id RE] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |   | | |GpuContiguous [id QP] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |     | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |     | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |     | | |   |Elemwise{gt,no_inplace} [id RF] <TensorType(bool, scalar)> ''   
+ | |   |   |     | | |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id RC] <TensorType(int64, scalar)> ''   
+ | |   |   |     | | |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |     | | |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id RG] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   |     | | | |Shape [id RH] <TensorType(int64, vector)> ''   
+ | |   |   |     | | |   |GpuContiguous [id QP] <GpuArrayType<None>(float32, (True, True, False, True))> ''   
+ | |   |   |     | | |Constant{1.0} [id BS] <float32>
+ | |   |   |     | | |Constant{0.0} [id BT] <float32>
+ | |   |   |     | |Constant{15} [id QN] <int64>
+ | |   |   |     | |Constant{-15} [id QO] <int64>
+ | |   |   |     |TensorConstant{[ 32  70 160 160]} [id FH] <TensorType(int64, vector)>
+ | |   |   |GpuContiguous [id RI] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   | |<GpuArrayType<None>(float32, (False, False, False, False))> [id RJ] <GpuArrayType<None>(float32, (False, False, False, False))>
+ | |   |   |GpuAllocEmpty{dtype='float32', context_name=None} [id RK] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   | |Assert{msg='The convolution would produce an invalid shape (dim[0] < 0).'} [id RL] <TensorType(int64, scalar)> ''   
+ | |   |   | | |Shape_i{0} [id RM] <TensorType(int64, scalar)> ''   
+ | |   |   | | | |GpuContiguous [id G] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   | | |Elemwise{ge,no_inplace} [id RN] <TensorType(bool, scalar)> ''   
+ | |   |   | |   |Shape_i{0} [id RM] <TensorType(int64, scalar)> ''   
+ | |   |   | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   | |Assert{msg='The convolution would produce an invalid shape (dim[1] < 0).'} [id RO] <TensorType(int64, scalar)> ''   
+ | |   |   | | |Shape_i{0} [id RP] <TensorType(int64, scalar)> ''   
+ | |   |   | | | |GpuContiguous [id RI] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   | | |Elemwise{ge,no_inplace} [id RQ] <TensorType(bool, scalar)> ''   
+ | |   |   | |   |Shape_i{0} [id RP] <TensorType(int64, scalar)> ''   
+ | |   |   | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   | |Assert{msg='The convolution would produce an invalid shape (dim[2] <= 0).'} [id RR] <TensorType(int64, scalar)> ''   
+ | |   |   | | |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id RS] <TensorType(int64, scalar)> ''   
+ | |   |   | | | |Shape_i{2} [id RT] <TensorType(int64, scalar)> ''   
+ | |   |   | | | | |GpuContiguous [id G] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   | | | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   | | | |Shape_i{2} [id RU] <TensorType(int64, scalar)> ''   
+ | |   |   | | | | |GpuContiguous [id RI] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   | | | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   | | | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   | | |Elemwise{gt,no_inplace} [id RV] <TensorType(bool, scalar)> ''   
+ | |   |   | |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id RS] <TensorType(int64, scalar)> ''   
+ | |   |   | |   |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   | |Assert{msg='The convolution would produce an invalid shape (dim[3] <= 0).'} [id RW] <TensorType(int64, scalar)> ''   
+ | |   |   |   |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id RX] <TensorType(int64, scalar)> ''   
+ | |   |   |   | |Shape_i{3} [id RY] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |GpuContiguous [id G] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | |TensorConstant{2} [id BG] <TensorType(int8, scalar)>
+ | |   |   |   | |Shape_i{3} [id RZ] <TensorType(int64, scalar)> ''   
+ | |   |   |   | | |GpuContiguous [id RI] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | |TensorConstant{1} [id BJ] <TensorType(int64, scalar)>
+ | |   |   |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   | |TensorConstant{1} [id BI] <TensorType(int8, scalar)>
+ | |   |   |   |Elemwise{gt,no_inplace} [id SA] <TensorType(bool, scalar)> ''   
+ | |   |   |     |Elemwise{Composite{(((i0 + (i1 * (Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5) - i6))) - Composite{(((i0 - i1) * i2) + i3)}(i2, i3, i4, i5)) + i7)}}[(0, 0)] [id RX] <TensorType(int64, scalar)> ''   
+ | |   |   |     |TensorConstant{0} [id Z] <TensorType(int8, scalar)>
+ | |   |   |GpuDnnConvDesc{border_mode='full', subsample=(1, 1), conv_mode='conv', precision='float32'} [id SB] <CDataType{cudnnConvolutionDescriptor_t}> ''   
+ | |   |   | |Shape [id SC] <TensorType(int64, vector)> ''   
+ | |   |   |   |GpuContiguous [id RI] <GpuArrayType<None>(float32, (False, False, False, False))> ''   
+ | |   |   |Constant{1.0} [id BS] <float32>
+ | |   |   |Constant{0.0} [id BT] <float32>
+ | |   |TensorConstant{(2,) of 1} [id OR] <TensorType(int64, vector)>
+ | |   |TensorConstant{(2,) of 1} [id OR] <TensorType(int64, vector)>
+ | |   |TensorConstant{(2,) of 0} [id BX] <TensorType(int64, vector)>
+ | |InplaceGpuDimShuffle{x,x,x,0} [id SD] <GpuArrayType<None>(float32, (True, True, True, False))> ''   
+ | | |<GpuArrayType<None>(float32, (False,))> [id SE] <GpuArrayType<None>(float32, (False,))>
+ | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ | |GpuArrayConstant{[[[[0]]]]} [id CA] <GpuArrayType<None>(int8, (True, True, True, True))>
+ |TensorConstant{[819200    320]} [id SF] <TensorType(int64, vector)>
+
+Storage map footprint:
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (32, 150, 160, 160), ElemSize: 4 Byte(s), TotalSize: 491520000 Byte(s)
+ - GpuElemwise{Composite{Switch(LT((i0 + i1), i2), i3, (i0 + i1))}}[(0, 0)]<gpuarray>.0, Shape: (32, 160, 160, 128), ElemSize: 4 Byte(s), TotalSize: 419430400 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (32, 100, 160, 160), ElemSize: 4 Byte(s), TotalSize: 327680000 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (32, 70, 160, 160), ElemSize: 4 Byte(s), TotalSize: 229376000 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (32, 70, 160, 160), ElemSize: 4 Byte(s), TotalSize: 229376000 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False))>, Shared Input, Shape: (1, 9830400), ElemSize: 4 Byte(s), TotalSize: 39321600 Byte(s)
+ - <GpuArrayType<None>(int32, (False,))>, Shared Input, Shape: (819200,), ElemSize: 4 Byte(s), TotalSize: 3276800 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (100, 150, 3, 3), ElemSize: 4 Byte(s), TotalSize: 540000 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (150, 100, 3, 3), ElemSize: 4 Byte(s), TotalSize: 540000 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (70, 50, 5, 5), ElemSize: 4 Byte(s), TotalSize: 350000 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (100, 70, 3, 3), ElemSize: 4 Byte(s), TotalSize: 252000 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (70, 100, 3, 3), ElemSize: 4 Byte(s), TotalSize: 252000 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (128, 440, 1, 1), ElemSize: 4 Byte(s), TotalSize: 225280 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (70, 70, 3, 3), ElemSize: 4 Byte(s), TotalSize: 176400 Byte(s)
+ - <GpuArrayType<None>(float32, (False, False, False, False))>, Shared Input, Shape: (50, 3, 5, 5), ElemSize: 4 Byte(s), TotalSize: 15000 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (150,), ElemSize: 4 Byte(s), TotalSize: 600 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (128,), ElemSize: 4 Byte(s), TotalSize: 512 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (100,), ElemSize: 4 Byte(s), TotalSize: 400 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (100,), ElemSize: 4 Byte(s), TotalSize: 400 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (70,), ElemSize: 4 Byte(s), TotalSize: 280 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (70,), ElemSize: 4 Byte(s), TotalSize: 280 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (70,), ElemSize: 4 Byte(s), TotalSize: 280 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (50,), ElemSize: 4 Byte(s), TotalSize: 200 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (31,), ElemSize: 4 Byte(s), TotalSize: 124 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (15,), ElemSize: 4 Byte(s), TotalSize: 60 Byte(s)
+ - TensorConstant{[ 32 320 320   3]}, Shape: (4,), ElemSize: 8 Byte(s), TotalSize: 32 Byte(s)
+ - TensorConstant{[ 32 100 160 160]}, Shape: (4,), ElemSize: 8 Byte(s), TotalSize: 32 Byte(s)
+ - TensorConstant{[ 32  70 160 160]}, Shape: (4,), ElemSize: 8 Byte(s), TotalSize: 32 Byte(s)
+ - TensorConstant{[ 32 150 160 160]}, Shape: (4,), ElemSize: 8 Byte(s), TotalSize: 32 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (7,), ElemSize: 4 Byte(s), TotalSize: 28 Byte(s)
+ - TensorConstant{[4800  160  160]}, Shape: (3,), ElemSize: 8 Byte(s), TotalSize: 24 Byte(s)
+ - TensorConstant{[3200  160  160]}, Shape: (3,), ElemSize: 8 Byte(s), TotalSize: 24 Byte(s)
+ - TensorConstant{[2240  160  160]}, Shape: (3,), ElemSize: 8 Byte(s), TotalSize: 24 Byte(s)
+ - TensorConstant{[819200    320]}, Shape: (2,), ElemSize: 8 Byte(s), TotalSize: 16 Byte(s)
+ - TensorConstant{(2,) of 1}, Shape: (2,), ElemSize: 8 Byte(s), TotalSize: 16 Byte(s)
+ - TensorConstant{(2,) of 0}, Shape: (2,), ElemSize: 8 Byte(s), TotalSize: 16 Byte(s)
+ - TensorConstant{(2,) of 2}, Shape: (2,), ElemSize: 8 Byte(s), TotalSize: 16 Byte(s)
+ - <GpuArrayType<None>(float32, (False,))>, Shared Input, Shape: (3,), ElemSize: 4 Byte(s), TotalSize: 12 Byte(s)
+ - TensorConstant{1}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{-7}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{-15}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{8}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{15}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{7}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{-3}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{3}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{9}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{4}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{1}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{160}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{16}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{-1}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{-2}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{2}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - Constant{0}, Shape: (), ElemSize: 8 Byte(s), TotalSize: 8.0 Byte(s)
+ - GpuArrayConstant{1.22070309772e-06}, Shape: (), ElemSize: 4 Byte(s), TotalSize: 4.0 Byte(s)
+ - Constant{1.0}, Shape: (), ElemSize: 4 Byte(s), TotalSize: 4.0 Byte(s)
+ - Constant{0.0}, Shape: (), ElemSize: 4 Byte(s), TotalSize: 4.0 Byte(s)
+ - GpuArrayConstant{[ 0.]}, Shape: (1,), ElemSize: 4 Byte(s), TotalSize: 4 Byte(s)
+ - TensorConstant{1}, Shape: (), ElemSize: 1 Byte(s), TotalSize: 1.0 Byte(s)
+ - TensorConstant{2}, Shape: (), ElemSize: 1 Byte(s), TotalSize: 1.0 Byte(s)
+ - TensorConstant{0}, Shape: (), ElemSize: 1 Byte(s), TotalSize: 1.0 Byte(s)
+ - TensorConstant{1}, Shape: (), ElemSize: 1 Byte(s), TotalSize: 1.0 Byte(s)
+ - GpuArrayConstant{[[[[0]]]]}, Shape: (1, 1, 1, 1), ElemSize: 1 Byte(s), TotalSize: 1 Byte(s)
+ TotalSize: 1742335077.0 Byte(s) 1.623 GB
+ TotalSize inputs: 1322904677.0 Byte(s) 1.232 GB
+
+HINT: Re-running with most Theano optimization disabled could give you a back-trace of when this node was created. This can be done with by setting the Theano flag 'optimizer=fast_compile'. If that does not work, Theano optimizations can be disabled with 'optimizer=None'.
+ 
+Job ended at Tue Feb 26 11:01:41 EST 2019
+ 

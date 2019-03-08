@@ -27,8 +27,7 @@ class Entry_stage:
     
     def __init__(self,para,res=0):
         self.para      = para
-        self.N         = para.N
-        self.res       = res
+        self.res       = res 
 
 
 
@@ -42,17 +41,17 @@ class Entry_stage:
         '''
         X_r = self.entry_threshold(info_flag,p_lambda, reserve) 
         
-        H_p = self.H_prob(X_r,info_flag)
+        H_p = self.H_prob(X_r,reserve,info_flag)
         if len(N_vector)>1:
-            prob_N = np.array(map(partial(self.P_n,p_lambda,H_p_v,info_flag),N_vector))
+            prob_N = np.array(map(partial(self.P_n,p_lambda,H_p,info_flag),N_vector))
         else:
             prob_N = self.P_n(p_lambda,H_p,info_flag,N_vector)
         
         return np.exp(prob_N)
-
+ 
     ## construct the prob for # of bidder 
-    def H_prob(self,X_r,info_flag):
-        mu     = self.para['comm_mu'] + self.para['beta']*np.log(self.res) + self.para['epsilon_mu ']* (1-info_flag)
+    def H_prob(self,X_r,reserve,info_flag):
+        mu     = self.para['comm_mu'] + self.para['beta']*np.log(reserve) + self.para['epsilon_mu']* (1-info_flag)
         sigma2 = self.para['comm_var'] + self.para['priv_var'] + self.para['epsilon_var'] 
 
         return 1 - norm.cdf(X_r,mu,sigma2)
@@ -75,12 +74,12 @@ class Entry_stage:
         given the X_r calculate the H_p
         given the H_p and data, calculate the likelihood of lambda 
         '''
-        X_r_v = np.array(map(partial(self.entry_threshold,info_flag,p_lambda),data['res_norm']))
+        X_r_v = np.array(list(map(partial(self.entry_threshold,info_flag,p_lambda),data['res_norm'])))
 
-        H_p_v = self.H_prob(X_r_v,info_flag)
+        H_p_v = self.H_prob(X_r_v,data['res_norm'],info_flag)
 
 
-        result=np.array(map(partial(self.P_n,p_lambda,H_p_v,info_flag),data['real_num_bidder']))
+        result=np.array(list(map(partial(self.P_n,p_lambda,H_p_v,info_flag),data['real_num_bidder'])))
         return  -np.sum(result)
 
  

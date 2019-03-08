@@ -210,7 +210,43 @@ def pre_data(Est_data,max_N=10):
     # Est_data=Est_data.reset_index(drop=True)
 #    Est_data=Est_data[Est_data['real_num_bidder']>=6]
     return Est_data[col_name]
-                
+
+def pre_data_stage1(Est_data,max_N=10,info_flag=0):
+    col_name=['ID', 'bidder_act', 'len_act', 'bidder_pos', 'bidder_state','bidder_price','ladder_norm',
+              'real_num_bidder','win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
+    # get rid of number of bidder = = 1
+    Est_data=Est_data[Est_data['num_bidder']>1]
+    Est_data=Est_data[Est_data['num_bidder']<=max_N]
+    Est_data=Est_data[Est_data['len_act']>2]
+
+    # double check
+    Est_data['real_num_bidder']= Est_data['bidder_state'].apply(lambda x: len(x))
+    Est_data=Est_data[Est_data['real_num_bidder']>1]
+    Est_data=Est_data[Est_data['real_num_bidder']<=max_N]
+    # get rid of priority people
+    Est_data=Est_data[Est_data['priority_people']==info_flag]
+    
+    
+    # normalize reservation price
+    Est_data['res_norm']=Est_data['reserve_price']/Est_data['evaluation_price']
+    Est_data = Est_data[np.isfinite(Est_data['res_norm'])]
+    Est_data=Est_data.dropna(subset=['res_norm'])
+    Est_data=Est_data[Est_data['res_norm'] >= 0.7]
+    # normalize the win bid
+    Est_data['win_norm']=Est_data['win_bid']/Est_data['reserve_price']
+    tail=Est_data['win_norm'].quantile(0.95)
+    Est_data=Est_data[Est_data['win_norm']<=tail]
+    # normalize bid ladder 
+    Est_data['ladder_norm']=Est_data['bid_ladder']/Est_data['evaluation_price']
+    
+    Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
+    Est_data['price_norm'] = Est_data['bidder_price']/Est_data['evaluation_price']
+    # delete the abnormal point
+    # Est_data=Est_data.reset_index(drop=True)
+    # Est_data=Est_data.drop(Est_data.index[537])
+    # Est_data=Est_data.reset_index(drop=True)
+#    Est_data=Est_data[Est_data['real_num_bidder']>=6]
+    return Est_data[col_name]
 
 
 def is_pos_def(Theta,N):
