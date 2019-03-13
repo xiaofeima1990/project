@@ -13,7 +13,7 @@ from functools import partial
 from collections import defaultdict,OrderedDict
 import time,datetime
 import numpy as np
-from Update_rule2 import Update_rule
+from Update_rule3 import Update_rule
 from ENV import ENV
 from Util import *
 import copy

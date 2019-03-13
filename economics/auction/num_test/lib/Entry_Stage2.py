@@ -15,7 +15,7 @@ import numpy as np
 from numpy.linalg import inv
 from scipy.stats import norm
 import warnings
-import math,copy
+import math,copy,time,datetime
 from scipy.optimize import minimize
 import scipy.stats as ss
 from Update_rule_simu import Update_rule
@@ -80,6 +80,15 @@ class Entry_stage:
 
 
         result=np.array(list(map(partial(self.P_n,p_lambda,H_p_v,info_flag),data['real_num_bidder'])))
+        print("current candidate lambda is  {}".format(p_lambda))
+
+        with open('hypothesis_test' + str(info_flag) +'.txt', 'a+') as f:
+            f.write("%f\t" % p_lambda)
+            f.write("%f\t" % min(X_r_v))
+            f.write("%f\t" % max(X_r_v))
+            
+            f.write("{0:.12f}\n".format(-np.sum(result)))
+
         return  -np.sum(result)
 
  
@@ -91,9 +100,15 @@ class Entry_stage:
         This is main function for calcuating the lambda 
  
         ''' 
-
+        now = datetime.datetime.now()
+        start_time=time.time()
+        print("start time at "+str(now.strftime("%Y-%m-%d %H:%M")))
         lambda_est=minimize(self.mle_func_lambda,5,args=(data,info_flag))
-
+        now = datetime.datetime.now()
+        end_time=time.time()
+        print("end time at "+str(now.strftime("%Y-%m-%d %H:%M")))
+        print("time spend : %f minutes "%((end_time-start_time)/60) )
+        print(lambda_est)
         return lambda_est.x
 
 

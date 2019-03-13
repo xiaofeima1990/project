@@ -49,7 +49,6 @@ if __name__ == '__main__':
     Est_data=pd.read_hdf(data_path+'est.h5',key='test_raw')
 
 
-
     
     stage_1=Entry_stage(Est_para_dict)
 
@@ -58,6 +57,8 @@ if __name__ == '__main__':
     info_flag = 0
     P_lambda  = 5
     max_N=10
+
+    print("start hypothesis testing!")
 
     Est_data=pre_data_stage1(Est_data,max_N,info_flag)
     # un_X_r = stage_1.entry_threshold(reserve,info_flag,P_lambda)

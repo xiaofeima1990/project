@@ -32,9 +32,9 @@ data_path= os.path.dirname(PATH) + '/data/Est/'
 
 import numpy as np
 import pandas as pd
-from Update_rule2 import Update_rule
+from Update_rule3 import Update_rule
 from Util import *
-from Est_parallel_HS import *
+from Est_parallel2 import *
 from ENV import ENV
 from scipy.optimize import minimize
 import copy ,time,datetime
@@ -185,7 +185,7 @@ if __name__ == '__main__':
             }
     
 
-    Theta=[0.01422,0.1,	0.053803,	0.0570,	0.12089]
+    Theta=[0.0222,0.1,	0.053803,	0.0570,	0.15089]
     start = time.time()
     now = datetime.datetime.now()
 

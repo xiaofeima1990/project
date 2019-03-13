@@ -136,8 +136,8 @@ class Update_rule:
         pre_MU    =self.MU.flatten()
         pre_SIGMA2=np.diag(self.SIGMA2)
 
+        x_drop=np.zeros(self.N)
         # Reorder p_k from second to last 
-        ord_ind1=np.argsort(p_low[1:])
         ord_ind2=np.argsort(p_low[1:])[::-1]
 
         ori_ind=ss.rankdata(p_low[1:])
@@ -155,9 +155,7 @@ class Update_rule:
         MU = MU.reshape(MU.size,1)
 
         # mu_k
-        x_drop=np.zeros(self.N)
-
-        # ---------------------------------------
+        
         mu_k = np.append(self.vi_mu, self.vi_rival_mu[ord_ind2])
         mu_k=mu_k.reshape(mu_k.size,1)
         
@@ -168,9 +166,6 @@ class Update_rule:
         
         Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
         
-        Sigma_inv = inv(self.SIGMA2)
-        # Sigma_inv_k1 = Sigma_inv[0:self.N,:] # N-1+1 all the rest of the 
-        MU        = self.MU
         AA_k = inv(Delta_k @ Sigma_inv.T) @ l_k
         temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
         temp_diag=temp_diag.reshape(temp_diag.size,1)
@@ -286,7 +281,6 @@ class Update_rule:
         x_j_lower = self.bound_simple(state_p)
         x_j_lower = x_j_lower.flatten()[1:]
 
-        # Constat part 
         Sigma_inv = inv(self.SIGMA2)
 
         # COV_xvi=np.append(self.vi_sigma2,np.ones(self.N-1)*self.comm_var) # old and possibly wrong implementation

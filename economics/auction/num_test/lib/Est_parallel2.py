@@ -13,7 +13,7 @@ from functools import partial
 from collections import defaultdict,OrderedDict
 import time,datetime
 import numpy as np
-from Update_rule2 import Update_rule
+from Update_rule3 import Update_rule
 from ENV import ENV
 from Util import *
 import copy
@@ -32,7 +32,7 @@ def map_E(N,h,state_p_l_bound,no_flag,Update_bid,x_signal):
     1 calcuate the expected value at each "round"
     for all bidders (active) as in Hong and Shum 2003
     This aims to do the smooth weighting simulation
-    2 construct the "m"
+    2 construct the "m" as in hong and shum 2003 (smooth objective function) (34)
     '''
     # calcualte the expected value at each "round"
     [E_post,E_value_list] = Update_bid.post_E_value(state_p_l_bound,no_flag,x_signal)
@@ -59,8 +59,6 @@ def map_E(N,h,state_p_l_bound,no_flag,Update_bid,x_signal):
     m_nominator = m_denominator * E_post[::-1]
 
     return [m_nominator,m_denominator]
-
-
 
 
 def para_fun_est(Theta,rng,xi_n,h,arg_data):
@@ -101,7 +99,7 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
     Update_bid.setup_para(i_id)
     
     # I think it is still the entry threshold not the final posting price as the lower bound
-    X_bar = Update_bid.bound(r*np.ones([1,N]))
+    X_bar = Update_bid.threshold_simple(r*np.ones([1,N]))
     # Why I need up, I do not need it 
     X_up = np.ones([1,N])*3
     x_signal=signal_DGP_est(para,rng,N,0,X_bar,X_up,xi_n)
