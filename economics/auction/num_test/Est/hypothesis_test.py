@@ -55,21 +55,22 @@ if __name__ == '__main__':
     # uninformed case reserve price can be random 
     # lambda determines the X_bar, so just do the MLE for lambda  
     info_flag = 0
-    P_lambda  = 5
+    P_lambda  = 5.5
     max_N=10
 
     print("start hypothesis testing!")
 
-    Est_data=pre_data_stage1(Est_data,max_N,info_flag)
-    # un_X_r = stage_1.entry_threshold(reserve,info_flag,P_lambda)
-    Est_data_can=Est_data[['res_norm','real_num_bidder']]
-    lambda_est = stage_1.MLE_lambda(Est_data_can,info_flag)
-    print("uninfo case: first attempt lambda is {}".format(lambda_est))
+    # Est_data=pre_data_stage1(Est_data,max_N,info_flag)
+    ##  un_X_r = stage_1.entry_threshold(reserve,info_flag,P_lambda)
+
+    # Est_data_can=Est_data[['res_norm','real_num_bidder']][:10]
+    # lambda_est = stage_1.MLE_lambda(Est_data_can,info_flag)
+    # print("uninfo case: first attempt lambda is {}".format(lambda_est))
 
     info_flag = 1
     Est_data=pre_data_stage1(Est_data,max_N,info_flag)
     # un_X_r = stage_1.entry_threshold(reserve,info_flag,P_lambda)
-    Est_data_can=Est_data[['res_norm','real_num_bidder']]
+    Est_data_can=Est_data[['res_norm','real_num_bidder']][:10]
     lambda_est = stage_1.MLE_lambda(Est_data_can,info_flag)
     print("info case: first attempt lambda is {}".format(lambda_est))
 

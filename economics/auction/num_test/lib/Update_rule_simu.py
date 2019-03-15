@@ -375,22 +375,22 @@ class Update_rule:
         k=0
         # mu 
         mu_k = np.append(self.vi_mu, self.vi_rival_mu)
-        mu_k = mu_k[0:self.N-k]
+        mu_k = mu_k[0:self.N]
         mu_k=mu_k.reshape(mu_k.size,1)
         # l
-        l_k  = np.ones((self.N-k,1))
+        l_k  = np.ones((self.N,1))
         # gamma
         Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
-        Gamma_k = Gamma_k[0:self.N-k]
+        Gamma_k = Gamma_k[0:self.N]
         Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
         
         # Delta
         Delta_k =self.vi_sigma2 * np.eye(self.N)+np.ones((self.N,self.N)) * self.comm_var - np.eye(self.N) * self.comm_var  
-        Delta_k=Delta_k[:,0:self.N-k].T
+        Delta_k=Delta_k[:,0:self.N].T
         
         # sigma_inv
         Sigma_inv = inv(self.SIGMA2)        
-        Sigma_inv_k1 = Sigma_inv[0:self.N-k,:]
+        Sigma_inv_k1 = Sigma_inv[0:self.N,:]
             
         # the main 
         # AA_k = inv(Delta_k @ Sigma_inv_k1.T) @ l_k
@@ -402,6 +402,8 @@ class Update_rule:
 
         drop_price=drop_price.flatten()  
         return drop_price
+
+    
 
     '''
     HS replication

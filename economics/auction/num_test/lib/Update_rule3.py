@@ -71,7 +71,7 @@ class Update_rule:
         
         # mu_k
         mu_k = np.append(self.vi_mu, self.vi_rival_mu)
-        mu_k=mu_k.reshape(mu_k.size,1)
+        mu_k = mu_k.reshape(mu_k.size,1)
         # l_k
         l_k  = np.ones((self.N,1))
         # gamma_k
