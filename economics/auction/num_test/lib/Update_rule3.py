@@ -1,22 +1,34 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Feb 06 14:28:00 2019
+Created on Thu Mar 19 08:28:00 2019
 
 @author: xiaofeima
 
-Use a new bidding function scripts to do the estimation
+use the new method I figured out to do the calculation
+
+lower bound: 
+start from lowest bidding price 
+
+upper bound
+start from highest bidding price 
+
+use the range of support to get trucated moment / truncated normal
+
+calculate the moment inequality ? OR do MLE for trucated normal
+
+(In the new Algorithm I do not even need the threshold)
 
 """
 
 
 import numpy as np
 from numpy.linalg import inv
-from scipy.stats import norm
+from scipy.stats import norm,truncnorm
 import warnings
 import math,copy
 from scipy.optimize import minimize
 import scipy.stats as ss
-
+from numpy import linalg as LA
 
 
 
@@ -92,64 +104,6 @@ class Update_rule:
         return x_drop
 
 
-    def threshold(self, p_low):
-        '''
-        Calculate the entry threshold for the auction given the reserve price 
-        ??
-        wait the modificiation for the informed case 
-        ??
-
-        '''
-
-        ## all the rivals bidding price is known
-        ## I have to re order the p_low for correct calculation 
-        ## since under symmetric case, I do not need to worry about the varicne order
-        
-        p_k=np.sort(p_low)
-        p_k=p_low.reshape(p_k.size,1)
-        # mu_k
-        x_drop=np.zeros(self.N)
-        Sigma_inv = inv(self.SIGMA2)
-        MU = self.MU
-        for k in range(self.N):
-            
-            mu_k = np.append(self.vi_mu, self.vi_rival_mu)
-            mu_k = mu_k[0:self.N-k]
-            mu_k = mu_k.reshape(mu_k.size,1)
-            
-            l_k  = np.ones((self.N-k,1))
-            
-            Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
-            Gamma_k = Gamma_k[0:self.N-k]
-            Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
-            
-            
-            Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2)-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
-            Delta_k=Delta_k[:,0:self.N-k].T
-            
-            
-            Sigma_inv_k1 = Sigma_inv[0:self.N-k,:] # N-1+1 all the rest of the 
-
-
-            AA_k = inv(Delta_k @ Sigma_inv_k1.T) @ l_k
-            temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
-            temp_diag=temp_diag.reshape(temp_diag.size,1)
-            
-            CC_k = 0.5*inv(Delta_k @ Sigma_inv_k1.T) @ (Gamma_k - temp_diag + 2*mu_k -2* Delta_k @ Sigma_inv @ MU)
-
-            
-            if k>0:
-                Sigma_inv_k2 = Sigma_inv[self.N-k:,:]
-                DD_k = inv(Delta_k @ (Sigma_inv_k1.T)) @ (Delta_k @ (Sigma_inv_k2.T))
-                x_d = x_drop[self.N-k:]
-            else:
-                DD_k = np.zeros([1,1])
-                x_d = 0
-            x_drop[self.N-k-1] = AA_k[-1]*np.log(p_k[self.N-k-1]) - np.dot( DD_k[-1,:],  x_d) - CC_k[-1]
-        
-        return x_drop.reshape(1,x_drop.size)
-
-
     def get_lower_p_bound(self, x_s):
         '''
         from X to P, use x to calculate the Price
@@ -209,7 +163,7 @@ class Update_rule:
         # highest to lowest
         ord_ind2=np.argsort(p_low)[::-1]
         
-        ori_ind=ss.rankdata(p_low)
+        ori_ind=ss.rankdata(p_low,method='ordinal')
         ori_ind=ori_ind-1
         ori_ind=ori_ind.astype(int)
 
@@ -257,8 +211,8 @@ class Update_rule:
             x_d = np.append(x_drop[(self.N-1)-k-1],x_d)
 
         x_drop=x_drop[::-1][ori_ind]
-        return x_drop.reshape(1,x_drop.size)
-
+        return [x_drop.reshape(1,x_drop.size),ord_ind2,ori_ind]
+ 
     def u_bound_xj(self,p_up,p_low):
         '''
         upper bound for private signal from the bidding price
@@ -271,7 +225,7 @@ class Update_rule:
         # highest to lowest 
         ord_ind2=np.argsort(p_low)[::-1]
         
-        ori_ind=ss.rankdata(p_low)
+        ori_ind=ss.rankdata(p_low,method="ordinal")
         ori_ind=ori_ind-1
         ori_ind=ori_ind.astype(int)
 
@@ -306,7 +260,7 @@ class Update_rule:
         # recover the order of the sequence 
         x_drop=np.append(x_drop[0],x_drop[1:][::-1][ori_ind])
 
-        return x_drop[1:]
+        return [x_drop[1:],ord_ind2,ori_ind]
 
 
     def real_bid_calc_new(self,ord_id):
@@ -362,39 +316,141 @@ class Update_rule:
         exp_value= AA_i*xi_v + E_j + E_const 
         return np.exp(exp_value)
 
-
-    def post_E_value(self,state_p_l_bound,no_flag,xi_v):
+    def low_x_recover(self,state_p_log,i_p_log,no_flag,ladder,i_id,low_support):
         '''
-        calculate the expected value from the first "round" to last "round"
-
-        no_flag means if there is no bid from one bidder, we do not count that bidder
+        given the previous bidding history, we can use bidder i's current bidding 
+        price to recover bidder i's lower bound 
         '''
-        E_post=np.array([])
-        E_value_list=[]
+
+        self.setup_para(i_id)
+        # Pure_value, bid_price, AA_i -> only in log form
+        # I have to go back to normal price
+        [E_const,AA_i,AA_j]=self.real_bid_calc_new(i_id)
+
+        [x_j_lower,ord_ind2,ori_ind] = self.l_bound_xj(state_p_log)
+        x_j_lower = x_j_lower.flatten()
+        x_j_lower = x_j_lower[ord_ind2]
+        low_support = low_support[::-1]
+        # update for lower support derived from last 
+        x_j_lower[self.N-1-i_id:] = low_support[self.N-1-i_id:]
+        x_j_lower = x_j_lower[::-1][ori_ind]
+        # upper bound
+        i_p_v=np.log(np.exp(i_p_log)+ladder)*np.ones(state_p_log.size+1)
+        [x_j_upper,ord_ind2,ori_ind] = self.u_bound_xj(i_p_v,state_p_log)
+        x_j_upper = x_j_upper.flatten()
+        # The learning effect
+        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper) * AA_j
+        E_j = np.sum(E_j.flatten() * (1-no_flag) )
+
+        # 
+        xi_low = (i_p_log - E_j - E_const)/AA_i 
+        return xi_low
+
+
+    def upper_x_recover(self,state_p_log,p_up,no_flag,ladder,i_id,low_support,upper_support):
+        '''
+        given the bidding history and upper price, we recover the upper bound of the private 
+        signal
+        '''
+
+        self.setup_para(i_id)
+        # Pure_value, bid_price, AA_i -> only in log form
+        # I have to go back to normal price
+        [E_const,AA_i,AA_j]=self.real_bid_calc_new(i_id)
+
+        # X_j is from highest to lowest
+        # update for lower support derived from last loop
+        [x_j_lower,ord_ind2,ori_ind] = self.l_bound_xj(state_p_log)
+        x_j_lower = x_j_lower.flatten()
+        x_j_lower = low_support[::-1].flatten()
+        x_j_lower = x_j_lower[::-1][ori_ind]
+        # upper bound
+        i_p_v=np.log(np.exp(p_up)+ladder)*np.ones(state_p_log.size+1)
+        [x_j_upper,ord_ind2,ori_ind] = self.u_bound_xj(i_p_v,state_p_log)
+        # reorder from highest to lowest 
+        x_j_upper = x_j_upper.flatten()
+        x_j_upper = x_j_upper[ord_ind2]
+        # replace/update for upper support derived from last loop
+        upper_support=upper_support[::-1]  
+        x_j_upper[:self.N-1-i_id]= upper_support[:self.N-1-i_id]
+        x_j_upper = x_j_upper[::-1][ori_ind]
+        
+
+        # The learning effect
+        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper) * AA_j
+        E_j = np.sum(E_j.flatten())
+
+        # 
+        xi_up = (np.log(np.exp(p_up) + ladder)- E_j - E_const)/AA_i 
+        return xi_up
+
+    def support_x(self,state_p_l_bound,bid_post_log,no_flag,ladder):
+        '''
+        get the lower and upper bound support of xi from all the moment inequalities 
+        most important function
+        '''
+        low_support  = np.zeros(self.N)
+        high_support = np.zeros(self.N)
+
+        # lower support
         for k in range(0,self.N): # number of "round"
-            # deal with the bidding state 
             temp_state = state_p_l_bound[self.N-1 -k,: ]
             no_flag_temp = no_flag[self.N-1 -k,:]
-            temp_E_value=[]            
-            for i in range(0,self.N-k): # the "remaining bidder"
-                # operate the bidding history
-                temp_state_i = copy.deepcopy(temp_state)
-                i_p=temp_state_i[i]
-                temp_state_i = np.delete(temp_state_i,i)
-                no_flag_temp_i = np.delete(no_flag_temp,i)
+            temp_state_i = copy.deepcopy(temp_state)
+            temp_state_i = np.delete(temp_state_i,self.N-1 -k)
+            no_flag_temp_i = np.delete(no_flag_temp,self.N-1 -k)
+            i_p=bid_post_log[self.N-1 -k]
+            temp_low=np.delete(low_support,k)
+            low_support[k]=self.low_x_recover(temp_state_i,i_p,no_flag_temp_i,ladder,k,temp_low)
 
-                E_value_i=self.bid_vector1(xi_v[i],temp_state_i,i_p,no_flag_temp_i,i)
-                E_value_i=E_value_i.flatten()
-                # save the expected highest posting expectection for that round
-                if i == self.N-k-1:
-                    E_post=np.append(E_post,E_value_i)
-                else:
-                    # save all the remaining bidders except for last one
-                    temp_E_value.append(E_value_i)
-            if k < self.N-1:
-                E_value_list.append(temp_E_value)
+        # higher support 
+        p_up= max(bid_post_log)
+        high_support[-1] = np.log(10)
+        if self.N >2:
+            high_support[-2] = low_support[-2]+ladder/10000
+            N_start=self.N-2-1
+        else:
+            N_start=self.N-1-1
+        for kk in range(N_start,-1,-1):
+            temp_state   = state_p_l_bound[self.N-1-kk,:]
+            no_flag_temp = no_flag[self.N-1- kk,:]
+            temp_state_i = copy.deepcopy(temp_state)
+            temp_state_i   = np.delete(temp_state_i,self.N-1-kk)
+            no_flag_temp_i = np.delete(no_flag_temp,self.N-1-kk)
+            temp_low = np.delete(low_support,kk)
+            temp_upp = np.delete(high_support,kk)
+            high_support[kk]=self.upper_x_recover(temp_state_i,p_up,no_flag_temp_i,ladder,kk,temp_low,temp_upp)
+        
+        return [low_support.reshape(low_support.size,1),high_support.reshape(high_support.size,1)]
 
-        return  [E_post,E_value_list]   
+
+    def prob_X_trunc(self,low_support,high_support,threshold):
+        '''
+        highly incorrect!!!
+        '''
+        self.setup_para(0)
+
+        SIGMA2   =self.SIGMA2
+    
+        # use scipy to comput the square root of Sigma
+        [D,V]=LA.eig(SIGMA2)
+        D_root = D**0.5
+        inv_D  =  D_root**(-1)
+        Sigma_inv = V @ np.diag(inv_D) @ LA.inv(V)
+        Sigma_inv=Sigma_inv.real
+        a=Sigma_inv@( threshold.reshape([self.N,1]) - self.MU.reshape([self.N,1]) )
+        b=10*np.ones([self.N,1]) 
+        
+        
+        prob_up   = truncnorm.cdf(high_support,a,b)
+        prob_down = truncnorm.cdf(low_support,a,b)
+
+        prob      = np.log(prob_up - prob_down)
+
+        return np.sum(prob)
+        
+
+
 
     '''
     HS replication

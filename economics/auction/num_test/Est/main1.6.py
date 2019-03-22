@@ -31,7 +31,7 @@ data_path= os.path.dirname(PATH) + '/data/Est/'
 import numpy as np
 import pandas as pd
 from simu import Simu,data_struct
-from Update_rule2 import Update_rule
+from Update_rule3 import Update_rule
 from Est_parallel2 import *
 from Util import *
 from ENV import ENV
@@ -44,11 +44,13 @@ from scipy.stats import norm
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor,ProcessPoolExecutor
 import threading
+from functools import partial
 from contextlib import contextmanager
 import pickle as pk
-import quantecon  as qe
+# import quantecon  as qe
 from numpy import linalg as LA
-
+import warnings
+warnings.filterwarnings("always")
 
 
 
@@ -121,27 +123,26 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
 
     data_n=len(DATA_STRUCT)
     
-    num_works = 4
+    num_works = 1
     work_pool = ThreadPoolExecutor(max_workers=num_works)
     
     # reorganize the data
     DATA_STRUCT_c = balance_data_est(DATA_STRUCT,num_works)
     
     cpu_num=multiprocessing.cpu_count()
+    print("num of cpu is "+str(cpu_num))
     cpu_num_node=int((cpu_num-num_works)/num_works)
     
     auction_list=[]
     # balance each work pool tasks: 
     # make data similar rather than sequencially run # 3, 4, 5, 6, 7, ...
     
-
-    for Data_Struct in DATA_STRUCT_c:
-     
-
-        auction_list.append(work_pool.submit(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct,xi_n),Data_Struct).result())
-    
-    
-    auction_result=np.nanmean(auction_list)
+    if num_works ==1 :
+        auction_result=work_pool.submit(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct,xi_n),DATA_STRUCT_c).result()
+    else:
+        for Data_Struct in DATA_STRUCT_c:
+            auction_list.append(work_pool.submit(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct,xi_n),Data_Struct).result())    
+        auction_result=np.nanmean(auction_list)
     
     end = time.time()
     
@@ -209,12 +210,12 @@ if __name__ == '__main__':
 
     # Est_data=pd.read_hdf('G:/auction/clean/est.h5',key='test_raw')
     Est_data=pd.read_hdf(data_path+'est.h5',key='test_raw')
-
+    print("OK")
     Est_data=pre_data(Est_data)
     # set up the hyper parameters
     rng_seed=1234
     max_N = 10
-    JJ    = 10000
+    JJ    = 5000
     
     d_struct={
             'rng_seed':rng_seed,
@@ -231,7 +232,7 @@ if __name__ == '__main__':
     #     "epsilon_var":0.4,
     #     }
 
-    Theta=[0.0051,0.1,	0.014783,	0.011028,	0.05361]
+    Theta=[0.008128,	1.124905,	0.173707,	0.001357,	0.137546]
     
     start = time.time()
     now = datetime.datetime.now()
@@ -241,7 +242,7 @@ if __name__ == '__main__':
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")
     
-    res = minimize(GMM_Ineq_parall, Theta, method='Nelder-Mead',args=(Est_data,d_struct,xi_n),bounds=bnds) 
+    res = minimize(GMM_Ineq_parall, Theta, method='Nelder-Mead',args=(Est_data,d_struct,xi_n)) 
     
     print("------------------------------------------------------------------")
     now = datetime.datetime.now()

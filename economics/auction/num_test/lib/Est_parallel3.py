@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thur Feb 7 10:35:22 2019
+Created on Thur Mar 21 08:35:22 2019
 
 @author: mgxgl
 save the parallel running function
@@ -13,7 +13,7 @@ from functools import partial
 from collections import defaultdict,OrderedDict
 import time,datetime
 import numpy as np
-from Update_rule2 import Update_rule
+from Update_rule3 import Update_rule
 from ENV import ENV
 from Util import *
 import copy
@@ -27,38 +27,16 @@ def list_duplicates(seq):
     return ((key,locs) for key,locs in tally.items() if len(locs)>=1)
 
 
-def map_E(N,h,state_p_l_bound,no_flag,Update_bid,x_signal):
+def cal_Prob(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     '''
-    1 calcuate the expected value at each "round"
-    for all bidders (active) as in Hong and Shum 2003
-    This aims to do the smooth weighting simulation
-    2 construct the "m" as in hong and shum 2003 (smooth objective function) (34)
+    # calculate the X range support 
     '''
     # calcualte the expected value at each "round"
-    [E_post,E_value_list] = Update_bid.post_E_value(state_p_l_bound,no_flag,x_signal)
+    [low_support,high_support] = Update_bid.support_x(state_p_log,bid_post_log,no_flag,ladder)
 
-    # construct m in (35) Hong and Shum 2003
-    # m denominator
-    phi_v=np.array([])
-    for kk in range(N-1):
-        # loop from round k =0 to N-2 
-        
-        # consider the remaining bidder from 0 (highest) to N-kk -1 
-        p_k   = E_post[kk]
-        p_k_j = E_value_list[kk]
+    log_Prob=Update_bid.prob_X_trunc(low_support,high_support,threshold)
 
-        diff  = (p_k_j - p_k )/h
-
-        phi     = norm.cdf(diff)
-        phi_v   = np.append(np.prod(phi),phi_v)
-      
-    m_denominator = np.prod(phi_v)
-    
-    # m nominator from last round to the first round 
-    # I have to match with the upper and lower bound 
-    m_nominator = m_denominator * E_post[::-1]
-
-    return [m_nominator,m_denominator]
+    return log_Prob
 
 
 def para_fun_est(Theta,rng,xi_n,h,arg_data):
@@ -100,19 +78,11 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
     
     # I think it is still the entry threshold not the final posting price as the lower bound
     X_bar = Update_bid.threshold_simple(r*np.ones([1,N]))
-    # Why I need up, I do not need it 
-    X_up = np.ones([1,N])*3
-    x_signal=signal_DGP_est(para,rng,N,0,X_bar,X_up,xi_n)
-    if x_signal.shape[0]<15:
-        print("t is {}".format(tt) )
-        return 100000
 
 
     price_v=np.append(price_v,np.linspace(1,4,4)*ladder+price_v[-1])
-    # construct price vector for the posting price
-    post_price  = price_v[data_state[ord_index]]
 
-    # now I need to calculate empirical integ 
+    # time spend
     # start = time.time()
 
     # re-order each bidder's bidding history
@@ -122,6 +92,7 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
     low_state=np.zeros((N,N))
 
     # get the bidder's lower bound state for calculation
+    # N * N diag is the bidder's own previous bidding
     for i in range(0,N):
         temp_s=[]
         for j in range(0,N):
@@ -149,32 +120,8 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
         low_state[i,:] = temp_s
     low_state=low_state.astype(int)
     no_flag=(low_state<1)*1
-    state_p_l_bound= price_v[low_state]
-    # 1 calculate the complicated expected value at each "round" for all remaining bidders
-    map_func=partial(map_E,N,h,np.log(state_p_l_bound),no_flag,Update_bid)
-    m_k_s=list(map(map_func,x_signal))
-    m_k_s_1 = np.array([x[0] for x in m_k_s])
-    m_k_s_2 = np.array([x[1] for x in m_k_s])
-
-    # take mean for m_k_s_1 and m_k_s_2 to calculate the m_k
-    de_PT = np.mean(m_k_s_2)
-    mk_v = np.mean(m_k_s_1,axis=0)
-    
-    # lower bound and upper bound 
-    low_bound   = price_v[data_state[ord_index]]
-    up_bound    = low_bound[0]*np.ones(N)
-
-    # personally I think if I multiply de_PT, the objective function would be very small
-    # 
-    low_1     =  low_bound  - mk_v/de_PT
-    high_1    =  up_bound   - mk_v/de_PT
-    low_sum = np.square((low_1>0)*1*low_1)
-    high_sum = np.square((high_1<0)*1*high_1)
-    high_sum[0]=0
-    # low_sum[1] =low_sum[1]*N 
-    # high_sum[1] = high_sum[1] *N  
-    # sum_value = np.sum(low_sum)/(2*N)+np.sum(high_sum)/(2*N)
-    sum_value = np.nansum(low_sum) + np.nansum(high_sum)
-    sum_value =sum_value/0.01
-    return sum_value
+    state_p_history= price_v[low_state]
+    # calculate the MLE
+    log_prob=cal_Prob(np.log(state_p_history),np.log(price_v[bid_v]),no_flag,Update_bid,X_bar,ladder)
+    return -log_prob
  

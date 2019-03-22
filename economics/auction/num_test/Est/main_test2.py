@@ -11,7 +11,6 @@ main test for data estimation
 import os 
 import sys
 
-
 #sys.path.append('/storage/work/g/gum27/system/pkg/')
 
 '''
@@ -34,7 +33,7 @@ import numpy as np
 import pandas as pd
 from Update_rule3 import Update_rule
 from Util import *
-from Est_parallel2 import *
+from Est_parallel3 import *
 from ENV import ENV
 from scipy.optimize import minimize
 import copy ,time,datetime
@@ -47,11 +46,7 @@ import multiprocessing
 from functools import partial
 from contextlib import contextmanager
 import pickle as pk
-import quantecon  as qe
 from numpy import linalg as LA
-
-
-
 
 
 Simu_para_dict={
@@ -69,11 +64,6 @@ def list_duplicates(seq):
     for i,item in enumerate(seq):
         tally[item].append(i)
     return ((key,locs) for key,locs in tally.items() if len(locs)>=1)
-   
-
-
-
-
 
 
 def GMM_Ineq(Theta0,Est_data,d_struct,xi_n):
@@ -88,9 +78,7 @@ def GMM_Ineq(Theta0,Est_data,d_struct,xi_n):
 
     rng=np.random.RandomState(d_struct['rng_seed'])
     
-
     start = time.time()
-    
     
     print('--------------------------------------------------------')
     print('current parameter set are :')

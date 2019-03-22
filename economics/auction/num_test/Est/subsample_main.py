@@ -25,7 +25,7 @@ data_path= os.path.dirname(PATH) + '/data/Est/'
 
 import numpy as np
 import pandas as pd
-from Update_rule2 import Update_rule
+from Update_rule3 import Update_rule
 from Util import *
 from Est_parallel2 import *
 from ENV import ENV
@@ -43,7 +43,6 @@ from numpy import linalg as LA
 
 Pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
 
-
 @contextmanager
 def poolcontext(*args, **kwargs):
     pool = multiprocessing.Pool(*args, **kwargs)
@@ -51,12 +50,13 @@ def poolcontext(*args, **kwargs):
     pool.terminate()
 
 
-def subsample_data(Est_data,size=300):
+def subsample_data(Est_data,seed_i,size=300):
+    np.random.seed(seed_i*10+12321)
     return Est_data.loc[np.random.choice(Est_data.index, size, replace=False),]
 
 
 def parallel_work(Est_data,Theta,xi_n,d_struct):
-    num_works = 5
+    num_works = 1
     work_pool = ThreadPoolExecutor(max_workers=num_works)
     
     cpu_num=multiprocessing.cpu_count()
@@ -67,10 +67,10 @@ def parallel_work(Est_data,Theta,xi_n,d_struct):
     # make data similar rather than sequencially run # 3, 4, 5, 6, 7, ...
     start = time.time()
     now = datetime.datetime.now()
-    for i in range(5):
-        est_data_sub=subsample_data(est_data,int(len(est_data)/4))
+    
+    est_data_sub=subsample_data(est_data,d_struct['seed'],int(len(est_data)/4))
 
-        auction_list.append(work_pool.submit(partial(Opt_min,Theta,d_struct,xi_n,cpu_num_node,i),est_data_sub).result())
+    results=work_pool.submit(partial(Opt_min,Theta,d_struct,xi_n,cpu_num_node,d_struct['seed']),est_data_sub).result()
     
     end = time.time()
     print('total time consuming for subsampling is {}'.format((end-start)/60))
@@ -108,6 +108,16 @@ def GMM_Ineq(Theta0,Data_struct,d_struct,xi_n,cpu_num,i_subsample):
     "epsilon_var":Theta0[4],
     }
 
+    if Theta['priv_var'] <=0 or Theta['epsilon_var']<=0 or Theta['comm_var']<=0 :
+    	print('variance can not be negative')
+    	return 10000
+    if Theta['epsilon_var'] >1 or Theta['comm_var'] > 1:
+        print('variance can not be larger than 1')
+        return 10000
+
+
+
+
     rng=np.random.RandomState(d_struct['rng_seed'])
     
     start = time.time()
@@ -115,8 +125,8 @@ def GMM_Ineq(Theta0,Data_struct,d_struct,xi_n,cpu_num,i_subsample):
     print('current parameter set are :')
     print(Theta)
 
-    TT=Data_struct.shape[0]    
-    print("total data size is {}".format(TT))
+    TT,_=Data_struct.shape    
+    
     try:
         func=partial(para_fun_est,Theta,rng,xi_n,d_struct['h'])
 
@@ -172,10 +182,11 @@ if __name__ == '__main__':
             'rng_seed':rng_seed,
             "max_N":max_N,
             'h':0.05,
+            'seed': 3,
             }
     
 
-    Theta=[0.001422,0.8,0.033803,0.0170,0.09089] 
+    Theta=[0.002842,	1.108298,	0.174076,	0.001235,	0.218908] 
     xi_n =rng_generate(np.random.RandomState(rng_seed),JJ,max_N)
 
     parallel_work(est_data,Theta,xi_n,d_struct)

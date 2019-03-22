@@ -20,7 +20,7 @@ import scipy.linalg as LAA
 from functools import partial
 from scipy.stats import norm,truncnorm
 import pickle as pk
-import quantecon  as qe
+#  import quantecon  as qe
 from numpy import linalg as LA
 
 # I need to make sure descending order 
@@ -204,11 +204,8 @@ def pre_data(Est_data,max_N=10):
     
     Est_data['bidder_price']=Est_data['bidder_price'].apply(lambda x: np.array(x) )
     Est_data['price_norm'] = Est_data['bidder_price']/Est_data['evaluation_price']
-    # delete the abnormal point
-    # Est_data=Est_data.reset_index(drop=True)
-    # Est_data=Est_data.drop(Est_data.index[537])
-    # Est_data=Est_data.reset_index(drop=True)
-#    Est_data=Est_data[Est_data['real_num_bidder']>=6]
+
+    Est_data=Est_data[Est_data['real_num_bidder']>4]
     return Est_data[col_name]
 
 def pre_data_stage1(Est_data,max_N=10,info_flag=0):
