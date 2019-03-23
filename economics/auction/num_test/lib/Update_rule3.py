@@ -289,33 +289,6 @@ class Update_rule:
         return [E_const.flatten(),AA_i.flatten(),AA_j.flatten()]
 
 
-    def bid_vector1(self,xi_v,state_p,i_p,no_flag,i_id):
-        '''
-        xi_v vectors for xi private signal
-        state_p normalized bidding price under the coresponding bidding history
-        i_id the ordered identiy of the bidders
-        '''
-
-        # doe not need to count the x signal criterion
-        self.setup_para(i_id)
-        # Pure_value, bid_price, AA_i -> only in log form
-        # I have to go back to normal price
-        [E_const,AA_i,AA_j]=self.real_bid_calc_new(i_id)
-        # ladder=np.log(price_v[-1]) - np.log(price_v[-2])
-        xi_v = xi_v.flatten()
-        # state_p is just the rival part N-1 length
-        # lower bound 
-        x_j_lower = self.l_bound_xj(state_p)
-        # upper bound
-        i_p_v=i_p*np.ones(state_p.size+1)
-        x_j_upper = self.u_bound_xj(i_p_v,state_p)
-        # The learning effect
-        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper) * AA_j
-        E_j = np.sum(E_j.flatten() * (1-no_flag) )
-        # updated expected value
-        exp_value= AA_i*xi_v + E_j + E_const 
-        return np.exp(exp_value)
-
     def low_x_recover(self,state_p_log,i_p_log,no_flag,ladder,i_id,low_support):
         '''
         given the previous bidding history, we can use bidder i's current bidding 
@@ -424,31 +397,104 @@ class Update_rule:
         return [low_support.reshape(low_support.size,1),high_support.reshape(high_support.size,1)]
 
 
-    def prob_X_trunc(self,low_support,high_support,threshold):
+    def prob_X_trunc(self,low_support,high_support,threshold,x_v,w_v):
         '''
         highly incorrect!!!
         '''
         self.setup_para(0)
 
-        SIGMA2   =self.SIGMA2
-    
-        # use scipy to comput the square root of Sigma
-        [D,V]=LA.eig(SIGMA2)
-        D_root = D**0.5
-        inv_D  =  D_root**(-1)
-        Sigma_inv = V @ np.diag(inv_D) @ LA.inv(V)
-        Sigma_inv=Sigma_inv.real
-        a=Sigma_inv@( threshold.reshape([self.N,1]) - self.MU.reshape([self.N,1]) )
-        b=10*np.ones([self.N,1]) 
-        
-        
-        prob_up   = truncnorm.cdf(high_support,a,b)
-        prob_down = truncnorm.cdf(low_support,a,b)
+        denoimator   = np.sum(w_v)
+        low_support  = low_support.reshape(self.N,low_support.size/self.N)
+        high_support = high_support.reshape(self.N,high_support.size/self.N)
+        x_flag1      = x_v >= low_support
+        x_flag2      = x_v <= high_support
 
-        prob      = np.log(prob_up - prob_down)
-
-        return np.sum(prob)
+        check_flag_v1=np.prod(x_flag1, axis=0)
+        check_flag_v2=np.prod(x_flag2, axis=0)
+        check_flag_v1=check_flag_v1*check_flag_v2
         
+        noimator     = np.sum(check_flag_v1*w_v)
+
+        log_Prob = np.log(noimator/denoimator)
+
+        return log_Prob
+        
+
+    def GHK_simulator(self, low_bound,up_bound,mode_flag=0,S=3000):
+        '''
+        applying GHK method to generate the multivariate truncated normal distribution
+        '''
+        self.setup_para(0)
+        np.random.seed(114499)
+ 
+
+        # Cholesky factorization the Sigma
+
+        down_ch_sigma=LA.cholesky(self.SIGMA2)
+        MU=self.MU
+
+        a = np.zeros(self.N)
+        b = np.ones(self.N)
+        # calculate the region for the truncation
+        if mode_flag==0 or mode_flag==2:
+            for i in range(0,self.N):
+                temp_mu=MU[i]
+                for j in range(0,i):
+                    temp_mu += MU[j]*down_ch_sigma[i,j]
+
+                a[i]=(low_bound[i]-temp_mu)/down_ch_sigma[i,i]
+                
+        elif mode_flag==1 or mode_flag==2:
+            for i in range(0,self.N):
+                temp_mu=MU[i]
+                for j in range(0,i):
+                    temp_mu += MU[j]*down_ch_sigma[i,j]
+
+                b[i]=(up_bound[i]-temp_mu)/down_ch_sigma[i,i]
+
+        # get the lower and upper bounds and generate the rng from uniformat
+        # u ~ U[Phi(a),Phi(b)]
+        SS=S+self.N*1500
+        Phi_a=norm.cdf(a)
+        Phi_b=norm.cdf(b)
+        # standard normal
+        U_v=np.random.uniform(Phi_a,Phi_b,[SS,self.N])
+        # x_v 
+        x_v=MU+down_ch_sigma@norm.ppf(U_v.T)
+        # weights of SS
+        w_a=np.zeros([self.N,SS])
+        w_b=np.zeros([self.N,SS])
+        w_v=np.ones([1,SS])
+        if mode_flag==0 :
+            for i in range(0,self.N):
+                temp_mu=MU[i]
+                for j in range(0,i):
+                    temp_mu += down_ch_sigma[i,j]*U_v[j,:]
+
+                w_a =  (low_bound[i]-temp_mu)/down_ch_sigma[i,i]
+                w_v *= (1-w_a)
+
+                
+        elif mode_flag==1 :
+            for i in range(0,self.N):
+                temp_mu=MU[i]
+                for j in range(0,i):
+                    temp_mu += down_ch_sigma[i,j]*U_v[j,:]
+        
+                w_b =  (up_bound[i]-temp_mu)/down_ch_sigma[i,i]
+                w_v *= (w_b-0)
+
+        else:
+            for i in range(self.N):
+                temp_mu=MU[i]
+                for j in range(0,i):
+                    temp_mu += down_ch_sigma[i,j]*U_v[j,:]
+
+                w_b =  (up_bound[i]-temp_mu)/down_ch_sigma[i,i]
+                w_a =  (low_bound[i]-temp_mu)/down_ch_sigma[i,i]
+                w_v *= (w_b-w_a)
+
+        return [x_v,U_v,w_v]
 
 
 
@@ -460,6 +506,7 @@ class Update_rule:
         '''
         use HS system of equations to recover the price. we know the private signal
         '''
+
 
 
         # signal

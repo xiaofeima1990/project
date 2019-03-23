@@ -32,9 +32,10 @@ def cal_Prob(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     # calculate the X range support 
     '''
     # calcualte the expected value at each "round"
+    [x_v,U_v,w_v]              = Update_bid.GHK_simulator(threshold,10,0)
     [low_support,high_support] = Update_bid.support_x(state_p_log,bid_post_log,no_flag,ladder)
 
-    log_Prob=Update_bid.prob_X_trunc(low_support,high_support,threshold)
+    log_Prob                   = Update_bid.prob_X_trunc(low_support,high_support,threshold,x_v,w_v)
 
     return log_Prob
 
