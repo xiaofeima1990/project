@@ -151,16 +151,15 @@ class Update_rule:
         return drop_price_l_bound
             
 
-    def l_bound_xj_1(self, p_low):
+    def l_bound_xj_1(self,p_low,p_i,k,low_support):
         '''
         lower bound for private signal from bidding price
+        k : the order of the bidding price the higher the small
+            k=N-1 winner k=0 first to drop
         '''
-        # still I have to calculate the signal recurisively
-        # partial finished the order issues
-        ## all the rivals bidding price is known
 
-        # get the order info from the bidding activity p_low
-        # highest to lowest
+        low_support=low_support.reshape(self.N-1,1)
+        # get the rank order and reorder the bidding sequence
         ord_ind2=np.argsort(p_low)[::-1]
         
         ori_ind=ss.rankdata(p_low,method='ordinal')
@@ -168,214 +167,103 @@ class Update_rule:
         ori_ind=ori_ind.astype(int)
 
         p_k=p_low[ord_ind2]
+        # construct the bidding price vector
+        p_k=np.append(p_i,p_k)
         p_k=p_k.reshape(p_k.size,1)
 
         # prepare for iteration
-        x_drop=np.zeros(self.N-1)
+        x_drop=np.zeros([self.N,1])
         Sigma_inv = inv(self.SIGMA2)
         MU = self.MU
         x_d=np.array([])
-        for k in range(self.N-1):
-            # mu
-            mu_k = np.append(self.vi_mu, self.vi_rival_mu[ord_ind2])
-            mu_k = mu_k[0:self.N-k]
-            mu_k=mu_k.reshape(mu_k.size,1)
-            # l
-            l_k  = np.ones((self.N-k,1))
-            # Gamma
-            Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])
-            Gamma_k = Gamma_k[0:self.N-k]
-            Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
-            # Delta
-            Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
-            Delta_k=Delta_k[:,0:self.N-k].T
-            # Sigma^-1 k1 
-            Sigma_inv_k1 = Sigma_inv[0:self.N-k,:] # N-1+1 all the rest of the 
-            # coefficient matrix for remaining bidders
-            AA_k = inv(Delta_k @ Sigma_inv_k1.T) @ l_k
-            # constant
-            temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
-            temp_diag=temp_diag.reshape(temp_diag.size,1)
-            CC_k = 0.5*inv(Delta_k @ Sigma_inv_k1.T) @ (Gamma_k - temp_diag + 2*mu_k -2* Delta_k @ Sigma_inv @ MU)
 
-            
-            if k>0:
-                Sigma_inv_k2 = Sigma_inv[self.N-k:,:]
-                # coefficient matrix for dropped bidders
-                DD_k = inv(Delta_k @ (Sigma_inv_k1.T)) @ (Delta_k @ (Sigma_inv_k2.T))
-                x_drop[(self.N-1)-k-1] = AA_k[-1]*(p_k[(self.N-1)-k-1]) - np.dot( DD_k[-1,:],  x_d) - CC_k[-1]        
-            else:
-                DD_k = np.zeros([1,1])
-                x_drop[(self.N-1)-k-1] = AA_k[-1]*(p_k[(self.N-1)-k-1]) - CC_k[-1]
+        # k=0 the first to drop 
+        # mu
+        mu_k = np.append(self.vi_mu, self.vi_rival_mu[ord_ind2])
+        mu_k = mu_k[0:self.N-k]
+        mu_k=mu_k.reshape(mu_k.size,1)
+        # l
+        l_k  = np.ones((self.N-k,1))
+        # Gamma
+        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])
+        Gamma_k = Gamma_k[0:self.N-k]
+        Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
+        # Delta
+        Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
+        Delta_k=Delta_k[:,0:self.N-k].T
+        # Sigma^-1 k1 
+        Sigma_inv_k1 = Sigma_inv[0:self.N-k,:] # N-1+1 all the rest of the 
+        # coefficient matrix for remaining bidders
+        AA_k = inv(Delta_k @ Sigma_inv_k1.T) @ l_k
+        # constant
+        temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
+        temp_diag=temp_diag.reshape(temp_diag.size,1)
+        CC_k = 0.5*inv(Delta_k @ Sigma_inv_k1.T) @ (Gamma_k - temp_diag + 2*mu_k -2* Delta_k @ Sigma_inv @ MU)
 
-            x_d = np.append(x_drop[(self.N-1)-k-1],x_d)
+        # k>0 plug in the lower support 
+        if k>0:
+            Sigma_inv_k2 = Sigma_inv[self.N-k:,:]
+            # coefficient matrix for dropped bidders
+            DD_k = inv(Delta_k @ (Sigma_inv_k1.T)) @ (Delta_k @ (Sigma_inv_k2.T))
 
-        x_drop=x_drop[::-1][ori_ind]
-        return [x_drop.reshape(1,x_drop.size),ord_ind2,ori_ind]
+            x_drop[:self.N-k] = AA_k[-1] * (p_k[:self.N-k]) - DD_k @ low_support[:k] - CC_k        
+        else:
+            DD_k = np.zeros([1,1])
+            x_drop[:self.N-k] = AA_k[-1] *p_k[:self.N-k] - CC_k
+        
+        return x_drop[0]
 
-    def u_bound_xj_1(self, p_up,p_low):
+    def u_bound_xj_1(self, p_up,k,high_support):
         '''
         lower bound for private signal from bidding price
+        k : the order of the bidding price the higher the small
+            k=N-1 winner k=0 first to drop
+
+        I do not need the order or something in this sense
         '''
-        # still I have to calculate the signal recurisively
-        # partial finished the order issues
-        ## all the rivals bidding price is known
-
-        # get the order info from the bidding activity p_low
-        # highest to lowest
-        p_low=p_low.flatten()
-
-        # get the order info from the bidding activity p_low
-        # highest to lowest 
-        ord_ind2=np.argsort(p_low)[::-1]
-        
-        ori_ind=ss.rankdata(p_low,method="ordinal")
-        ori_ind=ori_ind-1
-        ori_ind=ori_ind.astype(int)
-
-        p_k=p_up.reshape(p_up.size,1)
-
+        # p_up should have size equal to  N
+        p_k=p_up*np.ones([self.N-k,1])
+        high_support=high_support.reshape(self.N-1,1)
         # prepare for iteration
-        x_drop=np.zeros(self.N-1)
+        x_drop=np.zeros([self.N-k,1])
         Sigma_inv = inv(self.SIGMA2)
         MU = self.MU
-        x_d=np.array([])
-        for k in range(self.N-1):
-            # mu
-            mu_k = np.append(self.vi_mu, self.vi_rival_mu[ord_ind2])
-            mu_k = mu_k[0:self.N-k]
-            mu_k=mu_k.reshape(mu_k.size,1)
-            # l
-            l_k  = np.ones((self.N-k,1))
-            # Gamma
-            Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])
-            Gamma_k = Gamma_k[0:self.N-k]
-            Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
-            # Delta
-            Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
-            Delta_k=Delta_k[:,0:self.N-k].T
-            # Sigma^-1 k1 
-            Sigma_inv_k1 = Sigma_inv[0:self.N-k,:] # N-1+1 all the rest of the 
-            # coefficient matrix for remaining bidders
-            AA_k = inv(Delta_k @ Sigma_inv_k1.T) @ l_k
-            # constant
-            temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
-            temp_diag=temp_diag.reshape(temp_diag.size,1)
-            CC_k = 0.5*inv(Delta_k @ Sigma_inv_k1.T) @ (Gamma_k - temp_diag + 2*mu_k -2* Delta_k @ Sigma_inv @ MU)
 
-            
-            if k>0:
-                Sigma_inv_k2 = Sigma_inv[self.N-k:,:]
-                # coefficient matrix for dropped bidders
-                DD_k = inv(Delta_k @ (Sigma_inv_k1.T)) @ (Delta_k @ (Sigma_inv_k2.T))
-                x_drop[(self.N-1)-k-1] = AA_k[-1]*(p_k[(self.N-1)-k-1]) - np.dot( DD_k[-1,:],  x_d) - CC_k[-1]        
-            else:
-                DD_k = np.zeros([1,1])
-                x_drop[(self.N-1)-k-1] = AA_k[-1]*(p_k[(self.N-1)-k-1]) - CC_k[-1]
-
-            x_d = np.append(x_drop[(self.N-1)-k-1],x_d)
-
-        x_drop=x_drop[::-1][ori_ind]
-        return [x_drop.reshape(1,x_drop.size),ord_ind2,ori_ind]  
-
-
-    def l_bound_xj_0(self,p_low):
-        '''
-        upper bound for private signal from the bidding price
-        ''' 
-        pre_MU    =self.MU.flatten()
-        pre_SIGMA2=np.diag(self.SIGMA2)
-        p_low=p_low.flatten()
-        x_drop=np.zeros(self.N)
-        # get the order info from the bidding activity p_low
-        # highest to lowest 
-        ord_ind2=np.argsort(p_low)[::-1]
-        
-        ori_ind=ss.rankdata(p_low,method='ordinal')
-        ori_ind=ori_ind-1
-        ori_ind=ori_ind.astype(int)
-
-        p_k=p_low[ord_ind2]
-        p_k=p_k.reshape(p_k.size,1)
-
-        # MU and SIGMA2
-        post_SIGMA2=np.append(pre_SIGMA2[0],pre_SIGMA2[1:][ord_ind2])
-        post_SIGMA2=np.ones([self.N,self.N])*self.comm_var + np.diag(post_SIGMA2)-np.eye(self.N)*self.comm_var
-        Sigma_inv = inv(post_SIGMA2)
-        MU = np.append(pre_MU[0],pre_MU[1:][ord_ind2])
-        MU = MU.reshape(MU.size,1)
-
-        # mu_k
-        mu_k = np.append(self.vi_mu, self.vi_rival_mu[ord_ind2])
+        # mu
+        mu_k = np.append(self.vi_mu, self.vi_rival_mu)
+        mu_k = mu_k[0:self.N-k]
         mu_k=mu_k.reshape(mu_k.size,1)
-        # l_k
-        l_k  = np.ones((self.N,1))
-        # Gamma_k
-        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])
+        # l
+        l_k  = np.ones((self.N-k,1))
+        # Gamma
+        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2)
+        Gamma_k = Gamma_k[0:self.N-k]
         Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
-        # Delta_k
-        Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
-        # inverse of coefficient matrix 
-        AA_k = inv(Delta_k @ Sigma_inv.T) @ l_k
+        # Delta
+        Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2)-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
+        Delta_k=Delta_k[:,0:self.N-k].T
+        # Sigma^-1 k1 
+        Sigma_inv_k1 = Sigma_inv[0:self.N-k,:] # N-1+1 all the rest of the 
+        # coefficient matrix for remaining bidders
+        AA_k = inv(Delta_k @ Sigma_inv_k1.T) @ l_k
         # constant
         temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
         temp_diag=temp_diag.reshape(temp_diag.size,1)
-        CC_k = 0.5*inv(Delta_k @ (Sigma_inv.T)) @ (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@MU)
+        CC_k = 0.5*inv(Delta_k @ Sigma_inv_k1.T) @ (Gamma_k - temp_diag + 2*mu_k -2* Delta_k @ Sigma_inv @ MU)
 
-        x_drop = AA_k[1:]*p_k - CC_k[1:]
-        # recover the order of the sequence 
-        x_drop=x_drop[::-1][ori_ind]
+        # k=0 the first to get information
+        if k>0:
+            Sigma_inv_k2 = Sigma_inv[self.N-k:,:]
+            # coefficient matrix for dropped bidders
+            DD_k = inv(Delta_k @ (Sigma_inv_k1.T)) @ (Delta_k @ (Sigma_inv_k2.T))
 
-        return [x_drop,ord_ind2,ori_ind]
+            x_drop = AA_k[-1] * (p_k) - DD_k @ high_support[self.N-1-k:] - CC_k        
+        else:
+            DD_k = np.zeros([1,1])
+            x_drop[:self.N-k] = AA_k[-1] *p_k[:self.N-k] - CC_k
 
-    def u_bound_xj_0(self,p_up,p_low):
-        '''
-        upper bound for private signal from the bidding price
-        ''' 
-        pre_MU    =self.MU.flatten()
-        pre_SIGMA2=np.diag(self.SIGMA2)
-        p_low=p_low.flatten()
-        x_drop=np.zeros(self.N)
-        # get the order info from the bidding activity p_low
-        # highest to lowest 
-        ord_ind2=np.argsort(p_low)[::-1]
-        
-        ori_ind=ss.rankdata(p_low,method="ordinal")
-        ori_ind=ori_ind-1
-        ori_ind=ori_ind.astype(int)
+        return x_drop[0]
 
-        
-        p_k=p_up.reshape(p_up.size,1)
-
-        # MU and SIGMA2
-        post_SIGMA2=np.append(pre_SIGMA2[0],pre_SIGMA2[1:][ord_ind2])
-        post_SIGMA2=np.ones([self.N,self.N])*self.comm_var + np.diag(post_SIGMA2)-np.eye(self.N)*self.comm_var
-        Sigma_inv = inv(post_SIGMA2)
-        MU = np.append(pre_MU[0],pre_MU[1:][ord_ind2])
-        MU = MU.reshape(MU.size,1)
-
-        # mu_k
-        mu_k = np.append(self.vi_mu, self.vi_rival_mu[ord_ind2])
-        mu_k=mu_k.reshape(mu_k.size,1)
-        # l_k
-        l_k  = np.ones((self.N,1))
-        # Gamma_k
-        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])
-        Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
-        # Delta_k
-        Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
-        # inverse of coefficient matrix 
-        AA_k = inv(Delta_k @ Sigma_inv.T) @ l_k
-        # constant
-        temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
-        temp_diag=temp_diag.reshape(temp_diag.size,1)
-        CC_k = 0.5*inv(Delta_k @ (Sigma_inv.T)) @ (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@MU)
-
-        x_drop = AA_k[1:]*p_k - CC_k[1:]
-        # recover the order of the sequence 
-        #x_drop=np.append(x_drop[0],x_drop[1:][::-1][ori_ind])
-        x_drop=x_drop[::-1][ori_ind]
-        return [x_drop,ord_ind2,ori_ind]
 
 
     def real_bid_calc_new(self,ord_id):
@@ -404,78 +292,6 @@ class Update_rule:
         return [E_const.flatten(),AA_i.flatten(),AA_j.flatten()]
 
 
-    def low_x_recover(self,state_p_log,i_p_log,no_flag,ladder,i_id,low_support):
-        '''
-        given the previous bidding history, we can use bidder i's current bidding 
-        price to recover bidder i's lower bound 
-        '''
-
-        self.setup_para(i_id)
-        # Pure_value, bid_price, AA_i -> only in log form
-        # I have to go back to normal price
-        [E_const,AA_i,AA_j]=self.real_bid_calc_new(i_id)
-        # the state bidding follows the order from highset to lowest bidder's ranking
-        [x_j_lower,ord_ind2,ori_ind] = self.l_bound_xj_0(state_p_log)
-        
-        x_j_lower = x_j_lower.flatten()
-        # x_j_lower = x_j_lower[ord_ind2]
-        low_support = low_support[::-1]
-        # update for lower support derived from last
-        # 
-         
-        x_j_lower[self.N-1-i_id:] = low_support[self.N-1-i_id:]
-        # x_j_lower = x_j_lower[::-1][ori_ind]
-
-        # upper bound 
-        i_p_v=np.log(np.exp(i_p_log)+ladder)*np.ones(state_p_log.size)
-        [x_j_upper,ord_ind2,ori_ind] = self.u_bound_xj_0(i_p_v,state_p_log)
-        x_j_upper = x_j_upper.flatten()
-        # x_j_upper = 10*np.ones(len(x_j_lower))
-        # The learning effect
-        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper) * AA_j
-        # E_j = np.sum(E_j.flatten() * (1-no_flag) )
-        E_j = np.sum(E_j.flatten())
-        # 
-        xi_low = (i_p_log - E_j - E_const)/AA_i 
-        return xi_low
-
-
-    def upper_x_recover(self,state_p_log,p_up,no_flag,ladder,i_id,low_support,upper_support):
-        '''
-        given the bidding history and upper price, we recover the upper bound of the private 
-        signal
-        '''
-
-        self.setup_para(i_id)
-        # Pure_value, bid_price, AA_i -> only in log form
-        # I have to go back to normal price
-        [E_const,AA_i,AA_j]=self.real_bid_calc_new(i_id)
-
-        # X_j is from highest to lowest
-        # update for lower support derived from last loop
-        # [x_j_lower,ord_ind2,ori_ind] = self.l_bound_xj_0(state_p_log)
-        # x_j_lower = x_j_lower.flatten()
-        x_j_lower = low_support.flatten()
-        #x_j_lower = x_j_lower[::-1][ori_ind]
-        # upper bound
-        i_p_v=np.log(np.exp(p_up)+ladder)*np.ones(state_p_log.size)
-        [x_j_upper,ord_ind2,ori_ind] = self.u_bound_xj_0(i_p_v,state_p_log)
-        # reorder from highest to lowest 
-        x_j_upper = x_j_upper.flatten()
-        # x_j_upper = x_j_upper[ord_ind2]
-        # replace/update for upper support derived from last loop
-        # upper_support=upper_support[::-1]  
-        x_j_upper[-(self.N-1-i_id):]= upper_support[-(self.N-1-i_id):]
-        #x_j_upper = x_j_upper[::-1][ori_ind]
-        
-
-        # The learning effect
-        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper) * AA_j
-        E_j = np.sum(E_j.flatten())
-
-        # 
-        xi_up = (np.log(np.exp(p_up) + ladder)- E_j - E_const)/AA_i 
-        return xi_up
 
     def support_x(self,state_p_l_bound,bid_post_log,threshold,no_flag,ladder):
         '''
@@ -488,13 +304,11 @@ class Update_rule:
         # lower support
         for k in range(0,self.N): # number of "round"
             temp_state = state_p_l_bound[self.N-1 -k,: ]
-            no_flag_temp = no_flag[self.N-1 -k,:]
             temp_state_i = copy.deepcopy(temp_state)
             temp_state_i = np.delete(temp_state_i,self.N-1 -k)
-            no_flag_temp_i = np.delete(no_flag_temp,self.N-1 -k)
             i_p=bid_post_log[self.N-1 -k]
             temp_low=np.delete(low_support,k)
-            low_support[k]=self.low_x_recover(temp_state_i,i_p,no_flag_temp_i,ladder,k,temp_low)
+            low_support[k]=self.l_bound_xj_1(temp_state_i,i_p,k,temp_low)
             if k==0 and low_support[k]<threshold[0]:
                 low_support[k]=threshold[0]
 
@@ -503,18 +317,14 @@ class Update_rule:
         high_support[-1] = np.log(10)
         if self.N >2:
             high_support[-2] = low_support[-2]+ladder/10000
-            N_start=self.N-2-1
+            N_start=2
         else:
-            N_start=self.N-1-1
-        for kk in range(N_start,-1,-1):
-            temp_state   = state_p_l_bound[self.N-1-kk,:]
-            no_flag_temp = no_flag[self.N-1- kk,:]
-            temp_state_i = copy.deepcopy(temp_state)
-            temp_state_i   = np.delete(temp_state_i,self.N-1-kk)
-            no_flag_temp_i = np.delete(no_flag_temp,self.N-1-kk)
-            temp_low = np.delete(low_support,kk)
-            temp_upp = np.delete(high_support,kk)
-            high_support[kk]=self.upper_x_recover(temp_state_i,p_up,no_flag_temp_i,ladder,kk,temp_low,temp_upp)
+            N_start=1
+            
+        for kk in range(N_start,self.N):
+
+            temp_high=np.delete(high_support,self.N-1 -k)
+            high_support[self.N-1-kk]=self.u_bound_xj_1(p_up,kk,temp_high)
         
         return [low_support.reshape(low_support.size,1),high_support.reshape(high_support.size,1)]
 
