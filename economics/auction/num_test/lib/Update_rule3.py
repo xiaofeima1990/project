@@ -328,6 +328,23 @@ class Update_rule:
         
         return [low_support.reshape(low_support.size,1),high_support.reshape(high_support.size,1)]
 
+    def cal_E_i(self,x_v,w_v,low_support,high_support,i_id):
+        # use cal_bid to get Ai Aj and const part 
+        [E_const,AA_i,AA_j]=self.real_bid_calc_new(i_id)
+
+        # select the candidate X 
+        x_flag1      = 1*(x_v[i_id,:] >= low_support)
+        x_flag2      = 1*(x_v[i_id,:] <= high_support)
+        check_flag_v1=x_flag1*x_flag2
+
+        E_xi_v= AA_i*x_v[i_id]+ AA_j@np.delete(x_v,i_id,axis=0)
+        E_xi_v=E_xi_v*w_v*check_flag_v1
+        no_E  =np.mean(E_xi_v)
+        de_prob= np.mean(w_v)
+        E_X_cond=no_E/de_prob + E_const
+
+        return E_X_cond
+
 
     def prob_X_trunc(self,low_support,high_support,threshold,x2nd,x_v,w_v):
         '''

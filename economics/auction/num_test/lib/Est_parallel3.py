@@ -19,6 +19,7 @@ from Util import *
 import copy
 import scipy.stats as ss
 
+METHOD_flag=0
 
 def list_duplicates(seq):
     tally = defaultdict(list)
@@ -41,7 +42,7 @@ def cal_Prob(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     N=len(low_support)
     low_bound=threshold
     low_bound[-1]=high_support[-2]
-    low_bound[-2]=high_support[-2]*(1-0.005)
+    low_bound[-2]=high_support[-2]
     up_bound = high_support[-2]*np.ones(N)
     up_bound[-1] = 20
 
@@ -53,6 +54,38 @@ def cal_Prob(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     log_Prob                   = Update_bid.prob_X_trunc(low_support,high_support,threshold,x2nd,x_v,w_v)
 
     return log_Prob
+
+def cal_E_bid(N,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
+    '''
+    calculate the Expected pivotal function for each bidder within auction t
+    This is the updated version for my moment inequality estimation
+    1. get the lower and upper bound for each bidder from the bidding history Omega
+    2. fix X_J support, and calculate the truncated prob for xi>gamma, XJ in [X_low,X_up] (each xj)
+    3. Once get the random X matrix and w weighting vector, We also know the [xi_low,xi_up]. We
+       do the calculation for expectation
+    4. use the upper and lower bidding price to calculate the moment inequalities as before  
+    '''
+    [low_support,high_support]     = Update_bid.support_x(state_p_log,bid_post_log,threshold,no_flag,ladder)
+    # sequential expression
+    # i=0 lowest i=N highest
+    E_Xi=np.zeros(N)
+    for i in range(N):
+        low_bound=low_support
+        low_bound[i]=threshold[i]
+        # low_bound[-2]=high_support[-2]
+
+        up_bound=high_support
+        up_bound[i]=10
+        # calculate truncated dist with xi > gamma ,xj in [low , up]
+        [x_v,U_v,w_v]              = Update_bid.GHK_simulator(low_bound,up_bound,2)
+
+        # calculate the exp 
+        E_Xi[i]=Update_bid.cal_E_i(x_v,w_v,low_support[0],high_support[0],i)
+
+        # 
+
+    return E_Xi
+
 
 
 def para_fun_est(Theta,rng,xi_n,h,arg_data):
@@ -137,9 +170,29 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
     low_state=low_state.astype(int)
     no_flag=(low_state<1)*1
     state_p_history= price_v[low_state]
-    # calculate the MLE
-    log_prob=cal_Prob(np.log(state_p_history),np.log(price_v[bid_v]),no_flag,Update_bid,X_bar,ladder)
-    result_value = -log_prob    
+
+    if METHOD_flag==0:
+        # calculate the moment inequality condition
+        low_price_bound=np.log(price_v[bid_v])
+        up_price_bound=np.log(low_price_bound[-1]+ladder) * np.ones(N)
+        E_XV=cal_E_bid(N,np.log(state_p_history),np.log(price_v[bid_v]),no_flag,Update_bid,X_bar,ladder)
+
+
+        low_1     =  low_price_bound  - E_XV
+        high_1    =  up_price_bound   - E_XV
+        low_sum = np.square((low_1>0)*1*low_1)
+        high_sum = np.square((high_1<0)*1*high_1)
+        high_sum[0]=0
+
+        sum_value = np.nansum(low_sum) + np.nansum(high_sum)
+        result_value =sum_value/0.01
+
+    else:
+        # calculate the MLE
+        log_prob=cal_Prob(np.log(state_p_history),np.log(price_v[bid_v]),no_flag,Update_bid,X_bar,ladder)
+        result_value = -log_prob    
+
+
 
 
     return result_value
