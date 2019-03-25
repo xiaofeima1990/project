@@ -314,7 +314,8 @@ class Update_rule:
 
         # higher support 
         p_up= max(bid_post_log)
-        high_support[-1] = np.log(10)
+        high_support[-1] = low_support[-1]+2*ladder
+        
         if self.N >2:
             high_support[-2] = low_support[-2]+ladder/10000
             N_start=2
@@ -332,28 +333,36 @@ class Update_rule:
         # use cal_bid to get Ai Aj and const part 
         [E_const,AA_i,AA_j]=self.real_bid_calc_new(i_id)
 
+        is_sorted = lambda a: np.all(a[i_id] <= a[i_id:])
+        is_sorted2 = lambda a: np.all(a[i_id] > a[:i_id])
+        x_check_f=np.apply_along_axis(is_sorted,0,x_v)
+        x_check_f2=np.apply_along_axis(is_sorted2,0,x_v)
         # select the candidate X 
-        x_flag1      = 1*(x_v[i_id,:] >= low_support)
-        x_flag2      = 1*(x_v[i_id,:] <= high_support)
-        check_flag_v1=x_flag1*x_flag2
+        # x_flag1      = 1*(x_v[i_id,:] >= low_support)
+        # x_flag2      = 1*(x_v[i_id,:] <= high_support)
+        # check_flag_v1=x_flag1*x_flag2
+        check_flag_v1=x_check_f*x_check_f2*1
+        
 
-        E_xi_v= AA_i*x_v[i_id]+ AA_j@np.delete(x_v,i_id,axis=0)
+        E_xi_v= AA_i*x_v[i_id,:]+ AA_j@np.delete(x_v,i_id,axis=0)
         E_xi_v=E_xi_v*w_v*check_flag_v1
-        no_E  =np.mean(E_xi_v)
-        de_prob= np.mean(w_v)
+        no_E  =np.sum(E_xi_v) # mean is fine
+        de_prob= np.sum(w_v)  # mean is fine 
         E_X_cond=no_E/de_prob + E_const
 
         return E_X_cond
 
 
-    def prob_X_trunc(self,low_support,high_support,threshold,x2nd,x_v,w_v):
+    def MLE_X_trunc(self,low_support,high_support,threshold,x2nd,x_v,w_v):
         '''
-        highly incorrect!!!
+        I do not know this MLE est
         '''
         self.setup_para(0)
 
         low_support  = low_support.reshape(self.N,1)
         high_support = high_support.reshape(self.N,1)
+        low_support[-2]=low_support[-2]*(1-0.05)
+        high_support[-2]=high_support[-2]*(1+0.05)
         x_flag1      = x_v >= low_support
         x_flag2      = x_v <= high_support 
 
@@ -361,15 +370,16 @@ class Update_rule:
         check_flag_v2=np.prod(x_flag2, axis=0)
         check_flag_v1=check_flag_v1*check_flag_v2
         
-        nominator     = np.mean(check_flag_v1*w_v)
-        denominator   = np.mean(w_v)
+        nominator     = np.sum(check_flag_v1*w_v)
+        denominator   = np.sum(w_v)
         mu=self.MU[-2]
         sigma=self.SIGMA2[-2,-2]**0.5
 
-        density_2nd  = truncnorm.pdf((x2nd-mu)/sigma,(threshold[0]-mu)/sigma,10)
-        prob_1st = 1 - truncnorm.cdf((x2nd-mu)/sigma,(threshold[0]-mu)/sigma,10)
+        density_2nd  = truncnorm.pdf((x2nd-mu)/sigma,(threshold[-2]-mu)/sigma,10)
+        prob_1st = 1 - truncnorm.cdf((low_support[-1]-mu)/sigma,(threshold[-1]-mu)/sigma,10)
 
-        log_Prob = np.log(nominator/denominator) + np.log(density_2nd) + np.log(prob_1st)
+        
+        log_Prob = np.log(nominator)-np.log(denominator) + np.log(density_2nd) + np.log(prob_1st)
 
 
         return log_Prob
@@ -384,7 +394,7 @@ class Update_rule:
 
         return norm.ppf(U_v)
 
-    def GHK_simulator(self, low_bound,up_bound,mode_flag=0,S=300):
+    def GHK_simulator(self, low_bound,up_bound,mode_flag=0,S=3000):
         '''
         applying GHK method to generate the multivariate truncated normal distribution
         wrong modify
@@ -392,7 +402,7 @@ class Update_rule:
         self.setup_para(0)
         np.random.seed(114499)
  
-        SS=S+self.N*150
+        SS=S+self.N*1500
         # Cholesky factorization the Sigma
 
         down_ch_sigma=LA.cholesky(self.SIGMA2)
