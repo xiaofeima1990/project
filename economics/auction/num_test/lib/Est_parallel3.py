@@ -30,12 +30,27 @@ def list_duplicates(seq):
 def cal_Prob(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     '''
     # calculate the X range support 
-    '''
-    # calcualte the expected value at each "round"
-    [x_v,U_v,w_v]              = Update_bid.GHK_simulator(threshold,10,0)
-    [low_support,high_support] = Update_bid.support_x(state_p_log,bid_post_log,no_flag,ladder)
 
-    log_Prob                   = Update_bid.prob_X_trunc(low_support,high_support,threshold,x_v,w_v)
+    threshold : [r,r,r,...]  
+    '''
+    
+    [low_support,high_support] = Update_bid.support_x(state_p_log,bid_post_log,threshold,no_flag,ladder)
+    # deal with the truncated part 
+    # low : r,r,r... x_2nd 
+    # high : x_2nd, ....x_2nd, infty
+    N=len(low_support)
+    low_bound=threshold
+    low_bound[-1]=high_support[-2]
+    low_bound[-2]=high_support[-2]*(1-0.005)
+    up_bound = high_support[-2]*np.ones(N)
+    up_bound[-1] = 20
+
+    x2nd=high_support[-2]
+    [x_v,U_v,w_v]              = Update_bid.GHK_simulator(low_bound,up_bound,2)
+    low_support[-2]=low_support[-2]*(1-0.1)
+    high_support[-2]=high_support[-2]*(1+0.1)
+    high_support[-1]=10
+    log_Prob                   = Update_bid.prob_X_trunc(low_support,high_support,threshold,x2nd,x_v,w_v)
 
     return log_Prob
 
@@ -124,5 +139,8 @@ def para_fun_est(Theta,rng,xi_n,h,arg_data):
     state_p_history= price_v[low_state]
     # calculate the MLE
     log_prob=cal_Prob(np.log(state_p_history),np.log(price_v[bid_v]),no_flag,Update_bid,X_bar,ladder)
-    return -log_prob
+    result_value = -log_prob    
+
+
+    return result_value
  
