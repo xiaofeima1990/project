@@ -19,7 +19,7 @@ from Util import *
 import copy
 import scipy.stats as ss
 
-METHOD_flag=1
+METHOD_flag=0
 
 def list_duplicates(seq):
     tally = defaultdict(list)
@@ -84,7 +84,7 @@ def cal_E_bid(N,h,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     # calculate the conditional expected bidding function Ebeta(vi|xi,xj)
     # also we need to use the order of the bidding functions
     # i=0 lowest i=N highest
-    map_func=partial(map_E,N,h,state_p_log,no_flag,Update_bid)
+    map_func=partial(map_E,N,h,state_p_log,no_flag,ladder,Update_bid)
     m_k_s=list(map(map_func,x_v))
     m_k_s_1 = np.array([x[0] for x in m_k_s])
     m_k_s_2 = np.array([x[1] for x in m_k_s])
@@ -94,10 +94,10 @@ def cal_E_bid(N,h,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     mk_v = np.mean(m_k_s_1,axis=0)
     
 
-    return [mk_v/de_PT]
+    return mk_v/de_PT
 
 
-def map_E(N,h,state_p_l_bound,no_flag,Update_bid,x_signal):
+def map_E(N,h,state_p_l_bound,no_flag,ladder,Update_bid,x_signal):
     '''
     1 calcuate the expected value at each "round"
     for all bidders (active) as in Hong and Shum 2003
@@ -105,7 +105,7 @@ def map_E(N,h,state_p_l_bound,no_flag,Update_bid,x_signal):
     2 construct the "m" as in hong and shum 2003 (smooth objective function) (34)
     '''
     # calcualte the expected value at each "round"
-    [E_post,E_value_list] = Update_bid.post_E_value(state_p_l_bound,no_flag,x_signal)
+    [E_post,E_value_list] = Update_bid.post_E_value(state_p_l_bound,no_flag,ladder,x_signal)
 
     # construct m in (35) Hong and Shum 2003
     # m denominator
@@ -126,7 +126,7 @@ def map_E(N,h,state_p_l_bound,no_flag,Update_bid,x_signal):
     
     # m nominator from last round to the first round 
     # I have to match with the upper and lower bound 
-    m_nominator = m_denominator * E_post[::-1]
+    m_nominator = m_denominator * E_post 
 
     return [m_nominator,m_denominator]
 
@@ -226,10 +226,10 @@ def para_fun_est(Theta,rng,h,arg_data):
         high_1    =  up_price_bound   - E_XV
         low_sum = np.square((low_1>0)*1*low_1)
         high_sum = np.square((high_1<0)*1*high_1)
-        high_sum[0]=0
+        high_sum[-1]=0
 
         sum_value = np.nansum(low_sum) + np.nansum(high_sum)
-        result_value =sum_value/0.01
+        result_value =sum_value/0.001
 
     else:
         # calculate the MLE

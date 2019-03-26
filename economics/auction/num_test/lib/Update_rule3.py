@@ -362,7 +362,7 @@ class Update_rule:
         # recover the order of the sequence 
         #x_drop=np.append(x_drop[0],x_drop[1:][::-1][ori_ind])
         x_drop=x_drop[::-1][ori_ind]
-        return [x_drop,ord_ind2,ori_ind]
+        return x_drop
 
     def real_bid_calc_new(self,ord_id):
         '''
@@ -444,14 +444,16 @@ class Update_rule:
         xi_v = xi_v.flatten()
         # state_p is just the only dropout part N-1 length
         x_j_lower = self.l_bound_xj_0(state_p)
+        x_j_lower=x_j_lower.flatten()
 
-        i_p_v=np.log(np.exp(p_up)+2*ladder)+2*ladder)*np.ones(state_p_log.size)
+        i_p_v=np.log(np.exp(p_up)+2*ladder)*np.ones(state_p.size)
         x_j_upper = self.u_bound_xj_0(i_p_v,state_p)
+        x_j_upper = x_j_upper.flatten()
         E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper) * AA_j
-        E_j = np.sum(E_j.flatten() * (1-no_flag) )
+        E_j = np.sum(E_j.flatten())
 
         exp_value= AA_i*xi_v + E_j + E_const 
-        return np.exp(exp_value).flatten()
+        return exp_value.flatten()
 
 
     def post_E_value(self,state_p_l_bound,no_flag,ladder,xi_v):
@@ -468,16 +470,16 @@ class Update_rule:
             # own expected evalution for k 
             temp_state_k = copy.deepcopy(temp_state)
             p_up=max(temp_state_k)
-            temp_state_k = np.delete(temp_state_i,self.N-k-1)
+            temp_state_k = np.delete(temp_state_k,self.N-k-1)
             no_flag_temp_k = np.delete(no_flag_temp,self.N-k-1)
-            E_post[k]=self.bid_vector1(xi_v[i],temp_state_k,no_flag_temp_k,p_up,ladder,k)
+            E_post[k]=self.bid_vector1(xi_v[k],temp_state_k,no_flag_temp_k,p_up,ladder,k)
 
             for i in range(0,2): # the "remaining bidder" highest and second higest
                 temp_state_i = copy.deepcopy(temp_state)
                 p_up=max(temp_state_i)
                 temp_state_i = np.delete(temp_state_i,i)
                 no_flag_temp_i = np.delete(no_flag_temp,i)
-                E_value_i=self.bid_vector1(xi_v[i],temp_state_i,no_flag_temp_i,p_up,ladder,self.N-1-i)
+                E_value_i=self.bid_vector1(xi_v[self.N-1-i],temp_state_i,no_flag_temp_i,p_up,ladder,self.N-1-i)
                 E_value_i=E_value_i.flatten()
                 # save the expected highest posting expectection for that round
                 if i != self.N-k-1:
@@ -563,7 +565,7 @@ class Update_rule:
 
         return norm.ppf(U_v)
 
-    def GHK_simulator(self, low_bound,up_bound,mode_flag=0,S=5000):
+    def GHK_simulator(self, low_bound,up_bound,mode_flag=0,S=500):
         '''
         applying GHK method to generate the multivariate truncated normal distribution
         wrong modify
@@ -571,7 +573,7 @@ class Update_rule:
         self.setup_para(0)
         np.random.seed(114499)
  
-        SS=S+self.N*1500
+        SS=S+self.N*150
         # Cholesky factorization the Sigma
 
         down_ch_sigma=LA.cholesky(self.SIGMA2)
