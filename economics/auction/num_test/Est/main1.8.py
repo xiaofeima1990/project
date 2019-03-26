@@ -52,9 +52,6 @@ import warnings
 warnings.filterwarnings("always")
 
 
-
-
-
 Est_para_dict={
 
         "comm_mu":0.1,
@@ -81,8 +78,6 @@ def poolcontext(*args, **kwargs):
 
 
 
-
-
 def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     Theta={
     "comm_mu":Theta0[0],
@@ -95,8 +90,6 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     
 
     rng=np.random.RandomState(d_struct['rng_seed'])
-    
-
     start = time.time()
     
     
@@ -141,6 +134,8 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     else:
         for Data_Struct in DATA_STRUCT_c:
             auction_list.append(work_pool.submit(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct),Data_Struct).result())    
+        
+        auction_list=np.array(auction_list).flatten()
         auction_result=np.nanmean(auction_list)
     
     end = time.time()
@@ -163,28 +158,17 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
 
 def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
     time.sleep(0.5)
-    
-    
     # print(" id: {} , is dealing the auction with {} bidder ".format(threading.get_ident(),pub[2]))
     
-    
     TT,_=Data_struct.shape
-
     print("the length of the auction is {}".format(TT))
-    
-    
     results=[]
     try:
         
         func=partial(para_fun_est,Theta,rng,d_struct['h'])
-
         pool = ProcessPoolExecutor(max_workers=cpu_num)
-        
-        
         results= pool.map(func, zip(range(0,TT), Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[Pub_col].values.tolist()))
-        
-        
-        MoM=np.nansum(list(results))
+        MoM=np.nanmean(np.array(results).flatten())
 
     except np.linalg.LinAlgError as err:
         if 'Singular matrix' in str(err):
@@ -194,7 +178,7 @@ def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
             exit(1)
     
     
-    return MoM / TT
+    return MoM 
 
  
 
@@ -219,15 +203,6 @@ if __name__ == '__main__':
             'h':0.05,
             }
     
-    # Theta={
-    #     "comm_mu":1, # comman value mu
-    #     "priv_mu":0, # private value mu
-    #     "beta":0,   # for coefficient in front of the reservation price 
-    #     "comm_var":0.1,
-    #     "priv_var":0.3,
-    #     "epsilon_var":0.4,
-    #     }
-
     Theta=[0.008128,	1.124905,	0.173707,	0.001357,	0.137546]
     
     start = time.time()

@@ -552,6 +552,50 @@ class Update_rule:
 
         log_Prob = np.log(nominator)-np.log(denominator) + np.log(density_2nd) + np.log(prob_1st)
 
+        return log_Prob
+
+    def MLE_X_new(self,low_support,high_support,threshold,x2nd):
+        '''
+        I just realized that I can genreate the conditional chain rule to calculate
+        the MLE (Because I calculate the probability!!!)
+        '''
+        self.setup_para(0)
+        mu=self.MU[-2]
+        sigma=self.SIGMA2[-2,-2]**0.5
+
+        low_support  = low_support.reshape(self.N,1)
+        high_support = high_support.reshape(self.N,1)
+
+        density_2nd  = truncnorm.pdf((x2nd-mu)/sigma,(threshold[-2]-mu)/sigma,10)
+        prob_1st     = 1 - truncnorm.cdf((low_support[-1]-mu)/sigma,(threshold[-1]-mu)/sigma,10)
+        log_Prob     = np.log(density_2nd) + np.log(prob_1st)
+        
+        if self.N>2:
+            for i in range(self.N-2):
+                temp_low  =low_support[i+1:]
+                temp_high =high_support[i+1:]
+
+                temp_low  =np.append(temp_low,threshold[i])
+                temp_high =np.append(temp_high,10)
+
+                [x_v,U_v,w_v]=self.GHK_simulator(i,temp_low,temp_high,2)
+                # last column is what we need
+                #
+                x_flag1      = x_v[-1] >= low_support[i]
+                x_flag2      = x_v[-1] <= high_support[i]
+                check_flag_v1 = x_flag1*x_flag2*1
+                # calculate the prob 
+                nominator     = np.sum(check_flag_v1*w_v)
+                denominator   = np.sum(w_v)
+                log_Prob      = log_Prob + np.log(nominator)-np.log(denominator)
+
+
+                if nominator<=10**(-24) or prob_1st<=10**(-24) or density_2nd <=10**(-24) :
+                    print('-------------')
+                    print(low_support.flatten())
+                    print(high_support.flatten())
+                    print(threshold[0],self.N)
+                    print(nominator)
 
         return log_Prob
 
@@ -565,7 +609,7 @@ class Update_rule:
 
         return norm.ppf(U_v)
 
-    def GHK_simulator(self, low_bound,up_bound,mode_flag=0,S=500):
+    def GHK_simulator(self,i_id,low_bound,up_bound,mode_flag=0,S=500):
         '''
         applying GHK method to generate the multivariate truncated normal distribution
         wrong modify
@@ -573,19 +617,19 @@ class Update_rule:
         self.setup_para(0)
         np.random.seed(114499)
  
-        SS=S+self.N*150
+        SS=S + (self.N-i_id)*150 
         # Cholesky factorization the Sigma
 
-        down_ch_sigma=LA.cholesky(self.SIGMA2)
-        MU=self.MU
-        b = np.ones(self.N)*100 if mode_flag == 0 else  up_bound.flatten()
-        a = np.ones(self.N)*(-100) if mode_flag == 1 else low_bound.flatten()
+        down_ch_sigma=LA.cholesky(self.SIGMA2[i_id:,i_id:])
+        MU=self.MU[i_id:]
+        b = np.ones(self.N-i_id)*100 if mode_flag == 0 else  up_bound.flatten()
+        a = np.ones(self.N-i_id)*(-100) if mode_flag == 1 else low_bound.flatten()
 
 
-        w_a=np.zeros([self.N,SS])
-        w_b=np.zeros([self.N,SS])
+        w_a=np.zeros([self.N-i_id,SS])
+        w_b=np.zeros([self.N-i_id,SS])
         w_v=np.ones([1,SS])
-        U_rand_v = np.zeros([self.N,SS])
+        U_rand_v = np.zeros([self.N-i_id,SS])
         # generate the draws recursively. It is not easy to do
         # first draw u1 from N(0,1; (a1-mu1)/s11, (b1-mu1)/s11)
         # pins down the c and d 
@@ -596,7 +640,7 @@ class Update_rule:
 
         # transform to xi 
 
-        for i in range (0, self.N):
+        for i in range (0, self.N-i_id):
             temp_mu=MU[i]*np.ones(SS)
             for j in range(0,i):
                 temp_mu += down_ch_sigma[i,j]*U_rand_v[j,:]

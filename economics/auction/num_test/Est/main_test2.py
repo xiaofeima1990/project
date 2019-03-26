@@ -89,29 +89,11 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
     
     nn=len(Est_data)
     
-    DATA_STRUCT_c = balance_data_est(Est_data,4)
+    DATA_STRUCT_c = balance_data_est(Est_data,2)
     for Data_struct in DATA_STRUCT_c:
         TT,_=Data_struct.shape
-        
-        # TT,T_end=Data_struct.data_act.shape
-        # TT = int(TT)
-        # T_end=int(T_end)
-    
-        # # num of bidders in the auction
-        # N=int(Data_struct.pub_info[1,2])
-        # info_flag=Data_struct.pub_info[1,3]
-        # # setup the env info structure
-        
-        # Env=ENV(N, Theta)
-    
-        # if info_flag == 0 :
-        #     para=Env.Uninform()
-        # else:
-        #     para=Env.Info_ID()
-        
-        
-        # [x_signal,w_x]=signal_DGP(para,res,rng,N,JJ)
-        
+         
+
         '''
         serial testing 
         '''
@@ -120,8 +102,8 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
         pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
         for arg_data_ele in zip(range(0,TT),Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[pub_col].values.tolist()):
             results.append(func(arg_data_ele))
-    
-        MoM=np.nansum(results)/TT
+        results=np.array(results).flatten()
+        MoM=np.nanmean(results)
         
         Mom_v=Mom_v+MoM
         

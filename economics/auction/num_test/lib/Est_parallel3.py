@@ -19,7 +19,7 @@ from Util import *
 import copy
 import scipy.stats as ss
 
-METHOD_flag=0
+METHOD_flag=1
 
 def list_duplicates(seq):
     tally = defaultdict(list)
@@ -46,21 +46,15 @@ def cal_MLE(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     # deal with the truncated part 
     # low : r,r,r... x_2nd 
     # high : x_2nd, ....x_2nd, infty
-    N=len(low_support)
-    low_bound=threshold
-    low_bound[-2]=low_support[-2]
-    up_bound = high_support[-2]*np.ones(N)
-    up_bound[-1] = 10
 
 
     x2nd=high_support[-2]
-    [x_v,U_v,w_v]              = Update_bid.GHK_simulator(low_bound,up_bound,2)
     high_support[-1]=10
-    log_Prob                   = Update_bid.MLE_X_trunc(low_support,high_support,threshold,x2nd,x_v,w_v)
+    log_Prob                   = Update_bid.MLE_X_new(low_support,high_support,threshold,x2nd)
     if np.equal(log_Prob,-np.inf):
         log_Prob=np.nan
     
-    print(log_Prob)
+    #print(log_Prob)
     return log_Prob
 
 def cal_E_bid(N,h,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
