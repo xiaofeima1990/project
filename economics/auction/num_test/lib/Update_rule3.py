@@ -9,7 +9,7 @@ use the new method I figured out to do the calculation
 lower bound: 
 start from lowest bidding price 
 
-upper bound
+upper bound:
 start from highest bidding price 
 
 use the range of support to get trucated moment / truncated normal
@@ -313,9 +313,56 @@ class Update_rule:
         # recover the order of the sequence 
         x_drop=x_drop[::-1][ori_ind]
 
+        return x_drop
+
+    def u_bound_xj_0(self,p_up,p_low):
+        '''
+        upper bound for private signal from the bidding price
+        ''' 
+        pre_MU    =self.MU.flatten()
+        pre_SIGMA2=np.diag(self.SIGMA2)
+        p_low=p_low.flatten()
+        x_drop=np.zeros(self.N)
+        # get the order info from the bidding activity p_low
+        # highest to lowest 
+        ord_ind2=np.argsort(p_low)[::-1]
+        
+        ori_ind=ss.rankdata(p_low,method="ordinal")
+        ori_ind=ori_ind-1
+        ori_ind=ori_ind.astype(int)
+
+        
+        p_k=p_up.reshape(p_up.size,1)
+
+        # MU and SIGMA2
+        post_SIGMA2=np.append(pre_SIGMA2[0],pre_SIGMA2[1:][ord_ind2])
+        post_SIGMA2=np.ones([self.N,self.N])*self.comm_var + np.diag(post_SIGMA2)-np.eye(self.N)*self.comm_var
+        Sigma_inv = inv(post_SIGMA2)
+        MU = np.append(pre_MU[0],pre_MU[1:][ord_ind2])
+        MU = MU.reshape(MU.size,1)
+
+        # mu_k
+        mu_k = np.append(self.vi_mu, self.vi_rival_mu[ord_ind2])
+        mu_k=mu_k.reshape(mu_k.size,1)
+        # l_k
+        l_k  = np.ones((self.N,1))
+        # Gamma_k
+        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])
+        Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
+        # Delta_k
+        Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
+        # inverse of coefficient matrix 
+        AA_k = inv(Delta_k @ Sigma_inv.T) @ l_k
+        # constant
+        temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
+        temp_diag=temp_diag.reshape(temp_diag.size,1)
+        CC_k = 0.5*inv(Delta_k @ (Sigma_inv.T)) @ (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@MU)
+
+        x_drop = AA_k[1:]*p_k - CC_k[1:]
+        # recover the order of the sequence 
+        #x_drop=np.append(x_drop[0],x_drop[1:][::-1][ori_ind])
+        x_drop=x_drop[::-1][ori_ind]
         return [x_drop,ord_ind2,ori_ind]
-
-
 
     def real_bid_calc_new(self,ord_id):
         '''
@@ -381,30 +428,63 @@ class Update_rule:
         return [low_support.reshape(low_support.size,1),high_support.reshape(high_support.size,1)]
 
 
-    def post_E_value(self,state_p_l_bound,no_flag,xi_v):
+    def bid_vector1(self,xi_v,state_p,no_flag,p_up,ladder,i_id):
+        '''
+        xi_v vectors for xi private signal
+        state_p normalized bidding price under the coresponding bidding history
+        i_id the ordered identiy of the bidders
+        '''
+
+        # doe not need to count the x signal criterion
+        self.setup_para(i_id)
+        # Pure_value, bid_price, AA_i -> only in log form
+        # I have to go back to normal price
+        [E_const,AA_i,AA_j]=self.real_bid_calc_new(i_id)
+        # ladder=np.log(price_v[-1]) - np.log(price_v[-2])
+        xi_v = xi_v.flatten()
+        # state_p is just the only dropout part N-1 length
+        x_j_lower = self.l_bound_xj_0(state_p)
+
+        i_p_v=np.log(np.exp(p_up)+2*ladder)+2*ladder)*np.ones(state_p_log.size)
+        x_j_upper = self.u_bound_xj_0(i_p_v,state_p)
+        E_j = self.truc_x(self.xi_rival_mu.flatten(),self.xi_rival_sigma2.flatten(),x_j_lower,x_j_upper) * AA_j
+        E_j = np.sum(E_j.flatten() * (1-no_flag) )
+
+        exp_value= AA_i*xi_v + E_j + E_const 
+        return np.exp(exp_value).flatten()
+
+
+    def post_E_value(self,state_p_l_bound,no_flag,ladder,xi_v):
         '''
         calculate the expected value from the first "round" to last "round"
         '''
-        E_post=np.array([])
+        E_post=np.zeros(self.N)
         E_value_list=[]
         for k in range(0,self.N): # number of "round"
             # deal with the bidding state 
             temp_state = state_p_l_bound[self.N-1 -k,: ]
             no_flag_temp = no_flag[self.N-1 -k,:]
-            temp_E_value=[]            
-            for i in range(self.N-2,self.N-k): # the "remaining bidder"
+            temp_E_value=[]
+            # own expected evalution for k 
+            temp_state_k = copy.deepcopy(temp_state)
+            p_up=max(temp_state_k)
+            temp_state_k = np.delete(temp_state_i,self.N-k-1)
+            no_flag_temp_k = np.delete(no_flag_temp,self.N-k-1)
+            E_post[k]=self.bid_vector1(xi_v[i],temp_state_k,no_flag_temp_k,p_up,ladder,k)
+
+            for i in range(0,2): # the "remaining bidder" highest and second higest
                 temp_state_i = copy.deepcopy(temp_state)
+                p_up=max(temp_state_i)
                 temp_state_i = np.delete(temp_state_i,i)
                 no_flag_temp_i = np.delete(no_flag_temp,i)
-                E_value_i=self.bid_vector1(xi_v[i],temp_state_i,no_flag_temp_i,i)
+                E_value_i=self.bid_vector1(xi_v[i],temp_state_i,no_flag_temp_i,p_up,ladder,self.N-1-i)
                 E_value_i=E_value_i.flatten()
                 # save the expected highest posting expectection for that round
-                if i == self.N-k-1:
-                    E_post=np.append(E_post,E_value_i)
-                else:
-                    # save all the remaining bidders except for last one
+                if i != self.N-k-1:
+                    # highest to lowest 
                     temp_E_value.append(E_value_i)
             if k < self.N-1:
+                # from first dropout bidder to last one
                 E_value_list.append(temp_E_value)
 
         return  [E_post,E_value_list]   
@@ -437,6 +517,8 @@ class Update_rule:
     def MLE_X_trunc(self,low_support,high_support,threshold,x2nd,x_v,w_v):
         '''
         I do not know this MLE est
+        I just realized that I can genreate the conditional chain rule to calculate
+        the MLE (Because I calculate the probability!!!)
         '''
         self.setup_para(0)
 

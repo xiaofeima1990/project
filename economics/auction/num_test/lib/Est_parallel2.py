@@ -49,7 +49,7 @@ def map_E(N,h,state_p_l_bound,no_flag,Update_bid,x_signal):
 
         diff  = (p_k_j - p_k )/h
 
-        phi     = norm.cdf(diff)
+        phi     = ss.norm.cdf(diff)
         phi_v   = np.append(np.prod(phi),phi_v)
       
     m_denominator = np.prod(phi_v)

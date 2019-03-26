@@ -63,7 +63,7 @@ def cal_MLE(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     print(log_Prob)
     return log_Prob
 
-def cal_E_bid(N,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
+def cal_E_bid(N,h,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     '''
     calculate the Expected pivotal function for each bidder within auction t
     This is the updated version for my moment inequality estimation
@@ -71,12 +71,12 @@ def cal_E_bid(N,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     2. fix X_J support, and calculate the truncated prob for xi>gamma, XJ in [X_low,X_up] (each xj)
     3. Once get the random X matrix and w weighting vector, We also know the [xi_low,xi_up]. We
        do the calculation for expectation
-    4. use the upper and lower bidding price to calculate the moment inequalities as before  
+    4. construct the "m" as in hong and shum 2003 (smooth objective function) (34)
+    5. use the upper and lower bidding price to calculate the moment inequalities as before  
     '''
     [low_support,high_support]     = Update_bid.support_x(state_p_log,bid_post_log,threshold,no_flag,ladder)
 
     # generate the truncated random vectors X > gamma
-    N=len(low_support)
     low_bound=threshold
     up_bound= 10*np.ones(N)
     [x_v,U_v,w_v]              = Update_bid.GHK_simulator(low_bound,up_bound,0)
@@ -84,30 +84,17 @@ def cal_E_bid(N,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     # calculate the conditional expected bidding function Ebeta(vi|xi,xj)
     # also we need to use the order of the bidding functions
     # i=0 lowest i=N highest
+    map_func=partial(map_E,N,h,state_p_log,no_flag,Update_bid)
+    m_k_s=list(map(map_func,x_v))
+    m_k_s_1 = np.array([x[0] for x in m_k_s])
+    m_k_s_2 = np.array([x[1] for x in m_k_s])
 
-    [E_post,E_value_list] = Update_bid.post_E_value(state_p_l_bound,no_flag,x_signal)
+    # take mean for m_k_s_1 and m_k_s_2 to calculate the m_k
+    de_PT = np.mean(m_k_s_2)
+    mk_v = np.mean(m_k_s_1,axis=0)
+    
 
-    E_Xi=np.zeros(N)
-    for i in range(N):
-        low_bound=low_support
-        low_bound[i]=threshold[i]
-        # low_bound[-2]=high_support[-2]
-
-        up_bound=high_support
-        up_bound[i]=10
-        # calculate truncated dist with xi > gamma ,xj in [low , up]
-        [x_v,U_v,w_v]              = Update_bid.GHK_simulator(low_bound,up_bound,2)
-
-        # calculate the exp 
-        # I think, I still need to use [r,infty] to calculate the expectation
-        # because only [x_i_down,x_i_up] in [r,infty] is very small and does not 
-        # have much meaningful explanation. integrate over [r,infty] 
-        # means in average, the realized bidding should equal to the pivotal function
-        E_Xi[i]=Update_bid.cal_E_i(x_v,w_v,low_bound[0],up_bound [0],i)
-
-        # 
-
-    return E_Xi
+    return [mk_v/de_PT]
 
 
 def map_E(N,h,state_p_l_bound,no_flag,Update_bid,x_signal):
@@ -232,7 +219,7 @@ def para_fun_est(Theta,rng,h,arg_data):
         # calculate the moment inequality condition
         low_price_bound=np.log(price_v[bid_v])[::-1]
         up_price_bound=np.log(np.exp(low_price_bound[-1])+ladder) * np.ones(N)
-        E_XV=cal_E_bid(N,np.log(state_p_history),np.log(price_v[bid_v]),no_flag,Update_bid,X_bar,ladder)
+        E_XV=cal_E_bid(N,h,np.log(state_p_history),np.log(price_v[bid_v]),no_flag,Update_bid,X_bar,ladder)
 
 
         low_1     =  low_price_bound  - E_XV
