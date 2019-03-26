@@ -6,6 +6,10 @@ Created on Mon Mar 25 18:42:03 2018
 
 use real data to do the parallel estimation 
 
+# ---------03-26-2019 --------------------#
+# I just realized that previous version may get bad fval 
+
+
 """
 
 import os,sys
@@ -31,7 +35,7 @@ import numpy as np
 import pandas as pd
 from simu import Simu,data_struct
 from Update_rule3 import Update_rule
-from Est_parallel2 import *
+from Est_parallel3 import *
 from Util import *
 from ENV import ENV
 from scipy.optimize import minimize
@@ -49,7 +53,8 @@ import pickle as pk
 # import quantecon  as qe
 from numpy import linalg as LA
 import warnings
-warnings.filterwarnings("always")
+warnings.filterwarnings("default")
+# error ignore default module once
 
 
 Est_para_dict={
@@ -78,7 +83,7 @@ def poolcontext(*args, **kwargs):
 
 
 
-def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
+def GMM_Ineq_parall(Theta0,Data_struct,d_struct):
     Theta={
     "comm_mu":Theta0[0],
     # "epsilon_mu":Theta0[1], # change from private mu to epsilon_mu
@@ -93,7 +98,7 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     start = time.time()
     
     
-    print('--------------------------------------------------------')
+    print('------------------------------------------------------------------')
     print('current parameter set are :')
     print(Theta)
 #    print('# of auctions: '+str(TT) )
@@ -104,50 +109,48 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
         runing the estimation
     '''
     if Theta['priv_var'] <=0 or Theta['epsilon_var']<=0 or Theta['comm_var']<=0 :
-    	print('variance can not be negative')
+    	print('variance <0 ')
     	return 10000
-    if Theta['epsilon_var'] >1 or Theta['comm_var'] > 1 :
-        print('variance can not be larger than 1')
+    if Theta['epsilon_var'] >1 or Theta['comm_var'] > 1 or Theta['beta']<0 :
+        print('variance > 1 or beta <0')
         return 10000
     # if is_pos_def(Theta,d_struct['max_N']) :
     #     print("not positive definite variance matrix")
     #     return 10000
-
-    data_n=len(DATA_STRUCT)
-    
-    num_works = 1
-    work_pool = ThreadPoolExecutor(max_workers=num_works)
-    
-    # reorganize the data
-    DATA_STRUCT_c = balance_data_est(DATA_STRUCT,num_works)
     
     cpu_num=multiprocessing.cpu_count()
     print("num of cpu is "+str(cpu_num))
-    cpu_num_node=int((cpu_num-num_works)/num_works)
+
+    TT,_=Data_struct.shape
+    print("the length of the auction is {}".format(TT))
     
-    auction_list=[]
-    # balance each work pool tasks: 
-    # make data similar rather than sequencially run # 3, 4, 5, 6, 7, ...
-    
-    if num_works ==1 :
-        auction_result=work_pool.submit(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct),DATA_STRUCT_c).result()
-    else:
-        for Data_Struct in DATA_STRUCT_c:
-            auction_list.append(work_pool.submit(partial(para_data_allo_1,Theta, cpu_num_node,rng,d_struct),Data_Struct).result())    
+    try:
         
-        auction_list=np.array(auction_list).flatten()
-        auction_result=np.nanmean(auction_list)
+        func=partial(para_fun_est,Theta,rng,d_struct['h'])
+        pool = ProcessPoolExecutor(max_workers=cpu_num)
+        results= pool.map(func, zip(range(0,TT), Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[Pub_col].values.tolist() ) )
+        MoM=np.nanmean(np.array(list(results)).flatten())
+
+    except np.linalg.LinAlgError as err:
+        if 'Singular matrix' in str(err):
+            return 10**5
+        else:
+            print(err)
+            exit(1)
+
+
+    auction_result=np.asscalar(MoM)
     
     end = time.time()
     
     print("object value : "+ str(auction_result) )
     print("time spend in this loop: ")
     print(end - start)
-    print('--------------------------------------------------------\n')
+    print('------------------------------------------------------------------\n')
     
     ## save the parameters and objective value 
     
-    with open('para_est-Nelder.txt', 'a+') as f:
+    with open('para_est-new.txt', 'a+') as f:
         for item in Theta0:
             f.write("%f\t" % item)
             
@@ -156,31 +159,6 @@ def GMM_Ineq_parall(Theta0,DATA_STRUCT,d_struct,xi_n):
     return auction_result
 
 
-def para_data_allo_1(Theta,cpu_num, rng, d_struct, Data_struct):
-    time.sleep(0.5)
-    # print(" id: {} , is dealing the auction with {} bidder ".format(threading.get_ident(),pub[2]))
-    
-    TT,_=Data_struct.shape
-    print("the length of the auction is {}".format(TT))
-    results=[]
-    try:
-        
-        func=partial(para_fun_est,Theta,rng,d_struct['h'])
-        pool = ProcessPoolExecutor(max_workers=cpu_num)
-        results= pool.map(func, zip(range(0,TT), Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[Pub_col].values.tolist()))
-        MoM=np.nanmean(np.array(results).flatten())
-
-    except np.linalg.LinAlgError as err:
-        if 'Singular matrix' in str(err):
-            return 10**5
-        else:
-            print(err)
-            exit(1)
-    
-    
-    return MoM 
-
- 
 
 
 if __name__ == '__main__':
@@ -208,7 +186,7 @@ if __name__ == '__main__':
     start = time.time()
     now = datetime.datetime.now()
     bnds = ((0, 2), (-1, 1), (0,2), (0,2), (0,2))
-    print("------------------------------------------------------------------")
+    print('------------------------------------------------------------------')
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")
     

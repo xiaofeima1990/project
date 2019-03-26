@@ -66,7 +66,7 @@ def list_duplicates(seq):
     return ((key,locs) for key,locs in tally.items() if len(locs)>=1)
 
 
-def GMM_Ineq(Theta0,Est_data,d_struct):
+def GMM_Ineq(Theta0,Data_struct,d_struct):
     Theta={
     "comm_mu":Theta0[0],
     # "epsilon_mu":Theta0[1], # change from private mu to epsilon_mu
@@ -85,40 +85,23 @@ def GMM_Ineq(Theta0,Est_data,d_struct):
     print(Theta)
 #    print('# of auctions: '+str(TT) )
     
-    Mom_v =0
-    
-    nn=len(Est_data)
-    
-    DATA_STRUCT_c = balance_data_est(Est_data,2)
-    for Data_struct in DATA_STRUCT_c:
-        TT,_=Data_struct.shape
-         
 
-        '''
-        serial testing 
-        '''
-        func=partial(para_fun_est,Theta,rng,d_struct['h'])
-        results=[]
-        pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
-        for arg_data_ele in zip(range(0,TT),Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[pub_col].values.tolist()):
-            results.append(func(arg_data_ele))
-        results=np.array(results).flatten()
-        MoM=np.nanmean(results)
+    TT,_=Data_struct.shape
         
-        Mom_v=Mom_v+MoM
-        
-    auction_result=Mom_v/nn
 
+    '''
+    serial testing 
+    '''
+    func=partial(para_fun_est,Theta,rng,d_struct['h'])
+    results=[]
+    pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
+    for arg_data_ele in zip(range(0,TT),Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[pub_col].values.tolist()):
+        results.append(func(arg_data_ele))
+    results=np.array(results).flatten()
+    MoM=np.nanmean(results)
 
+    auction_result=MoM
 
-    # '''
-    # serial testing for map 
-    # '''
-    # func=partial(para_fun,para,info_flag,rng,T_end,int(JJ*N),x_signal,w_x)
-    # results=list(map(func, zip(range(0,TT), Data_struct.data_act,Data_struct.data_state,Data_struct.pub_info) ))
-    
-    # MoM=sum(results)/TT
-    
     end = time.time()
     
     print("object value : "+ str(auction_result) )

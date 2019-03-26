@@ -1,11 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 Created on Wed Feb 06 14:28:00 2019
+
 @author: xiaofeima
+
 Use a new bidding function scripts to do the estimation
-#---------------------New Updation--------------------#
-# this is used for naive estimation (old method)
-# bidders have lower and upper bound where upper bound 
-# is the bidding price + delta
 
 """
 
@@ -99,6 +98,7 @@ class Update_rule:
         ??
         wait the modificiation for the informed case 
         ??
+
         '''
 
         ## all the rivals bidding price is known
@@ -366,6 +366,7 @@ class Update_rule:
     def post_E_value(self,state_p_l_bound,no_flag,xi_v):
         '''
         calculate the expected value from the first "round" to last "round"
+
         no_flag means if there is no bid from one bidder, we do not count that bidder
         '''
         E_post=np.array([])

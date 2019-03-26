@@ -5,21 +5,19 @@ Created on Thu Mar 19 08:28:00 2019
 @author: xiaofeima
 
 use the new method I figured out to do the calculation
-
+# ------------New Updation 03-26-2019---------------------------# 
 lower bound: 
 start from lowest bidding price 
 
 upper bound:
 start from highest bidding price 
+Here I introudce three things :
+1. truncated function generation process
+2. lower and upper support recovered from bidding history
+3. MLE estimation method
 
-use the range of support to get trucated moment / truncated normal
-
-calculate the moment inequality ? OR do MLE for trucated normal
-
-(In the new Algorithm I do not even need the threshold)
 
 """
-
 
 import numpy as np
 from numpy.linalg import inv
@@ -29,8 +27,6 @@ import math,copy
 from scipy.optimize import minimize
 import scipy.stats as ss
 from numpy import linalg as LA
-
-
 
 class Update_rule:
     
@@ -45,7 +41,7 @@ class Update_rule:
         '''
         Set up the parameters for the each bidder
         '''
-        self.xi_mu        =self.para.xi_mu[i_id]
+        self.xi_mu        = self.para.xi_mu[i_id]
         self.xi_sigma2    = self.para.xi_sigma2[i_id] 
         self.vi_mu        = self.para.vi_mu[i_id]
         self.vi_sigma2    = self.para.vi_sigma2[i_id]
@@ -55,7 +51,7 @@ class Update_rule:
         self.xi_rival_sigma2 = self.para.xi_rival_sigma2[i_id]
         self.vi_rival_mu     = self.para.vi_rival_mu[i_id]
         self.vi_rival_sigma2 = self.para.vi_rival_sigma2[i_id]   
-        self.cov_istar       =self.para.cov_istar[i_id]
+        self.cov_istar       = self.para.cov_istar[i_id]
 
         # dimension
         #             
@@ -542,12 +538,18 @@ class Update_rule:
 
         density_2nd  = truncnorm.pdf((x2nd-mu)/sigma,(threshold[-2]-mu)/sigma,10)
         prob_1st = 1 - truncnorm.cdf((low_support[-1]-mu)/sigma,(threshold[-1]-mu)/sigma,10)
-        if nominator<=10**(-24) or prob_1st<=10**(-24) or density_2nd <=10**(-24) :
-            print('-------------')
-            print(low_support.flatten())
-            print(high_support.flatten())
-            print(threshold[0])
-            print(nominator)
+
+        with np.errstate(divide='raise'):
+            try:
+                log_Prob      = density_2nd + prob_1st+ np.log(nominator)-np.log(denominator)
+            except Exception as e:
+                print('-----------------------------------------------')
+                print('0 in log at {} bidders with {} reserve price'.format(self.N,threshold[0]))
+                print(low_support.flatten())
+                print(high_support.flatten())
+                print("density_2d: {0:.4}\t| prob_1st: {0:.4}\t| nominator: {0:.4}\t| denominator: {0:.4}\t| ".format(density_2nd,prob_1st,nominator,denominator))
+
+                log_Prob = np.nan
 
 
         log_Prob = np.log(nominator)-np.log(denominator) + np.log(density_2nd) + np.log(prob_1st)
@@ -568,34 +570,52 @@ class Update_rule:
 
         density_2nd  = truncnorm.pdf((x2nd-mu)/sigma,(threshold[-2]-mu)/sigma,10)
         prob_1st     = 1 - truncnorm.cdf((low_support[-1]-mu)/sigma,(threshold[-1]-mu)/sigma,10)
-        log_Prob     = np.log(density_2nd) + np.log(prob_1st)
+        with np.errstate(divide='raise'):
+            try:
+                log_Prob      = np.log(density_2nd) + np.log(prob_1st)
+            except Exception as e:
+                print('-----------------------------------------------')
+                print('0 in log at {} bidders with {} reserve price'.format(self.N,threshold[0]))
+                print(low_support.flatten())
+                print(high_support.flatten())
+                print("density_2d: {} | prob_1st: {}".format(density_2nd[0],prob_1st[0]))
+
+                log_Prob = np.nan
+                return log_Prob
+
+
         
         if self.N>2:
             for i in range(self.N-2):
                 temp_low  =low_support[i+1:]
                 temp_high =high_support[i+1:]
 
-                temp_low  =np.append(temp_low,threshold[i])
-                temp_high =np.append(temp_high,10)
+                temp_low  =np.append(threshold[i],temp_low)
+                temp_high =np.append(10,temp_high)
 
                 [x_v,U_v,w_v]=self.GHK_simulator(i,temp_low,temp_high,2)
                 # last column is what we need
                 #
-                x_flag1      = x_v[-1] >= low_support[i]
-                x_flag2      = x_v[-1] <= high_support[i]
+                x_flag1      = x_v[0] >= low_support[i]
+                x_flag2      = x_v[0] <= high_support[i]
                 check_flag_v1 = x_flag1*x_flag2*1
                 # calculate the prob 
                 nominator     = np.sum(check_flag_v1*w_v)
                 denominator   = np.sum(w_v)
-                log_Prob      = log_Prob + np.log(nominator)-np.log(denominator)
+                with np.errstate(divide='raise'):
+                    try:
+                        
+                        log_Prob      = log_Prob + np.log(nominator)-np.log(denominator)
+                    except Exception as e:
+                        print('-----------------------------------------------')
+                        print(e)
+                        print('0 in log at {} bidders with {} reserve price for bidder {}'.format(self.N,threshold[0],i))
+                        print(low_support.flatten())
+                        print(high_support.flatten())
+                        print("density_2d: {} \t| prob_1st: {} \t| nominator: {} \t| denominator: {} \t| ".format(density_2nd[0],prob_1st[0],nominator,denominator))
 
+                        log_Prob = np.nan
 
-                if nominator<=10**(-24) or prob_1st<=10**(-24) or density_2nd <=10**(-24) :
-                    print('-------------')
-                    print(low_support.flatten())
-                    print(high_support.flatten())
-                    print(threshold[0],self.N)
-                    print(nominator)
 
         return log_Prob
 
@@ -609,7 +629,7 @@ class Update_rule:
 
         return norm.ppf(U_v)
 
-    def GHK_simulator(self,i_id,low_bound,up_bound,mode_flag=0,S=500):
+    def GHK_simulator(self,i_id,low_bound,up_bound,mode_flag=0,S=300):
         '''
         applying GHK method to generate the multivariate truncated normal distribution
         wrong modify

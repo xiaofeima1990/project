@@ -5,7 +5,11 @@ Created on Thur Mar 21 08:35:22 2019
 @author: mgxgl
 save the parallel running function
 
-modfiy for (34) and (35) in Hong and Shum 2003
+# --------------03-26-2019-------------------#
+1 modfiy for (34) and (35) in Hong and Shum 2003
+  only consider the last two bidders sequence
+2 construct the MLE 
+
 
 """
 
@@ -19,7 +23,7 @@ from Util import *
 import copy
 import scipy.stats as ss
 
-METHOD_flag=1
+METHOD_flag=0 # 1 is the MLE 0 is the Moment 
 
 def list_duplicates(seq):
     tally = defaultdict(list)
@@ -37,6 +41,8 @@ def cal_MLE(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     
     [low_support,high_support] = Update_bid.support_x(state_p_log,bid_post_log,threshold,no_flag,ladder)
     # low and high support clean
+    high_support[-2] = low_support[-2] if low_support[-2]>high_support[-2] else high_support[-2]
+    
     flag=low_support[:-2]>high_support[:-2]
     high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
     flag=high_support[:-2]>high_support[-2]
@@ -51,8 +57,7 @@ def cal_MLE(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     x2nd=high_support[-2]
     high_support[-1]=10
     log_Prob                   = Update_bid.MLE_X_new(low_support,high_support,threshold,x2nd)
-    if np.equal(log_Prob,-np.inf):
-        log_Prob=np.nan
+
     
     #print(log_Prob)
     return log_Prob
@@ -73,13 +78,13 @@ def cal_E_bid(N,h,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     # generate the truncated random vectors X > gamma
     low_bound=threshold
     up_bound= 10*np.ones(N)
-    [x_v,U_v,w_v]              = Update_bid.GHK_simulator(low_bound,up_bound,0)
+    [x_v,U_v,w_v]              = Update_bid.GHK_simulator(0,low_bound,up_bound,0)
     
     # calculate the conditional expected bidding function Ebeta(vi|xi,xj)
     # also we need to use the order of the bidding functions
     # i=0 lowest i=N highest
     map_func=partial(map_E,N,h,state_p_log,no_flag,ladder,Update_bid)
-    m_k_s=list(map(map_func,x_v))
+    m_k_s=list(map(map_func,x_v.T))
     m_k_s_1 = np.array([x[0] for x in m_k_s])
     m_k_s_2 = np.array([x[1] for x in m_k_s])
 
@@ -205,6 +210,7 @@ def para_fun_est(Theta,rng,h,arg_data):
                 input('wait for check')
                 
         low_state[i,:] = temp_s
+        low_state[i,i] = bid_v[i]
     low_state=low_state.astype(int)
     no_flag=(low_state<1)*1
     state_p_history= price_v[low_state]
@@ -224,6 +230,7 @@ def para_fun_est(Theta,rng,h,arg_data):
 
         sum_value = np.nansum(low_sum) + np.nansum(high_sum)
         result_value =sum_value/0.001
+        # print(result_value)
 
     else:
         # calculate the MLE
