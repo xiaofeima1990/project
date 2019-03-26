@@ -221,6 +221,8 @@ class Update_rule:
 
         I do not need the order or something in this sense
         '''
+
+        k=self.N-1
         # p_up should have size equal to  N
         p_k=p_up*np.ones([self.N-k,1])
         high_support=high_support.reshape(self.N-1,1)
@@ -263,6 +265,55 @@ class Update_rule:
             x_drop[:self.N-k] = AA_k[-1] *p_k[:self.N-k] - CC_k
 
         return x_drop[0]
+
+    def l_bound_xj_0(self,p_low):
+        '''
+        upper bound for private signal from the bidding price
+        ''' 
+        pre_MU    =self.MU.flatten()
+        pre_SIGMA2=np.diag(self.SIGMA2)
+        p_low=p_low.flatten()
+        x_drop=np.zeros(self.N)
+        # get the order info from the bidding activity p_low
+        # highest to lowest 
+        ord_ind2=np.argsort(p_low)[::-1]
+
+        ori_ind=ss.rankdata(p_low,method='ordinal')
+        ori_ind=ori_ind-1
+        ori_ind=ori_ind.astype(int)
+
+        p_k=p_low[ord_ind2]
+        p_k=p_k.reshape(p_k.size,1)
+
+        # MU and SIGMA2
+        post_SIGMA2=np.append(pre_SIGMA2[0],pre_SIGMA2[1:][ord_ind2])
+        post_SIGMA2=np.ones([self.N,self.N])*self.comm_var + np.diag(post_SIGMA2)-np.eye(self.N)*self.comm_var
+        Sigma_inv = inv(post_SIGMA2)
+        MU = np.append(pre_MU[0],pre_MU[1:][ord_ind2])
+        MU = MU.reshape(MU.size,1)
+
+        # mu_k
+        mu_k = np.append(self.vi_mu, self.vi_rival_mu[ord_ind2])
+        mu_k=mu_k.reshape(mu_k.size,1)
+        # l_k
+        l_k  = np.ones((self.N,1))
+        # Gamma_k
+        Gamma_k = np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])
+        Gamma_k = Gamma_k.reshape(Gamma_k.size,1)
+        # Delta_k
+        Delta_k =np.diag(np.append(self.vi_sigma2, self.vi_rival_sigma2[ord_ind2])-self.comm_var)+np.ones((self.N,self.N))*self.comm_var
+        # inverse of coefficient matrix 
+        AA_k = inv(Delta_k @ Sigma_inv.T) @ l_k
+        # constant
+        temp_diag=np.diag(Delta_k @ Sigma_inv @ Delta_k.T)
+        temp_diag=temp_diag.reshape(temp_diag.size,1)
+        CC_k = 0.5*inv(Delta_k @ (Sigma_inv.T)) @ (Gamma_k-temp_diag + 2*mu_k -2* Delta_k@Sigma_inv@MU)
+
+        x_drop = AA_k[1:]*p_k - CC_k[1:]
+        # recover the order of the sequence 
+        x_drop=x_drop[::-1][ori_ind]
+
+        return [x_drop,ord_ind2,ori_ind]
 
 
 
@@ -329,6 +380,36 @@ class Update_rule:
         
         return [low_support.reshape(low_support.size,1),high_support.reshape(high_support.size,1)]
 
+
+    def post_E_value(self,state_p_l_bound,no_flag,xi_v):
+        '''
+        calculate the expected value from the first "round" to last "round"
+        '''
+        E_post=np.array([])
+        E_value_list=[]
+        for k in range(0,self.N): # number of "round"
+            # deal with the bidding state 
+            temp_state = state_p_l_bound[self.N-1 -k,: ]
+            no_flag_temp = no_flag[self.N-1 -k,:]
+            temp_E_value=[]            
+            for i in range(self.N-2,self.N-k): # the "remaining bidder"
+                temp_state_i = copy.deepcopy(temp_state)
+                temp_state_i = np.delete(temp_state_i,i)
+                no_flag_temp_i = np.delete(no_flag_temp,i)
+                E_value_i=self.bid_vector1(xi_v[i],temp_state_i,no_flag_temp_i,i)
+                E_value_i=E_value_i.flatten()
+                # save the expected highest posting expectection for that round
+                if i == self.N-k-1:
+                    E_post=np.append(E_post,E_value_i)
+                else:
+                    # save all the remaining bidders except for last one
+                    temp_E_value.append(E_value_i)
+            if k < self.N-1:
+                E_value_list.append(temp_E_value)
+
+        return  [E_post,E_value_list]   
+
+
     def cal_E_i(self,x_v,w_v,low_support,high_support,i_id):
         # use cal_bid to get Ai Aj and const part 
         [E_const,AA_i,AA_j]=self.real_bid_calc_new(i_id)
@@ -361,8 +442,8 @@ class Update_rule:
 
         low_support  = low_support.reshape(self.N,1)
         high_support = high_support.reshape(self.N,1)
-        low_support[-2]=low_support[-2]*(1-0.05)
-        high_support[-2]=high_support[-2]*(1+0.05)
+        low_support[-2]=low_support[-2]-0.05
+        high_support[-2]=high_support[-2]+0.05
         x_flag1      = x_v >= low_support
         x_flag2      = x_v <= high_support 
 
@@ -377,8 +458,14 @@ class Update_rule:
 
         density_2nd  = truncnorm.pdf((x2nd-mu)/sigma,(threshold[-2]-mu)/sigma,10)
         prob_1st = 1 - truncnorm.cdf((low_support[-1]-mu)/sigma,(threshold[-1]-mu)/sigma,10)
+        if nominator<=10**(-24) or prob_1st<=10**(-24) or density_2nd <=10**(-24) :
+            print('-------------')
+            print(low_support.flatten())
+            print(high_support.flatten())
+            print(threshold[0])
+            print(nominator)
 
-        
+
         log_Prob = np.log(nominator)-np.log(denominator) + np.log(density_2nd) + np.log(prob_1st)
 
 
@@ -394,7 +481,7 @@ class Update_rule:
 
         return norm.ppf(U_v)
 
-    def GHK_simulator(self, low_bound,up_bound,mode_flag=0,S=3000):
+    def GHK_simulator(self, low_bound,up_bound,mode_flag=0,S=5000):
         '''
         applying GHK method to generate the multivariate truncated normal distribution
         wrong modify

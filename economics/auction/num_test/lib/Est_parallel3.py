@@ -36,21 +36,31 @@ def cal_MLE(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     '''
     
     [low_support,high_support] = Update_bid.support_x(state_p_log,bid_post_log,threshold,no_flag,ladder)
+    # low and high support clean
+    flag=low_support[:-2]>high_support[:-2]
+    high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
+    flag=high_support[:-2]>high_support[-2]
+    high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
+
+        
     # deal with the truncated part 
     # low : r,r,r... x_2nd 
     # high : x_2nd, ....x_2nd, infty
     N=len(low_support)
     low_bound=threshold
-    low_bound[-1]=low_support[-2]
     low_bound[-2]=low_support[-2]
     up_bound = high_support[-2]*np.ones(N)
     up_bound[-1] = 10
+
 
     x2nd=high_support[-2]
     [x_v,U_v,w_v]              = Update_bid.GHK_simulator(low_bound,up_bound,2)
     high_support[-1]=10
     log_Prob                   = Update_bid.MLE_X_trunc(low_support,high_support,threshold,x2nd,x_v,w_v)
-
+    if np.equal(log_Prob,-np.inf):
+        log_Prob=np.nan
+    
+    print(log_Prob)
     return log_Prob
 
 def cal_E_bid(N,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
@@ -75,6 +85,7 @@ def cal_E_bid(N,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     # also we need to use the order of the bidding functions
     # i=0 lowest i=N highest
 
+    [E_post,E_value_list] = Update_bid.post_E_value(state_p_l_bound,no_flag,x_signal)
 
     E_Xi=np.zeros(N)
     for i in range(N):
