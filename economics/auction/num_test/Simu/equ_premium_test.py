@@ -80,9 +80,9 @@ Simu_para_dict={
         "comm_mu":0.07,
         "beta":0.905,
         "epsilon_mu":0,
-        "comm_var":0.025,
+        "comm_var":0.17,
         "priv_var":0.005,
-        "epsilon_var":0.036,
+        "epsilon_var":0.13,
         }
 
 

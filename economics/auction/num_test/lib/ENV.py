@@ -60,6 +60,8 @@ class ENV:
         self.info_st['N']=self.N
         self.info_st["beta"] = self.beta
         self.info_st['comm_var'] =self.comm_var 
+        self.info_st['priv_var'] =self.priv_var 
+        self.info_st['epsilon_var'] =self.noise_var 
         self.info_st['comm_mu']  =self.comm_mu + self.beta*np.log(res)
         # self.info_st['beta']  =self.beta
         # xi_mu and xi_sigma2 this is a list for each possible i 
@@ -216,6 +218,20 @@ class Info_result(object):
         return comm_var for 
         '''
         return self.info_dict['comm_var']
+
+    @property 
+    def priv_var(self):
+        '''
+        return priv_var for 
+        '''
+        return self.info_dict['priv_var']
+
+    @property 
+    def epsilon_var(self):
+        '''
+        return epsilon_var for 
+        '''
+        return self.info_dict['epsilon_var']
 
     @property 
     def comm_mu(self):
