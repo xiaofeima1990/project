@@ -306,9 +306,13 @@ winning price w.r.t. number of bidders
 
 '''
 pri_group1 = df_1_s.groupby("priority_people")
-xx1 = np.sort(pri_group1.get_group(0)['p_ratio'])
+temp_df=pri_group1.get_group(0)
+temp_df=temp_df.loc[temp_df['p_res_eva']<0.75,'p_ratio']
+xx1 = np.sort(temp_df)
 density1 = stats.kde.gaussian_kde(xx1)
-xx2 = np.sort(pri_group1.get_group(1)['p_ratio'])
+temp_df=pri_group1.get_group(1)
+temp_df=temp_df.loc[temp_df['p_res_eva']<0.75,'p_ratio']
+xx2 = np.sort(temp_df)
 density2 = stats.kde.gaussian_kde(xx2)
 
 x1 = np.arange(0.75, 3, 0.01)
