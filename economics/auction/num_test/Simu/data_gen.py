@@ -107,7 +107,7 @@ if __name__ == '__main__':
     Simu_para_dict={
 
         "comm_mu":0.07,
-        "beta":0.965,
+        "beta":1.265,
         "epsilon_mu":0,
         "comm_var":0.17,
         "priv_var":0.005,
@@ -117,8 +117,8 @@ if __name__ == '__main__':
     if mode_flag == 1 :
         ## fix the number of bidders  
         ## parameters
-        N        = 5
-        SS       = 100
+        N        = 2
+        SS       = 150
         Rng_seed = 12456
         # informed bidder bidding strategy
         # 0
@@ -132,7 +132,7 @@ if __name__ == '__main__':
         # print('info case')
         # informed bidder bidding strategy
         # 0 normal, 1 aggresive, 2 never bid
-        bidding_mode = 1
+        bidding_mode = 0
         
         info_flag=1
         simu_data_1= Gen_Simu_data1(N,SS,Simu_para_dict,bidding_mode,info_flag,Rng_seed)
@@ -148,16 +148,16 @@ if __name__ == '__main__':
         '''
         # setup the environment paramers
         start_n=2
-        end_n=10
-        T=150
+        end_n=15
+        T=250
         
         Rng_seed=123
         info_flag=0 # has the informed bidder (1) or not (0)
         # informed bidder bidding strategy
         # 0 normal, 1 aggresive, 2 never bid
-        bidding_mode = 2
+        bidding_mode = 0
         simu_data_2= Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode,info_flag)
-        with open( data_path + "simu_data__uninfo.pkl", "wb") as f : 
+        with open( data_path + "simu_data_3_uninfo-"+str(bidding_mode)+".pkl", "wb") as f : 
             pk.dump(simu_data_2, f)
 
 
@@ -166,7 +166,7 @@ if __name__ == '__main__':
         # 0 normal, 1 aggresive, 2 never bid
         # bidding_mode = 0
         simu_data_2= Gen_Simu_data2(start_n,end_n,T,Simu_para_dict,bidding_mode,info_flag)
-        with open( data_path + "simu_data_2_info.pkl", "wb") as f : 
+        with open( data_path + "simu_data_3_info-"+str(bidding_mode) +".pkl", "wb") as f : 
             pk.dump(simu_data_2, f)
 
     # # load the uninformed case 

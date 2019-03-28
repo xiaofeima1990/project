@@ -38,6 +38,67 @@ if __name__ == '__main__':
     end_n=10
     
     
+    # ----------------------------------------------------------
+    ## simple comparison for normal bidding 
+    # ----------------------------------------------------------
+    PATH= 'G:/github/project/economics/auction/num_test/data/Simu/'
+    
+    with open( PATH + "simu_data_2_uninfo-0.pkl", "rb") as f :
+        simu_data_0=pk.load( f)
+    # with the informed bidder
+    with open( PATH + "simu_data_2_info-0.pkl", "rb") as f :
+        simu_data_1=pk.load( f)
+        
+    N_chunk=len(simu_data_0)
+    n_start=0
+    for i in range(n_start,N_chunk):
+        temp_sim_0=simu_data_0[i][1]
+        sim_0_list=[]
+        if i ==n_start:
+            sim_0_df=temp_sim_0
+        else:
+            sim_0_df=sim_0_df.append(temp_sim_0,ignore_index=True)
+        print('for N = {} auctions'.format(i+2))
+
+    N_chunk=len(simu_data_1)
+    n_start=0
+    # for informed bidder start from n=3 at least 
+    for i in range(n_start,N_chunk):
+        temp_sim_1=simu_data_1[i][1]
+        sim_1_list=[]
+        if i ==n_start:
+            sim_1_df=temp_sim_1
+        else:
+            sim_1_df=sim_1_df.append(temp_sim_1,ignore_index=True)
+        print('for N = {} auctions'.format(i+2))
+
+
+
+
+    xx1 = np.sort(sim_0_df['data_win'])
+    xx1 =xx1.astype(float) 
+    density1 = ss.kde.gaussian_kde(xx1)
+    xx2 = np.sort(sim_1_df['data_win'])
+    xx2 =xx2.astype(float)
+    density2 = ss.kde.gaussian_kde(xx2)
+    x1 = np.arange(0.7, 2, 0.001)
+    x2 = np.arange(0.7, 2, 0.001)
+
+    _ = plt.plot(x1,density1(x1),label = "without informed")
+    _ = plt.plot(x2,density2(x2),label = "with informed - normal")
+
+    _ = plt.xlabel("winning price / reserve price")
+    _ = plt.ylabel("Density")
+    _ = plt.title("Simulated Distribution of Winning Bid")
+    _ = plt.margins(0.02)
+    _ = plt.legend(loc='upper right')
+    _ = plt.grid(True)    
+
+
+    # ----------------------------------------------------------
+    # comparison for all the strategies 
+    # ----------------------------------------------------------
+    
     PATH= 'E:/github/Project/economics/auction/num_test/simu'
     # without the informed bidder 
     with open( data_path + "simu_data_2_uninfo-0.pkl", "rb") as f :
@@ -51,7 +112,7 @@ if __name__ == '__main__':
     with open( data_path + "simu_data_2_info-2.pkl", "rb") as f :
         simu_data_12=pk.load( f)
 
-    
+
 
     
     N_chunk=len(simu_data_1)
@@ -60,18 +121,7 @@ if __name__ == '__main__':
     cmp_list=['data_win','sec_diff_i1','sec_freq_i1','low_freq_ratio_i','freq_i1']
 
 #        
-    for i in range(0,N_chunk):
-        temp_sim_0=simu_data_0[i][1]
-        temp_sim_1=simu_data_1[i][1]
-        sim_0_list=[]
-        sim_1_list=[]
-        if i ==0:
-            sim_0_df=temp_sim_0
-            sim_1_df=temp_sim_1
-        else:
-            sim_0_df=sim_0_df.append(temp_sim_0,ignore_index=True)
-            sim_1_df=sim_1_df.append(temp_sim_1,ignore_index=True)
-        print('for N = {} auctions'.format(i+2))
+
 
     for i in range(0,N_chunk):
         temp_sim_0=simu_data_0[i][0]

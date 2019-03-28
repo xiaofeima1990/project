@@ -43,7 +43,7 @@ class GHK:
         '''
         np.random.seed(rng)
  
-        SS=S + (self.N)*500 
+        SS=S
         # Cholesky factorization the Sigma
 
         down_ch_sigma=LA.cholesky(self.SIGMA2)

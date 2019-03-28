@@ -88,7 +88,7 @@ class Simu:
         mode controls for random or not 
         '''
         if mode == 0:
-            reserve = 0.8
+            reserve = 1.0
         else:
             reserve = 0.7 + 0.3*self.rng.rand() 
         return reserve
@@ -156,11 +156,11 @@ class Simu:
         several simulation mode: 
         1. random_para_flag : indicate whether it fixes the parameter set (0) or randomize (1) 
         2. reserve_flag     : indicate whether it fixes the reserve price (0) or not (1)
-
+        3. rule_flag        : indicates what kinds of upper bound constraint we use (0- no upper bound) (1 upper bounds) (2 xi and upper bound)
         '''
         reserve_flag = 0
         random_para_flag = 0
-
+        rule_flag  = 1
         # prepared vector
         Sim_df=pd.DataFrame(columns=Col_name)
 
@@ -188,7 +188,7 @@ class Simu:
             # 1 randomize the reserve price of not 
 
             # fix the reserve price 
-            reserve=self.rand_reserve(random_para_flag)
+            reserve=self.rand_reserve(reserve_flag)
             Env=ENV(N,self.dict_para)
 
             # this may be use for differentilize the 
@@ -208,28 +208,30 @@ class Simu:
             para=Env.info_struct(info_index_v,rank_index,reserve)
 
             # initialize updating rule
-            Update_bid=Update_rule(para)
+            Update_bid=Update_rule(para,rule_flag)
             # get the threshold
             Update_bid.setup_para(i_id)
             # entry threehold
             if info_flag==1:
                 x_reserve = Update_bid.entry_threshold_info(np.log(reserve))
+                # both use the highest entry threshold 
                 X_low = x_reserve[0]*np.ones(N)
-                X_low[info_index]=x_reserve[0]
+                X_low[info_index]=x_reserve[1]
             else:
-                x_reserve = Update_bid.entry_threshold_uninfo(np.log(reserve)*np.ones([N,1]))
+                x_reserve = Update_bid.threshold_test(np.log(reserve))
                 X_low=x_reserve*np.ones([1,N])
 
             # select highest x_bar as entry conditions 
             
-            X_up  = Update_bid.entry_simu_up(X_low.flatten(),3)
-            ghk_para=self.para_ghk(para,0)
-            ghk=GHK(ghk_para)
-            [x_signal,w_v] = ghk.GHK_simulator(X_low,X_up*np.ones(N),2,4488,10)
-            x_signal=x_signal[:,4].flatten()
-            ladder=0.01 + 0.015*self.rng.rand()
+            # X_up  = Update_bid.entry_simu_up(X_low.flatten(),3)
+            X_up = 5
+            # ghk_para=self.para_ghk(para,0)
+            # ghk=GHK(ghk_para)
+            # [x_signal,w_v] = ghk.GHK_simulator(X_low,X_up*np.ones(N),2,4488,100)
+            # x_signal=x_signal[:,-1].flatten()
+            # ladder=0.01 + 0.015*self.rng.rand()
 
-            #[x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,X_bar,X_up*np.ones([1,N]))
+            [x_signal,ladder]=self.signal_DGP_simu(para,self.rng,N,X_low,X_up*np.ones([1,N]))
             
             # notice that actually, I do not need to vectorize the bidding price
             # I can just use the bidding ladder and reserve price to represent posting 
@@ -271,7 +273,7 @@ class Simu:
                         bid_price = reserve + bid * ladder
                         no_flag =  1*(np.array(ss_state)>-1)[1:] 
                         
-                        result = Update_bid.real_bid(x_signal[i],ss_state_p,bid_price,no_flag,i) if i == info_index else Update_bid.real_info_bid(x_signal[i],bid_price)
+                        result = Update_bid.real_bid(x_signal[i],ss_state_p,bid_price,no_flag,i) if i != info_index else Update_bid.real_info_bid(x_signal[i],bid_price)
                         
                         Active[i]  = result[2]
                         Active2[i] = result[1]

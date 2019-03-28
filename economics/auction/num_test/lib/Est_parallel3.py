@@ -229,7 +229,7 @@ def para_fun_est(Theta,rng,h,arg_data):
         high_sum[-1]=0
 
         sum_value = np.nansum(low_sum) + np.nansum(high_sum)
-        result_value =sum_value/0.001
+        result_value = sum_value/0.001
         # print(result_value)
 
     else:

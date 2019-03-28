@@ -29,10 +29,9 @@ import scipy.stats as ss
 
 class Update_rule:
     
-    def __init__(self,para,res=0,rule_flag = 0):
+    def __init__(self,para,rule_flag = 0):
         self.para      = para
         self.N         = para.N
-        self.res       = res
         self.comm_var  = para.comm_var
         self.comm_mu   = para.comm_mu
         self.priv_var  = para.priv_var
@@ -203,10 +202,35 @@ class Update_rule:
         return x_drop[0]
 
     def entry_threshold_info(self,log_res):
-        x_ini=max(self.entry_threshold_uninfo(log_res))
-        X_r_est=minimize(self.threshold_func,[x_ini,x_ini],args=(log_res))
+
+        x_ini = self.bound_simple(np.exp(log_res)*np.ones(self.N))
+        x_ini = max(x_ini)
+        X_r_est=minimize(self.threshold_func2,[x_ini,x_ini],args=(log_res))
         return X_r_est.x
-    
+
+    def threshold_test(self,log_res):
+        x_j_lower = self.bound_simple(np.exp(log_res)*np.ones(self.N))
+        X_r_est=minimize(self.threshold_new,x_j_lower[0],args=(log_res))
+        return X_r_est.x
+    def threshold_new(self,x_low, log_res):
+        # get the general form
+        Sigma_inv = inv(self.SIGMA2)
+        COV_xvi=self.cov_istar
+        CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
+        AA_coef =  Sigma_inv @ COV_xvi
+        AA_i = AA_coef[0]
+        AA_j = AA_coef[1:]
+
+        # x_j_lower = self.bound_simple(log_res*np.ones(self.N-1))
+        x_j_low=x_low*np.ones(self.N-1)
+
+        E_j = AA_j.flatten()*x_j_low
+        E_j = sum(E_j)
+        
+        eq=AA_i*x_low + CC_i + E_j - log_res
+
+        return eq**2
+
     def threshold_func(self,X_r,log_res):
         '''
         permerntly fix the info bidder as the second one 
@@ -218,37 +242,72 @@ class Update_rule:
         eq1 = X_r[1] - log_res
 
         # feasibility constraint for the uninformed bidder 
-        # E[V|X XI]
-        mu_k = self.vi_mu
-        # simga_i^2
-        Gamma_k = self.vi_sigma2
+        Sigma_inv = inv(self.SIGMA2)
+        COV_xvi=self.cov_istar
+        CC_i = self.vi_mu - self.MU.T @ Sigma_inv @ COV_xvi
+        AA_coef =  Sigma_inv @ COV_xvi
+        AA_i = AA_coef[0]
+        AA_j = AA_coef[1:]
+
+        # x_j_lower = self.bound_simple(log_res*np.ones(self.N-1))
+        x_j_low=X_r[0]*np.ones(self.N-1)
+        x_j_low[0]=X_r[1]
+
+
+        E_j = AA_j.flatten()*x_j_low
+        E_j = sum(E_j)
+        # this is the feasibliity constraint of the informed guy    
+        E_x0=AA_i*X_r[0] + CC_i + E_j - log_res
         
-        # cov i  Delta
-        Delta_k =self.comm_var * np.ones(self.N)
-        Delta_k[0] = self.vi_sigma2
-        Delta_k=Delta_k.reshape(self.N,1)
-        
-        # sigma_inv
-        SIMGA2 = self.comm_var * np.ones([self.N,self.N]) + (self.priv_var+self.epsilon_var)*np.eye(self.N)
-        SIMGA2[1,1] = self.comm_var + self.priv_var
-        Sigma_inv = inv(self.SIGMA2)        
-        Sigma_inv_k1 = Sigma_inv[0:self.N,:]
-        
-        # the main AA and CC
-        AA_k = Delta_k.T @ Sigma_inv_k1.T
-        CC_k = 0.5*  (Gamma_k - Delta_k.T @ Sigma_inv @ Delta_k) + mu_k - Delta_k.T @Sigma_inv@self.MU
-                    
-        E_x0 = (AA_k @ x_s  + CC_k)
-        
-        # this is the feasibliity constraint of the informed guy
+
         eq0  = E_x0 - log_res
 
         # incentive constraint for informed and uninformed 
-        eq2 = X_r[1] - E_x0
+        eq2 = E_x0 - X_r[1]
 
-        return 5*eq2**2 + eq1**2 + eq0**2 
+        return eq2**2 + eq1**2+eq0**2 
 
+    def threshold_func2(self,X_r,log_res):
+        '''
+        permerntly fix the info bidder as the second one 
+        '''
 
+        # feasibility constraint for informed bidder 
+        eq1 = X_r[1] - log_res
+        E_x1 = self.truc_x(self.xi_mu,self.priv_var+self.comm_var,X_r[1],10) 
+
+        # feasibility constraint for the uninformed bidder 
+        SIGMA2= self.comm_var* np.ones([self.N,self.N]) + (self.priv_var+self.epsilon_var)*np.eye(self.N)
+        SIGMA2[1,1]= self.comm_var + self.priv_var
+        Sigma_inv = inv(SIGMA2)
+        MU = self.MU
+        COV_xvi=self.comm_var* np.ones([self.N,1])
+        COV_xvi[0]=self.priv_var + self.comm_var
+
+        CC_i = self.vi_mu - MU.T @ Sigma_inv @ COV_xvi
+        AA_coef =  Sigma_inv @ COV_xvi
+        AA_i = AA_coef[0]
+        AA_j = AA_coef[1:]
+
+        # x_j_lower = self.bound_simple(log_res*np.ones(self.N-1))
+        if self.N ==2:
+            x_j_low=X_r[1]
+        else:
+            x_j_low=X_r[0]*np.ones(self.N-1)
+            x_j_low[1]=X_r[1]
+        x_j_upper = 10*np.ones(self.N-1)
+
+        #E_j = AA_j.flatten()*x_j_low
+        E_j = AA_j.flatten()*self.truc_x(MU[1:].flatten(),np.diag(SIGMA2)[1:].flatten(),x_j_low.flatten(),x_j_upper)
+        E_j = sum(E_j)
+        # this is the feasibliity constraint of the informed guy    
+        E_x0=AA_i*X_r[0] + CC_i + E_j
+        
+
+        # incentive constraint for informed and uninformed 
+        eq2 = E_x0 - E_x1
+
+        return eq2**2 + eq1**2
 
     def entry_simu_up(self,x_bar,up):
         # Constat part 
@@ -284,6 +343,8 @@ class Update_rule:
 
         return [Pure_value,E_win_revenue,flag]
 
+
+
     def real_bid(self,xi,state_p,bid_price,no_flag,i_id):
         x_j_lower = self.bound_simple(state_p)
         x_j_lower = x_j_lower.flatten()[1:]
@@ -304,7 +365,7 @@ class Update_rule:
         if self.rule_flag ==0:
             x_j_upper = 5*np.ones(self.N-1)
         else :
-            x_j_upper = self.bound_simple(bid_price)
+            x_j_upper = self.bound_simple(bid_price*np.ones(self.N))
             x_j_upper = x_j_upper.flatten()[1:]
             if self.rule_flag ==2:
                 x_j_upper = ( 1*( x_j_lower < xi*np.ones(self.N-1) ) ) * xi + ( 1*( xi*np.ones(self.N-1) <= x_j_lower))* 5

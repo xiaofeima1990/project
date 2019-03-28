@@ -19,9 +19,6 @@ lib_path= os.path.dirname(PATH) + '/lib/'
 sys.path.append(lib_path)
 
 data_path= os.path.dirname(PATH) + '/data/Simu/'
-from Update_rule import Update_rule
-from est import Est
-from ENV import ENV
 import numpy as np
 import pandas as pd
 import random
@@ -137,12 +134,12 @@ while ii>=2:
     # 2.1 fixed # of bidders: winning bid, bid freqency, 
 	# 2.2 use possion process to randomize # of bidders. 
 	# -------------------------------------------------------------
-    PATH= 'E:/github/Project/economics/auction/num_test/data/Simu/'
+    PATH= 'G:/github/Project/economics/auction/num_test/data/Simu/'
     # without the informed bidder 
-    with open( PATH + "simu_data_2_uninfo.pkl", "rb") as f :
+    with open( PATH + "simu_data_0_uninfo.pkl", "rb") as f :
         simu_data_0=pk.load( f)
     # with the informed bidder
-    with open( PATH + "simu_data_2_info.pkl", "rb") as f :
+    with open( PATH + "simu_data_0_info.pkl", "rb") as f :
         simu_data_1=pk.load( f)
 
 

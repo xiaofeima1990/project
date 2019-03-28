@@ -190,7 +190,7 @@ if __name__ == '__main__':
     print("optimization Begins at : "+ str(now.strftime("%Y-%m-%d %H:%M")))
     print("------------------------------------------------------------------")
     
-    res = minimize(GMM_Ineq_parall, Theta, method='Nelder-Mead',args=(Est_data,d_struct)) 
+    res = minimize(GMM_Ineq_parall, Theta, method='SLSQP',args=(Est_data,d_struct)) 
     
     print("------------------------------------------------------------------")
     now = datetime.datetime.now()
