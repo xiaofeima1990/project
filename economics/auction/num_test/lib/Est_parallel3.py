@@ -56,7 +56,7 @@ def cal_MLE(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
 
     x2nd=high_support[-2]
     high_support[-1]=10
-    log_Prob                   = Update_bid.MLE_X_new(low_support,high_support,threshold,x2nd)
+    log_Prob                   = Update_bid.MLE_X_new2(low_support,high_support,threshold,x2nd)
 
     
     #print(log_Prob)
