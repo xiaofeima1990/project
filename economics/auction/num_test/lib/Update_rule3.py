@@ -632,8 +632,17 @@ class Update_rule:
         mu=self.MU[-2]
         sigma=self.SIGMA2[-2,-2]**0.5
 
+        old_low=np.copy(low_support)
+        old_high=np.copy(high_support)
+        flag=low_support[:-2]>high_support[:-2]
+        high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
+        flag=high_support[:-2]>high_support[-2]
+        high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
+
+
         low_support  = low_support.reshape(self.N,1)
         high_support = high_support.reshape(self.N,1)
+
 
 
         # the higest winning private signal prob
@@ -700,6 +709,96 @@ class Update_rule:
 
         return log_Prob
 
+
+    def MLE_X_new3(self,low_support,high_support,threshold,x2nd):
+        '''
+        In Karl's suggestion, conditional each Omgea_i, I can get conditional distribution for 
+        each bidder i. Then I can calculate the probability that xi is under the lower and upper 
+        bound
+        In this test, I calcuate the probaility that Xi is out of the support, which I minimize the probability
+        Prob_xi( xi_low < Xi < xi_up |Omega_it)
+        ignore the second highest bid first 
+        '''
+        self.setup_para(0)
+        mu=self.MU[-2]
+        sigma=self.SIGMA2[-2,-2]**0.5
+
+        old_low=np.copy(low_support)
+        old_high=np.copy(high_support)
+        flag=low_support[:-2]>high_support[:-2]
+        high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
+        # flag=high_support[:-2]>high_support[-2]
+        # high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
+
+
+        low_support  = low_support.reshape(self.N,1)
+        high_support = high_support.reshape(self.N,1)
+
+
+
+        # the higest winning private signal prob
+        temp_low  =np.delete(low_support,self.N-1)
+        temp_high =np.delete(high_support,self.N-1)
+
+        temp_low  =np.append(threshold[self.N-1],temp_low)
+        temp_high =np.append(10,temp_high)        
+
+        [x_v ,w_v]=self.GHK_simulator(self.N-1,temp_low,temp_high,2)
+
+        x_flag1      = x_v[0] <= low_support[self.N-1]
+        # x_flag2      = x_v[0] <= high_support[self.N-1]
+        check_flag_v1 = x_flag1 
+        prob_1st     = np.mean(check_flag_v1)
+
+        with np.errstate(divide='raise'):
+            try:
+                log_Prob      = np.log(1+prob_1st*1000)
+            except Exception as e:
+                print('-----------------------------------------------')
+                print('0 in log at {} bidders with {} reserve price'.format(self.N,threshold[0]))
+                print(low_support.flatten())
+                print(high_support.flatten())
+                print("density_2d: {} ".format(prob_1st[0]))
+
+                log_Prob = np.nan
+                return log_Prob
+
+
+        
+        if self.N>2:
+            for i in range(self.N-2):
+                temp_low  =np.delete(low_support,i)
+                temp_high =np.delete(high_support,i) 
+
+                temp_low  =np.append(threshold[i],temp_low)
+                temp_high =np.append(10,temp_high)
+
+                [x_v ,w_v]=self.GHK_simulator(i,temp_low,temp_high,2)
+                # last column is what we need
+                #
+                x_flag1      = x_v[0] <= low_support[i]
+                x_flag2      = x_v[0] >= high_support[i]
+                check_flag_v1 = (x_flag1 + x_flag2)*1
+                # calculate the prob is that possible? 
+                #  
+                Prob_temp     = np.mean(check_flag_v1) 
+
+                with np.errstate(divide='raise'):
+                    try:
+                        
+                        log_Prob      = log_Prob + np.log(1+Prob_temp*1000)
+                    except Exception as e:
+                        print('-----------------------------------------------')
+                        print(e)
+                        print('0 in log at {} bidders with {} reserve price for bidder {}'.format(self.N,threshold[0],i))
+                        print(low_support.flatten())
+                        print(high_support.flatten())
+                        print("prob_1st: {} \t| nominator: {} \t ".format(prob_1st,Prob_temp))
+
+                        log_Prob = np.nan
+
+
+        return log_Prob
         
     def norm_generator(self,c,d):
 
