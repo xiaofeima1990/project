@@ -149,7 +149,7 @@ if __name__ == '__main__':
         # setup the environment paramers
         start_n=2
         end_n=15
-        T=250
+        T=150
         
         Rng_seed=123
         info_flag=0 # has the informed bidder (1) or not (0)

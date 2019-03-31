@@ -23,7 +23,7 @@ from Util import *
 import copy
 import scipy.stats as ss
 
-METHOD_flag=0 # 1 is the MLE 0 is the Moment 
+METHOD_flag=1 # 1 is the MLE 0 is the Moment 
 
 def list_duplicates(seq):
     tally = defaultdict(list)
@@ -43,10 +43,10 @@ def cal_MLE(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     # low and high support clean
     high_support[-2] = low_support[-2] if low_support[-2]>high_support[-2] else high_support[-2]
     
-    flag=low_support[:-2]>high_support[:-2]
-    high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
-    flag=high_support[:-2]>high_support[-2]
-    high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
+    # flag=low_support[:-2]>high_support[:-2]
+    # high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
+    # flag=high_support[:-2]>high_support[-2]
+    # high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
 
         
     # deal with the truncated part 
@@ -56,11 +56,31 @@ def cal_MLE(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
 
     x2nd=high_support[-2]
     high_support[-1]=10
-    log_Prob                   = Update_bid.MLE_X_new(low_support,high_support,threshold,x2nd)
+    log_Prob                   = Update_bid.MLE_X_new2(low_support,high_support,threshold,x2nd)
 
     
     #print(log_Prob)
     return log_Prob
+
+def cal_MLE2(state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
+    '''
+    # calculate the X range support 
+
+    threshold : [r,r,r,...]  
+    '''
+    
+    [low_support,high_support] = Update_bid.support_x(state_p_log,bid_post_log,threshold,no_flag,ladder)
+    # low and high support clean
+    high_support[-2] = low_support[-2] if low_support[-2]>high_support[-2] else high_support[-2]
+      
+    x2nd=high_support[-2]
+    high_support[-1]=10
+    log_Prob                   = Update_bid.MLE_X_new3(low_support,high_support,threshold,x2nd)
+
+    
+    #print(log_Prob)
+    return log_Prob
+
 
 def cal_E_bid(N,h,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     '''
@@ -78,7 +98,7 @@ def cal_E_bid(N,h,state_p_log,bid_post_log,no_flag,Update_bid,threshold,ladder):
     # generate the truncated random vectors X > gamma
     low_bound=threshold
     up_bound= 10*np.ones(N)
-    [x_v,U_v,w_v]              = Update_bid.GHK_simulator(0,low_bound,up_bound,0)
+    [x_v,w_v]              = Update_bid.GHK_simulator(0,low_bound,up_bound,0)
     
     # calculate the conditional expected bidding function Ebeta(vi|xi,xj)
     # also we need to use the order of the bidding functions
@@ -234,10 +254,11 @@ def para_fun_est(Theta,rng,h,arg_data):
 
     else:
         # calculate the MLE
-        log_prob=cal_MLE(np.log(state_p_history),np.log(price_v[bid_v]),no_flag,Update_bid,X_bar,ladder)
-        result_value = -log_prob    
-
-
+        # log_prob=cal_MLE(np.log(state_p_history),np.log(price_v[bid_v]),no_flag,Update_bid,X_bar,ladder)
+        # result_value = -log_prob    
+        
+        log_prob=cal_MLE2(np.log(state_p_history),np.log(price_v[bid_v]),no_flag,Update_bid,X_bar,ladder)
+        result_value = log_prob  
 
 
     return result_value
