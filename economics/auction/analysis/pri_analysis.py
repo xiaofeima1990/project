@@ -24,7 +24,7 @@ graph_path = "E:/Dropbox/academic/ideas/IO field/justice auction/draft/pic/"
 
 con = sqlite3.connect(store_path+"auction_info_house.sqlite")
 
-PATH_output="G:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code4\\analysis\\"
+PATH_output="E:/github/Project/economics/auction/test/"
 
 df_1_s = pd.read_csv(PATH_output+"sample1_df.csv", sep='\t', encoding='utf-8')
 df_2_s = pd.read_csv(PATH_output+"sample2_df.csv", sep='\t', encoding='utf-8')
@@ -44,6 +44,10 @@ df_1_s=df_1_s.loc[df_1_s['num_bidder']<20,]
 
 tail1=df_1_s['resev_proxy'].quantile(.99)
 df_1_s=df_1_s.loc[df_1_s['resev_proxy']<tail1,]
+
+tail1=df_1_s['win_bid'].quantile(.99)
+df_1_s=df_1_s.loc[df_1_s['win_bid']<tail1,]
+
 
 
 # get the distribution between priority people and non-priority people
@@ -288,8 +292,6 @@ max_bin=df_1_s.loc[df_1_s['priority_people']==1,'num_bidder'].max()
 bins = np.linspace( min(group_freq1.num_bidder.min()), max_bin, 40)
 
 z1=df_1_s.loc[df_1_s['priority_people']==0,'num_bidder']
-
-
 z2=df_1_s.loc[df_1_s['priority_people']==1,'num_bidder']
 
 plt.hist((z1,z2),bins,density=True, label=['without priority bidder', 'with priority bidder'])
@@ -302,21 +304,30 @@ p.grid(True)
 
 
 '''
-winning price w.r.t. number of bidders
+winning price distribution
 
 '''
 pri_group1 = df_1_s.groupby("priority_people")
-temp_df=pri_group1.get_group(0)
-temp_df=temp_df.loc[temp_df['p_res_eva']<0.75,'p_ratio']
+temp_df=pri_group1.get_group(0)['p_ratio']
+#temp_df=np.log(pri_group1.get_group(0)['p_ratio'])
+#temp_df=pri_group1.get_group(0)
+#temp_df=temp_df.loc[temp_df['p_res_eva']<0.75,'p_ratio']
 xx1 = np.sort(temp_df)
 density1 = stats.kde.gaussian_kde(xx1)
-temp_df=pri_group1.get_group(1)
-temp_df=temp_df.loc[temp_df['p_res_eva']<0.75,'p_ratio']
+
+temp_df=pri_group1.get_group(1)['p_ratio']
+#temp_df=np.log(pri_group1.get_group(1)['p_ratio'])
+#temp_df=pri_group1.get_group(1)
+#temp_df=temp_df.loc[temp_df['p_res_eva']<0.75,'p_ratio']
 xx2 = np.sort(temp_df)
 density2 = stats.kde.gaussian_kde(xx2)
 
-x1 = np.arange(0.75, 3, 0.01)
-x2 = np.arange(0.75, 3, 0.01)
+#x1 = np.arange(0.75, 3, 0.01)
+#x2 = np.arange(0.75, 3, 0.01)
+
+x1 = np.arange(0.7, 3, 0.01)
+x2 = np.arange(0.7, 3, 0.01)
+
 
 _ = plt.plot(x1,density1(x1),label = "without priority")
 _ = plt.plot(x2,density2(x2),label = "with priority")

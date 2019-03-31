@@ -4,10 +4,32 @@
 library(foreign)
 library(stargazer)
 library(plm)
-
-sample= read.csv(file=file.path("E:\\Dropbox\\academic\\ideas\\IO field\\justice auction\\code2\\analysis\\", "sample1_df.csv"), header=TRUE, sep="\t",encoding = "UTF-8")
+# try to use sample1_df
+sample= read.csv(file=file.path("E:/github/Project/economics/auction/test", "sample1_df.csv"), header=TRUE, sep="\t",encoding = "UTF-8")
 View(sample)
-sample2=data_clean(sample,'resev_proxy',sample$resev_proxy,0.01)
+
+
+sample2=data_clean(sample,'bid_freq',sample$bid_freq,0.01)
+sample2=data_clean(sample,'win_bid',sample$win_bid,0.01)
+sample2=data_clean(sample2,'reserve_price',sample$reserve_price,0.01)
+sample2=data_clean(sample2,'resev_proxy',sample$resev_proxy,0.05)
+# --------------------------------------------------------------------------------
+# summary statistics
+# --------------------------------------------------------------------------------
+
+sample20=sample2[sample2$priority_people==0,]
+sample20['ladder_ratio']=sample20['bid_ladder']/sample20['reserve_price']
+sample20['reserve_1000']=sample20['reserve_price']/1000
+summary(sample20)
+stargazer(sample20)
+
+
+sample21=sample2[sample2$priority_people==1,]
+sample20['ladder_ratio']=sample20['bid_ladder']/sample20['reserve_price']
+sample20['reserve_1000']=sample20['reserve_price']/1000
+summary(sample20)
+stargazer(sample20)
+
 
 
 # ---------------------------------------------------------------------------------
@@ -45,12 +67,14 @@ summary(reg_pri_freq0)
 
 
 # regress on bidding freq with control on city and year
-reg_pri_freq1 <- lm(bid_freq ~ p_res_eva+num_bidder+priority_people, data=sample2)
+reg_pri_freq1 <- lm(bid_freq ~ p_res_eva+num_bidder+priority_people+factor(city)+factor(year), data=sample2)
 summary(reg_pri_freq1)
 
 
 # output the results for resev_proxy
-stargazer(reg_pri0,reg_pri1,reg_pri_bidder0,reg_pri_bidder1,type='latex')
+stargazer(reg_pri0,reg_pri1,reg_pri_bidder0,reg_pri_bidder1,type='text')
+stargazer(reg_pri1,reg_pri_bidder1,reg_pri_freq1, type='text')
+
 
 # ---------------------------------------------------------------------------------
 # second time auction regression

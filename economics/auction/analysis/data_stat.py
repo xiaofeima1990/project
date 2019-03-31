@@ -87,12 +87,16 @@ df_2_c=df_2_c.loc[df_2['num_bidder']>0,]
 plt.subplot(121)
 xx = np.sort(df_1_c['num_bidder'])
 yy = np.arange(1,len(xx)+1)/len(xx)
-_ = plt.plot(xx,yy,marker=".", linestyle = "none")
+num_bins = 25
+counts, bin_edges = np.histogram (df_1_c['num_bidder'], bins=num_bins, normed=True)
+cdf = np.cumsum (counts)
+_ = plt.plot (bin_edges[1:], cdf/cdf[-1])
+_ = plt.plot(xx,yy,marker="_", linestyle = "none")
 _ = plt.xlabel("number of bidder")
 _ = plt.ylabel("Empirical CDF")  
 _ = plt.title("First Time Auction")  
 plt.margins(0.02)
-plt.annotate('nearly 80% of \n first time auctions \n have less than \n 9 bidders', xy=(9, 0.75), xytext=(11, 0.4),
+plt.annotate('nearly 80% of \n first time auctions \n have less than \n 11 bidders', xy=(9, 0.75), xytext=(11, 0.4),
              arrowprops=dict(facecolor='black', shrink=0.05),
              )
 plt.grid(True)
@@ -228,8 +232,9 @@ plt.scatter(x=df_1_done["num_bidder"], y=df_1_done['resev_proxy'],
 plt.xlabel("number of bidder")
 plt.ylabel("winning price premium")
 plt.title("First Time Auction")
-cax = plt.axes([0.95, 0.1, 0.05, 0.8])
-plt.colorbar(cax =cax )
+#cax = plt.axes([0.95, 0.1, 0.05, 0.8])
+#plt.colorbar(cax =cax )
+plt.grid(True)
 plt.show()
 
 plt.scatter(x=df_2_done["num_bidder"], y=df_2_done['resev_proxy'], 
