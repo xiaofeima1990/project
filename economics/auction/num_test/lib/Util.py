@@ -30,6 +30,10 @@ from numpy import linalg as LA
 is_sorted = lambda a: np.all(a[0] >= a[1:])  # Test for first position is the highest valued bidder
 is_sorted2 = lambda a: np.all(a[1] >= a[2:]) # Test for the second position is the second highest valued bidder
 is_sorted3 = lambda a: np.all(a[-1] <= a[0:-1]) # Test for the last position is the lowest valued bidder 
+
+is_sorted_r1 = lambda a: np.all(a[-1] >= a[:-1])
+is_sorted_r2 = lambda a: np.all(a[-2] >= a[:-2])
+
 def balance_data_est(Est_data,n_work):
     pecentil_slice=1.0/n_work
     Data_Struct_c=[]
@@ -120,6 +124,20 @@ def rng_generate(rng,JJ=10000,N_max=10,loc=-0.1):
 
     return xi_n
 
+def order_selection(x_v,w_v):
+    '''
+    select the random vectors into the order things
+
+    '''
+    x_check_f=np.apply_along_axis(is_sorted_r1,1,x_v)
+    x_v_new=x_v[x_check_f,]
+    w_v_new=w_v[x_check_f,]
+    x_check_f=np.apply_along_axis(is_sorted_r2,1,x_v_new)
+    x_v_new=x_v_new[x_check_f,]   
+    w_v_new=w_v_new[x_check_f,]
+
+    return [x_v_new,w_v_new]
+
 def signal_DGP_est(para,rng,N,i_id,X_bar,X_up,xi_n):
     # this part should follow the ascending order 
     # X_bar is the threshold 
@@ -174,7 +192,7 @@ Data preprocessing
 '''
 
 
-def pre_data(Est_data,max_N=10):
+def pre_data(Est_data,max_N=11):
     col_name=['ID', 'bidder_act', 'len_act', 'bidder_pos', 'bidder_state','bidder_price','ladder_norm',
               'real_num_bidder','win_norm', 'num_bidder','priority_people', 'price_norm','res_norm']
     # get rid of number of bidder = = 1
@@ -197,8 +215,15 @@ def pre_data(Est_data,max_N=10):
     Est_data=Est_data[Est_data['res_norm'] >= 0.7]
     # normalize the win bid
     Est_data['win_norm']=Est_data['win_bid']/Est_data['reserve_price']
-    tail=Est_data['win_norm'].quantile(0.95)
-    Est_data=Est_data[Est_data['win_norm']<=tail]
+    tail=Est_data['win_bid'].quantile(0.99)
+    Est_data=Est_data[Est_data['win_bid']<=tail]
+    tail=Est_data['evaluation_price'].quantile(0.99)
+    Est_data=Est_data[Est_data['evaluation_price']<=tail]
+    tail=Est_data['len_act'].quantile(0.99)
+    Est_data=Est_data[Est_data['len_act']<=tail]    
+    tail=Est_data['reserve_price'].quantile(0.99)
+    Est_data=Est_data[Est_data['reserve_price']<=tail]   
+
     # normalize bid ladder 
     Est_data['ladder_norm']=Est_data['bid_ladder']/Est_data['evaluation_price']
     

@@ -411,7 +411,7 @@ class Update_rule:
         high_support[-1] = low_support[-1]+2*ladder
         
         if self.N >2:
-            high_support[-2] = low_support[-2]+ladder/10000
+            high_support[-2] = low_support[-2]+ladder/1000
             N_start=2
         else:
             N_start=1
@@ -556,10 +556,10 @@ class Update_rule:
 
         return log_Prob
 
-    def MLE_X_new(self,low_support,high_support,threshold,x2nd):
+    def MLE_X_new_omega(self,low_support,high_support,threshold,x2nd):
         '''
-        I just realized that I can genreate the conditional chain rule to calculate
-        the MLE (Because I calculate the probability!!!)
+        this is old version that use the probability of 
+        Prob(Xi in [xi_low, xi_up] | Omega_it xj in [xj_low,xj_up])
         '''
         self.setup_para(0)
         mu=self.MU[-2]
@@ -590,10 +590,10 @@ class Update_rule:
                 temp_low  =low_support[i+1:]
                 temp_high =high_support[i+1:]
 
-                temp_low  =np.append(threshold[i],temp_low)
-                temp_high =np.append(10,temp_high)
+                temp_low  =np.append(temp_low,threshold[i])
+                temp_high =np.append(temp_high,10)
 
-                [x_v,U_v,w_v]=self.GHK_simulator(i,temp_low,temp_high,2)
+                [x_v,w_v]=self.GHK_simulator(i,temp_low,temp_high,2)
                 # last column is what we need
                 #
                 x_flag1      = x_v[0] >= low_support[i]
@@ -620,17 +620,20 @@ class Update_rule:
         return log_Prob
 
 
-    def MLE_X_new2(self,low_support,high_support,threshold,x2nd):
+    def MLE_X_new_karl(self,low_support,high_support,threshold):
         '''
         In Karl's suggestion, conditional each Omgea_i, I can get conditional distribution for 
         each bidder i. Then I can calculate the probability that xi is under the lower and upper 
         bound
-        Prob_xi( xi_low < Xi < xi_up |Omega_it)
-        ignore the second highest bid first 
+        Prob_Xi (Xi in [X_low, X_up] | Xi > gamma)
+        Prob_xi( xi_low < xi < xi_up | Omega_it)
+        ignore the second highest bid first  
+        For each xi  I don't even need the truncated GHK simulator 
+        Here I am doing miniziation to estimate the prob that outside the support
         '''
         self.setup_para(0)
-        mu=self.MU[-2]
-        sigma=self.SIGMA2[-2,-2]**0.5
+        mu=self.MU
+        sigma=np.diag(self.SIGMA2)**0.5
 
         old_low=np.copy(low_support)
         old_high=np.copy(high_support)
@@ -639,29 +642,20 @@ class Update_rule:
         flag=high_support[:-2]>high_support[-2]
         high_support[:-2]=(1-flag)*high_support[:-2]+flag*high_support[-2]
 
-
-        low_support  = low_support.reshape(self.N,1)
-        high_support = high_support.reshape(self.N,1)
-
+        low_support  = low_support.flatten()
+        high_support = high_support.flatten()
 
 
-        # the higest winning private signal prob
-        temp_low  =np.delete(low_support,self.N-1)
-        temp_high =np.delete(high_support,self.N-1)
-
-        temp_low  =np.append(threshold[self.N-1],temp_low)
-        temp_high =np.append(10,temp_high)        
-
-        [x_v ,w_v]=self.GHK_simulator(self.N-1,temp_low,temp_high,2)
-
-        x_flag1      = x_v[0] >= low_support[self.N-1]
-        x_flag2      = x_v[0] <= high_support[self.N-1]
-        check_flag_v1 = x_flag1 * x_flag2*1
-        prob_1st     = np.mean(check_flag_v1)
+        # Notice that P_Xi (Xi in [X_low, X_up] | Xi > gamma)
+        # from i=1, 3,4,....
+        # minimize ignore the second highest
+        norm_threshold = (threshold[-1]-mu[-1])/sigma[-1]
+        norm_support   = (low_support[-1]-mu[-1])/sigma[-1]
+        prob_1st=truncnorm.cdf(norm_support,norm_threshold,15)
 
         with np.errstate(divide='raise'):
             try:
-                log_Prob      = np.log(prob_1st)
+                log_Prob      = np.log(1+prob_1st)
             except Exception as e:
                 print('-----------------------------------------------')
                 print('0 in log at {} bidders with {} reserve price'.format(self.N,threshold[0]))
@@ -670,53 +664,40 @@ class Update_rule:
                 print("density_2d: {} ".format(prob_1st[0]))
 
                 log_Prob = np.nan
-                return log_Prob
+                return log_Prob    
 
-
-        
-        if self.N>2:
-            for i in range(self.N-2):
-                temp_low  =np.delete(low_support,i)
-                temp_high =np.delete(high_support,i) 
-
-                temp_low  =np.append(threshold[i],temp_low)
-                temp_high =np.append(10,temp_high)
-
-                [x_v ,w_v]=self.GHK_simulator(i,temp_low,temp_high,2)
-                # last column is what we need
-                #
-                x_flag1      = x_v[0] >= low_support[i]
-                x_flag2      = x_v[0] <= high_support[i]
-                check_flag_v1 = x_flag1 * x_flag2*1
-                # calculate the prob is that possible? 
-                #  
-                Prob_temp     = np.mean(check_flag_v1) 
-
+        if self.N > 2: 
+            for i in range(0,self.N-2):
+                norm_threshold = (threshold[i]-mu[i])/sigma[i]
+                norm_low_supp  = (low_support[i]-mu[i])/sigma[i]
+                norm_high_supp = (high_support[i]-mu[i])/sigma[i]
+                Prob_temp1 = truncnorm.cdf(norm_low_supp,norm_threshold,15,mu[i],sigma[i])
+                Prob_temp2 = 1 - truncnorm.cdf(norm_high_supp,norm_threshold,15,mu[i],sigma[i])
                 with np.errstate(divide='raise'):
                     try:
                         
-                        log_Prob      = log_Prob + np.log(Prob_temp)
+                        log_Prob      = log_Prob + np.log(1+Prob_temp1) + np.log(1+Prob_temp2)
                     except Exception as e:
                         print('-----------------------------------------------')
                         print(e)
                         print('0 in log at {} bidders with {} reserve price for bidder {}'.format(self.N,threshold[0],i))
                         print(low_support.flatten())
                         print(high_support.flatten())
-                        print("prob_1st: {} \t| nominator: {} \t ".format(prob_1st,Prob_temp))
-
+                        print("prob_1st: {} \t| low: {} \t | upp: {} \t ".format(prob_1st,Prob_temp1,Prob_temp2))
+ 
                         log_Prob = np.nan
 
 
         return log_Prob
 
 
-    def MLE_X_new3(self,low_support,high_support,threshold,x2nd):
+    def MLE_X_new_omega2(self,low_support,high_support,threshold,x2nd):
         '''
         In Karl's suggestion, conditional each Omgea_i, I can get conditional distribution for 
         each bidder i. Then I can calculate the probability that xi is under the lower and upper 
         bound
         In this test, I calcuate the probaility that Xi is out of the support, which I minimize the probability
-        Prob_xi( xi_low < Xi < xi_up |Omega_it)
+        Prob_xi(   Xi <xi_low,  xi_up < Xi |Omega_it)
         ignore the second highest bid first 
         '''
         self.setup_para(0)
@@ -734,18 +715,16 @@ class Update_rule:
         low_support  = low_support.reshape(self.N,1)
         high_support = high_support.reshape(self.N,1)
 
-
-
         # the higest winning private signal prob
         temp_low  =np.delete(low_support,self.N-1)
         temp_high =np.delete(high_support,self.N-1)
 
-        temp_low  =np.append(threshold[self.N-1],temp_low)
-        temp_high =np.append(10,temp_high)        
+        temp_low  =np.append(temp_low,threshold[self.N-1])
+        temp_high =np.append(temp_high,10)        
 
         [x_v ,w_v]=self.GHK_simulator(self.N-1,temp_low,temp_high,2)
 
-        x_flag1      = x_v[0] <= low_support[self.N-1]
+        x_flag1      = x_v[-1] <= low_support[self.N-1]
         # x_flag2      = x_v[0] <= high_support[self.N-1]
         check_flag_v1 = x_flag1 
         prob_1st     = np.mean(check_flag_v1)
@@ -770,14 +749,14 @@ class Update_rule:
                 temp_low  =np.delete(low_support,i)
                 temp_high =np.delete(high_support,i) 
 
-                temp_low  =np.append(threshold[i],temp_low)
-                temp_high =np.append(10,temp_high)
+                temp_low  =np.append(temp_low,threshold[i])
+                temp_high =np.append(temp_high,10)
 
                 [x_v ,w_v]=self.GHK_simulator(i,temp_low,temp_high,2)
                 # last column is what we need
                 #
-                x_flag1      = x_v[0] <= low_support[i]
-                x_flag2      = x_v[0] >= high_support[i]
+                x_flag1      = x_v[-1] <= low_support[i]
+                x_flag2      = x_v[-1] >= high_support[i]
                 check_flag_v1 = (x_flag1 + x_flag2)*1
                 # calculate the prob is that possible? 
                 #  
@@ -796,7 +775,6 @@ class Update_rule:
                         print("prob_1st: {} \t| nominator: {} \t ".format(prob_1st,Prob_temp))
 
                         log_Prob = np.nan
-
 
         return log_Prob
         
@@ -822,8 +800,8 @@ class Update_rule:
 
         down_ch_sigma=LA.cholesky(self.SIGMA2)
         MU=self.MU
-        b = np.ones(self.N)*100 if mode_flag == 0 else  up_bound.flatten()
-        a = np.ones(self.N)*(-100) if mode_flag == 1 else low_bound.flatten()
+        b = np.ones(self.N)*10 if mode_flag == 0 else  up_bound.flatten()
+        a = np.ones(self.N)*(-10) if mode_flag == 1 else low_bound.flatten()
 
 
         w_a=np.zeros([self.N,SS])
@@ -868,8 +846,6 @@ class Update_rule:
         '''
         use HS system of equations to recover the price. we know the private signal
         '''
-
-
 
         # signal
         x_s = x_s.reshape(x_s.size,1)

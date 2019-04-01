@@ -92,7 +92,7 @@ def GMM_Ineq(Theta0,Data_struct,d_struct):
     '''
     serial testing 
     '''
-    func=partial(para_fun_est,Theta,rng,d_struct['h'])
+    func=partial(para_fun_est,Theta,rng,d_struct)
     results=[]
     pub_col=['ladder_norm', 'win_norm', 'real_num_bidder','priority_people', 'res_norm']
     for arg_data_ele in zip(range(0,TT),Data_struct['bidder_state'],Data_struct['bidder_pos'],Data_struct['price_norm'],Data_struct[pub_col].values.tolist()):
@@ -135,6 +135,8 @@ if __name__ == '__main__':
             'rng_seed':rng_seed,
             "max_N":max_N,
             'h':0.05,
+            'model_flag':0,
+            'MLE_choice':3,
             }
     
 
