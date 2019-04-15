@@ -1,0 +1,29 @@
+# http test for api 
+# separated by ### 
+@user_key=2bddce7174abaf499d47ed2a4baf4581
+
+
+# https://api.crunchbase.com/v3.1/ipos?user_key=2bddce7174abaf499d47ed2a4baf4581
+
+# ipos example
+# single one just use ? if there has extra param we need to use &
+GET https://api.crunchbase.com/v3.1/ipos
+    ?page=1
+    &user_key={{user_key}}
+
+###
+# single one just use ? if there has extra param we need to use &
+GET https://api.crunchbase.com/v3.1/ipos?user_key={{user_key}} HTTP/1.1
+
+
+
+###
+# this is for curl method
+curl -X GET \
+  'https://api.crunchbase.com/v3.1/ipos' \
+  -H 'X-Cb-User-Key:{{user_key}}'
+  -d '{
+	"page":1,
+    "sort_order":"created_at DESC"
+      }'
+###

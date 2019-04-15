@@ -88,7 +88,7 @@ class Simu:
         mode controls for random or not 
         '''
         if mode == 0:
-            reserve = 1.0
+            reserve = 0.7
         else:
             reserve = 0.7 + 0.3*self.rng.rand() 
         return reserve

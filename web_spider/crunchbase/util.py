@@ -36,11 +36,14 @@ def open_link(url,try_times=10):
         return start_raw
 
 
-store_path= "E:/mengbo/"
+store_path= "D:/crunchbase/"
 
-payload = {'user_key': '6c9ef18c935a0d984d463dd6bb872638'}
+payload = {'user_key': '2bddce7174abaf499d47ed2a4baf4581'}
 
 flag_page= input("start from which page")
+
+
+
 
 r = requests.get('https://api.crunchbase.com/v3.1/ipos?', params=payload)
 if r.status_code == 200 :
