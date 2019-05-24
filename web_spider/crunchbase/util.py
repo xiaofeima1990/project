@@ -2,10 +2,10 @@
 """
 Created on Sat Aug 11 11:52:34 2018
 
-@author: xiaofeima
-mengbo Niube
+@author: Guoxuan
 
-API data collecting for crunchbase
+This module saves the method and function that is used 
+for data collection and data format conversion
 user_key=6c9ef18c935a0d984d463dd6bb872638
 """
 import requests
@@ -14,107 +14,79 @@ import copy, time
 import sqlite3
 import json
 
+payload = {'user_key': '2bddce7174abaf499d47ed2a4baf4581'}
+PAGE_info=["total_items","number_of_pages","current_page","items_per_page","sort_order"]
 
-
-def open_link(url,try_times=10):
-    i=0
+def get_raw_data(url,para=payload,try_times=3):
+    '''
+    get the json data from api 
+    input arguments:
+        url:(required) the api link
+        para:(option) the query params that need to specify the url
+        try_times:(option) try times if something is wrong
+    return variables:
+        flag: indicating whether successful or not
+        raw: the json metadata
+    '''
+    i = 0
     while i < try_times:
-        r = requests.get(url, params=payload)
-        if r.status_code == 200 :
-            start_raw=r.json()
-            break
-        else:
-            i +=1
-            print("failued to open the url")
-            time.sleep(2)
+        try:
+            r = requests.get(url, params=para,timeout=2)
+            r.raise_for_status()
+        except requests.exceptions.HTTPError as errh:
+            print ("Http Error:",errh)
             
-    if i>=try_times:
+        except requests.exceptions.ConnectionError as errc:
+            print ("Error Connecting:",errc)
+            
+        except requests.exceptions.Timeout as errt:
+            print ("Timeout Error:",errt)
+            
+        except requests.exceptions.RequestException as err:
+            print ("OOps: Something Else",err)    
+            
+        if r.status_code == 200 :
+            raw = r.json()
+            break    
+        else:
+            time.sleep(5)
+            i += 1  
+            
+    if i >= try_times:
         print(url)
         input("problem, please check the internet and url")
-        return ""
+        return 0, ""
     else:    
-        return start_raw
+        return 1, raw
 
 
-store_path= "D:/crunchbase/"
+def meta_info(raw_json,flag):
+    '''
+    extract data info and page info from meta data 
+    input argument:
+        raw_json
+            the raw json 
+        flag
+            indicating this is start/restart the process
+    return variables:
+        page_info
+            the page information we need in the next run
+        data_info
+            the data we need to collect 
+    '''
+    meta_raw=raw_json['data']
+    page_info=meta_raw['paging']
+    data_info=meta_raw['items']
 
-payload = {'user_key': '2bddce7174abaf499d47ed2a4baf4581'}
+    finished = int(page_info["items_per_page"]) * (int(page_info["current_page"])-1) / float(page_info["total_items"])
+    if flag == 0:
+        print("start/continue the data collection procedure")
+        print("total items: {}, finished: {}% ".format(page_info["total_items"],finished ))
 
-flag_page= input("start from which page")
-
-
-
-
-r = requests.get('https://api.crunchbase.com/v3.1/ipos?', params=payload)
-if r.status_code == 200 :
-    start_raw=r.json()
-
-data_raw=start_raw['data']
-data_page=data_raw['paging']
-data_info=data_raw['items']
-
-num_pag=data_page['number_of_pages']
-total_items = data_page["total_items"]
-next_page_url=data_page["next_page_url"]
-current_page=data_page["current_page"]
+    print("processing page: {}/{}, items: {} , finished: {}%".format(page_info["current_page"],page_info["number_of_pages"],page_info["items_per_page"],finished))
 
 
 
-    
-# get the info
-df_1=pd.DataFrame(data_info)
-df_full=pd.concat([df_1.drop(['properties'], axis=1), df_1['properties'].apply(pd.Series)], axis=1)
-col=df_full.columns
+    return page_info,data_info
 
-print("current page :  ", flag_page)
-current_page=int(flag_page)
 
-if current_page>1: 
-    
-    next_page_url="https://api.crunchbase.com/v3.1/ipos?page="+flag_page+"&sort_order=created_at%20DESC&items_per_page=100"
-    
-    df_full=pd.DataFrame(columns=col)
-    
-while current_page <= num_pag:
-    next_page_url=next_page_url+"&"
-    start_raw=open_link(next_page_url)
-#    r = requests.get(next_page_url, params=payload)
-#    if r.status_code == 200 :
-#        start_raw=r.json()
-    if start_raw == "":
-        print("current page is : ", current_page)
-        print("restart the program")
-        if not df_full.empty:
-            con = sqlite3.connect(store_path+"IPO.sqlite")
-            df_full.to_sql("IPOs", con, if_exists="append")
-            con.close()
-        exit()
-        
-    else:
-        
-        
-        data_raw=start_raw['data']
-        data_page=data_raw['paging']
-        data_info=data_raw['items']
-        
-        # get the info
-        df_1=pd.DataFrame(data_info)
-        df_full_temp=pd.concat([df_1.drop(['properties'], axis=1), df_1['properties'].apply(pd.Series)], axis=1)
-        
-        df_full=df_full.append(df_full_temp,ignore_index=True)
-    
-        next_page_url=data_page["next_page_url"]
-        current_page=data_page["current_page"]
-        print("current page :  ",current_page )
-        
-        if current_page %20 == 0 or current_page== num_pag :
-            # save 
-            con = sqlite3.connect(store_path+"IPO.sqlite")
-            df_full.to_sql("IPOs", con, if_exists="append")
-            con.close()
-            
-            df_full=pd.DataFrame(columns=col)
-            
-        
-                
-          
