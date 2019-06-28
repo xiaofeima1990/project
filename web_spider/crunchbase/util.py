@@ -63,7 +63,7 @@ def get_raw_data(url,para=payload,try_times=3):
 def meta_info(raw_json,flag):
     '''
     extract data info and page info from meta data 
-    input argument:
+    input arguments:
         raw_json
             the raw json 
         flag
@@ -90,3 +90,39 @@ def meta_info(raw_json,flag):
     return page_info,data_info
 
 
+def detail_info(raw_json):
+    '''
+    extract more detailed info (organization, funding round, fund etc.) from meta data
+    input argument: 
+        raw_json
+            the raw json 
+    return variables:
+        data_info
+            the data we need to collect 
+    '''
+    meta_raw = raw_json['data']
+    type_info = meta_raw['type']
+    uuid = meta_raw['uuid']
+    property_info = meta_raw['properties']
+    relation_ship = meta_raw['relationships']
+    print("processing: {} - {}".format(type_info,uuid)) 
+    return property_info,relation_ship
+
+
+def detail_info(raw_json):
+    '''
+    extract more detailed info (organization, funding round, fund etc.) from meta data
+    input argument: 
+        raw_json
+            the raw json 
+    return variables:
+        data_info
+            the data we need to collect 
+    '''
+    meta_raw = raw_json['data']
+    type_info = meta_raw['type']
+    uuid = meta_raw['uuid']
+    property_info = meta_raw['properties']
+    relation_ship = meta_raw['relationships']
+    print("processing: {} - {}".format(type_info,uuid)) 
+    return property_info,relation_ship

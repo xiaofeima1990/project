@@ -8,6 +8,7 @@ API data collecting for crunchbase
 user_key=6c9ef18c935a0d984d463dd6bb872638
 This is the main script for data collection
 
+https://data.crunchbase.com/docs/using-the-api
 """
 import requests
 import pandas as pd
@@ -54,7 +55,7 @@ flag=0
 page_num=1
 query_para={
 	"page":page_num,
-    "sort_order":"created_at DESC"
+    "sort_order":"created_at ASC"
 }
 ## save to the database
 stat_flag,page_info,df_summary=data_api.api_data_collect(query_para,flag)
@@ -68,7 +69,7 @@ length_page= int(page_info['number_of_pages'])
 
 while page_num <= length_page:
     try:
-        stat_flag,page_info,df_temp=data_api.api_data_collect(query_para,flag)
+        stat_flag,page_info,df_temp=data_api.api_organization_collect_summary(query_para,flag)
         if stat_flag==0:
             print("something wrong, restart the problem")
             exit(1)
