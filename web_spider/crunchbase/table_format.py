@@ -52,8 +52,15 @@ acquired_organization_id
 funding_amount
 acquired date
 '''
+### Summary part 
+# organization
+# people
+# funding round 
+# acquisition
+# ipo
+# category
 
-## organization part
+
 organization_summary_col=[
     'uuid',
     'permalink',
@@ -68,7 +75,7 @@ organization_summary_col=[
     'country_code',
 ]
 
-## people part
+
 people_summary_col = [
     'uuid'
     'permalink',
@@ -83,6 +90,60 @@ people_summary_col = [
     'region_name',
     'country_code',
 ]
+
+
+##IPO
+IPO_summary_col = [
+    'uuid',
+    # property
+    'went_public_on',
+    'went_public_on_trust_code',
+    'stock_exchange_symbol',
+    'stock_symbol',
+    'shares_sold',
+    'money_raised',
+    'money_raised_currency_code',
+    'money_raised_usd',
+]
+
+
+## funding info 
+funding_round_summary_col=[
+    'uuid',
+    'funding_type',
+    'series',
+    'series_qualifier',
+    'announced_on',
+    'closed_on',
+    'money_raised',
+    'money_raised_currency_code',
+    'money_raised_usd',
+
+    'target_money_raised',
+    'target_money_raised_currency_code',
+    'target_money_raised_usd',
+    
+    'pre_money_valuation',
+    'pre_money_valuation_currency_code',
+    'pre_money_valuation_usd',
+    'rank',    
+
+]
+
+acquisition_summary_col = [
+    'uuid',
+    'price',
+    'price_currency_code',
+    'price_usd',
+    'payment_type',
+    'acquisition_type',
+    'acquisition_status',
+    'disposition_of_acquired',
+    'announced_on',
+    'rank',
+
+]
+
 
 ### people extra
 people_extra_col = [
@@ -131,22 +192,7 @@ job_dict = {
     'ended_on':"ended_on",
     }
 
-
-
-IPO_summary_col = [
-    'uuid',
-    # property
-    'api_url',
-    'went_public_on',
-    'went_public_on_trust_code',
-    'stock_exchange_symbol',
-    'stock_symbol',
-    'shares_sold',
-    'money_raised',
-    'money_raised_currency_code',
-    'money_raised_usd',
-]
-
+## detail
 
 organization_property_col1=[
     'permalink',
@@ -181,6 +227,19 @@ organization_property_col2=[
     'category_group',
 ]
 
-## funding info 
+
+investment_col= [
+    'funding_round_id'
+    'investment_id',
+    'money_invested',
+    'money_invested_currency_code',
+    'money_invested_usd',
+    'is_lead_investor',
+    'announced_on',
+    'investor_id',
+    'investor_permalink',
+    'target_id',
+    'target_permalink'
 
 
+]

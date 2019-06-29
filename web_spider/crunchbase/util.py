@@ -109,9 +109,9 @@ def detail_info(raw_json):
     return property_info,relation_ship
 
 
-def detail_info(raw_json):
+def relation_info(raw_json):
     '''
-    extract more detailed info (organization, funding round, fund etc.) from meta data
+    extract relationship info (organization, funding round, fund etc.) from meta data
     input argument: 
         raw_json
             the raw json 
@@ -119,10 +119,11 @@ def detail_info(raw_json):
         data_info
             the data we need to collect 
     '''
-    meta_raw = raw_json['data']
-    type_info = meta_raw['type']
-    uuid = meta_raw['uuid']
-    property_info = meta_raw['properties']
-    relation_ship = meta_raw['relationships']
-    print("processing: {} - {}".format(type_info,uuid)) 
-    return property_info,relation_ship
+    meta_raw = raw_json['data']['items']
+    page_info = raw_json['data']['paging']
+    total_item = page_info['total_items']
+    print("total items in this relationship: {} ".format(total_item))
+    if int(total_item) > 100:
+        print("attention this relationship has over 100 items")
+
+    return meta_raw

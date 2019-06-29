@@ -58,7 +58,7 @@ query_para={
     "sort_order":"created_at ASC"
 }
 ## save to the database
-stat_flag,page_info,df_summary=data_api.api_data_collect(query_para,flag)
+stat_flag,page_info,df_summary=data_api.api_organization_summary(query_para,flag)
 col_name=df_summary.columns
 if stat_flag==0:
     print("something wrong, restart the problem")

@@ -51,7 +51,7 @@ tables:
 
 **company** 
 
-uuid,entity_type,name,normalized_name, permalink, category_code, status, founded_at, closed_at, web_domain,short_description,rank,
+uuid,entity_type,name, permalink, category_code, status, founded_at, closed_at, web_domain,short_description,rank,
 country_code, state_code, city, region, 
 num_founding_rounds,funding_total_usd,FundingRound_group,first_funding_at, last_funding_at, 
 relation_founder, 
@@ -61,7 +61,7 @@ primary_role, role_company,role_investor,role_group,role_school
 
 **investor**
 
-uuid,entity_type,name,normalized_name, permalink,investor_type, founded_at, closed_at, web_domain,short_description,rank
+uuid,entity_type,name,permalink,investor_type, founded_at, closed_at, web_domain,short_description,rank
 country_code, state_code, city, region,
 num_investment,
 relation_founder,
@@ -75,6 +75,30 @@ country_code, state_code, city, region,
 num_founding_rounds,FundingRound_group
 relation_founder, 
 primary_role, role_company,role_investor,role_group,role_school
+
+**funding round**
+uuid,funding_type,series,series_qualifier,rank
+announced_on,closed_on,
+
+money_raised,money_raised_currency_code,money_raised_usd
+target_money_raised,target_money_raised_currency_code,target_money_raised_usd,
+pre_money_valuation,pre_money_valuation_currency_code,pre_money_valuation_usd
+
+**IPO**
+uuid,
+went_public_on,went_public_on_trust_code,stock_exchange_symbol,
+stock_symbol,shares_sold
+money_raised,money_raised_currency_code,money_raised_usd
+
+**acquisition**
+uuid,announced_on,rank
+price,price_currency_code,price_usd,payment_type
+acquisition_type,acquisition_status,disposition_of_acquired
+
+**people**
+uuid,permalink,web_path,first_name,last_name,gender
+role_investor,organization_name,title
+city_name,region_name,country_code
 
 
 
