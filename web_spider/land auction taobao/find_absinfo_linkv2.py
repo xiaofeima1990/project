@@ -26,6 +26,7 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException,TimeoutException,StaleElementReferenceException
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 import pandas as pd
 import sqlite3
 import urllib
@@ -52,7 +53,7 @@ def open_page(driver,url):
     # driver.implicitly_wait(5)
     # WebDriverWait(driver,60).until(EC.presence_of_element_located((By.XPATH,"/html/body/div[3]/div[4]/a[7]")))
     try:
-        driver.set_page_load_timeout(10)
+        driver.set_page_load_timeout(40)
         driver.get(url)
     except TimeoutException as ex:
         check=driver.find_element_by_css_selector(page_load_flag)
@@ -208,26 +209,53 @@ def next_page(driver,page_count,flag):
 
 if __name__ == '__main__':
 
-    file_path="E:\\Dropbox\\"
-    
+    file_path="E:\\Dropbox\\academic\\11_work_dataset\\justice auction\\link\\house\\"
+    driver_path="E:\\github\\Project\\web_spider\\land auction taobao\\geckodriver.exe"    
 #    con = sqlite3.connect("E:\\justice_auction.sqlite")
     
 #     this even requires gbk decoding encoding!!! to convert str to url
 #    city_name=["广州","郑州","厦门","福州","常州","南京","盐城","泰州","扬州","镇江","南通"]
     # '温州','绍兴', "湖州", 
 #    city_name=["肇庆","惠州","汕头","潮州","揭阳","汕尾","湛江","茂名","阳江","韶关","清远","云浮","梅州","河源"]# 广东is down 
-    city_name=['宜昌','武汉','十堰','襄阳','鄂州','荆门','黄石','孝感','黄冈','荆州','咸宁','随州','恩施','潜江','仙桃','天门','神农架']# 湖北
-    # city_name=['泰安','济宁','烟台','日照','菏泽','临沂','潍坊','德州','济南','东营','淄博','青岛','枣庄','威海','滨州','聊城','莱芜'] 
-    # city_name=['天津']
+    # city_name=['宜昌','武汉','十堰','襄阳','鄂州','荆门','黄石','孝感','黄冈','荆州','咸宁','随州','恩施','潜江','仙桃','天门','神农架']# 湖北
+    fujian = ['福建','厦门','莆田','三明','泉州','漳州','南平','龙岩','宁德']
+    hebei = ['石家庄','唐山','秦皇岛','邯郸','邢台','保定','张家口','承德','沧州','廊坊','衡水']
+    anhui = ['合肥','芜湖','蚌埠','淮南','马鞍山','淮北','铜陵','安庆','黄山','滁州','阜阳','宿州','六安','亳州','池州','宣城']
+    
+    neimenggu= ['呼和浩特','包头','乌海','赤峰','通辽','鄂尔多斯','呼伦贝尔','巴彦淖尔','乌兰察布','兴安','锡林郭勒','阿拉善']
+    henan= ['郑州','开封','洛阳','平顶山','安阳','鹤壁','新乡','焦作','济源','濮阳','许昌','漯河','三门峡','南阳','商丘','信阳','周口','驻马店']
+    guangxi = ['南宁','柳州','桂林','梧州','北海','防城港','钦州','贵港','玉林','百色','贺州','河池','来宾','崇左']
+    sichuan = ['成都','自贡','攀枝花','泸州','德阳','绵阳','广元','遂宁','内江','乐山','南充','眉山','宜宾','广安','达州','雅安','巴中','资阳','阿坝','甘孜','凉山']
+    city_name = ['铜川','宝鸡','咸阳','渭南','延安','汉中','榆林','安康','商洛']
+    shanxi2 = ['太原','大同','阳泉','长治','晋城','朔州','晋中','运城','忻州','临汾','吕梁']
+    
+    heilongjiang = ['哈尔滨','齐齐哈尔','鸡西','鹤岗','双鸭山','大庆','伊春','佳木斯','七台河','牡丹江','黑河','绥化','大兴安岭']
     
 #    ele=input("input city name: ")
     flag_auction_time=input("input auction time choice: 1- first time, 2- second time, 3- 1+2, : ")
     error_page=input('start page')
     error_year=input('error occur year ')
     error_page=int(error_page)
+    print('sleep for 0 hours')
+    time.sleep(1)
+    print('start')
     
-    driver=webdriver.Firefox()
-#    driver = webdriver.PhantomJS()
+    
+    ## firefox need version 55 higher 
+    profile=webdriver.firefox.firefox_profile.FirefoxProfile()
+    # 1 - Allow all images
+    # 2 - Block all images
+    # 3 - Block 3rd party images 
+    profile.set_preference("permissions.default.image", 2)
+    # driver=webdriver.Firefox(firefox_profile=profile)
+    options = FirefoxOptions()
+    options.add_argument("--headless")
+    driver = webdriver.Firefox(firefox_options=options,firefox_profile=profile,executable_path=driver_path)
+
+    
+    # PhantomJS is depresiated but I am still going to use it 
+    driver = webdriver.PhantomJS() # depresiated 
+    
     for ele in city_name:
         print("-----------------------------------")
         print("city "+ele+ " begins")
@@ -286,7 +314,11 @@ if __name__ == '__main__':
         print("-----------------------------------")
         driver.quit()
         time.sleep(10)
-        driver=webdriver.Firefox()
+        options = FirefoxOptions()
+        options.add_argument("--headless")
+        profile=webdriver.firefox.firefox_profile.FirefoxProfile()
+        profile.set_preference("permissions.default.image", 2)
+        driver = webdriver.Firefox(firefox_options=options,firefox_profile=profile,executable_path=driver_path)
     
     driver.quit()
         

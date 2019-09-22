@@ -24,7 +24,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException,TimeoutException
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.support.ui import WebDriverWait
 import selenium.common.exceptions as S_exceptions
 import pandas as pd
@@ -34,11 +34,8 @@ import sqlite3
 
 AUCTION_INFO1={
     'win_bid':'span.pm-current-price.J_Price',
-    'num_bidder':'div.pm-remind > span.pm-apply.i-b > em',
-  #   'reserve_price':'#J_HoverShow > tr:nth-child(1) > td:nth-child(1) > span.pay-price > span',
-  #  'evaluation_price':'#J_HoverShow > tr:nth-child(2) > td:nth-child(1) > span.pay-price > span',
-  #  'bid_ladder':'#J_HoverShow > tr:nth-child(1) > td:nth-child(2) > span.pay-price > span',
-    'n_register':"em.J_Applyer",
+#    'num_bidder':'div.pm-remind > span.pm-apply.i-b > em',
+    'n_register':".J_Applyer",
     "n_watch":"#J_Looker",
     'delay_count':'#J_Delay > em',
     
@@ -54,7 +51,7 @@ PRICE_INFO_dict={
         }
 
 
-finish_time='#page > div:nth-child(7) > div > div > div.pm-main-l.auction-interaction > ul > li:nth-child(2) > span.countdown.J_TimeLeft'
+finish_time='countdown.J_TimeLeft'
 incharge_court='c-department'
 #incharge_court='#page > div:nth-child(7) > div > div > div.pm-main-l.auction-interaction > div.pai-info > p:nth-child(2) > a'
 
@@ -151,7 +148,7 @@ def get_info(driver,link_url,status,auction_time_flag):
     
     
     
-    df_info1.loc[0,'finish_time']=driver.find_element_by_css_selector(finish_time).text
+    df_info1.loc[0,'finish_time']=driver.find_element_by_class_name(finish_time).text
     
     tmp_pri=driver.find_element_by_css_selector(priority_info).text.split(":")
     if "无" in tmp_pri[1]: 
@@ -180,7 +177,7 @@ def get_info(driver,link_url,status,auction_time_flag):
         pass
         
     # court information
-    df_info1.loc[0,'incharge_court']=driver.find_element_by_xpath("//div[3]/div[2]/div/a[2]").text
+    df_info1.loc[0,'incharge_court']=driver.find_element_by_class_name("unit-txt.unit-name.item-announcement").text
     
     check_text=driver.find_element_by_css_selector(location_nav).text.split("\n")
     n_len=len(check_text)
@@ -270,7 +267,7 @@ def get_info(driver,link_url,status,auction_time_flag):
                 flag=0
                 
                 
-    
+        df_info1.loc[0,'num_bidder'] =len( df_info2['bidder_id'].unique()) 
 
     location_nav4='#J_DetailTabMenu > li:nth-child('+str(flag_ii2)+') > a'            
     check_flag=driver.find_element_by_css_selector(location_nav4).text  
@@ -307,7 +304,7 @@ if __name__ == '__main__':
 
 
     
-    driver_path="E:\\github\\Project\\web_spider\\land auction taobao\\"
+    driver_path="E:\\github\\Project\\web_spider\\land auction taobao\\geckodriver.exe"
 
 
     city=input("input your city ")
@@ -322,19 +319,18 @@ if __name__ == '__main__':
     auction_time_flag=input("input auction time choice: 1- first time, 2- second time ")
     
     df_link=pd.read_csv(link_path+city+"-"+auction_time_flag+"-sf.csv",sep="\t", encoding='utf-8')
-#    options = Options()
+
     profile=webdriver.firefox.firefox_profile.FirefoxProfile()
-    # 1 - Allow all images
-    # 2 - Block all images
-    # 3 - Block 3rd party images 
+#    # 1 - Allow all images
+#    # 2 - Block all images
+#    # 3 - Block 3rd party images 
     profile.set_preference("permissions.default.image", 2)
-#    options.set_headless(headless=True)
-#    options.add_argument("--headless")
-#    options.set_headless(headless=True)
-#    driver = webdriver.Firefox(firefox_options=options, executable_path=driver_path)
-#    driver=webdriver.Chrome()
-    driver=webdriver.Firefox(firefox_profile=profile)
-#    driver = webdriver.PhantomJS()
+#    driver=webdriver.Firefox(firefox_profile=profile)
+
+    options = FirefoxOptions()
+    options.add_argument("--headless")
+    driver = webdriver.Firefox(firefox_options=options,firefox_profile=profile,executable_path=driver_path)
+
     total_len=len(df_link)
     try:
         for index, row in df_link.iterrows():
@@ -366,7 +362,7 @@ if __name__ == '__main__':
                 time.sleep(15)
                 profile=webdriver.firefox.firefox_profile.FirefoxProfile()
                 profile.set_preference("permissions.default.image", 2)
-                driver=webdriver.Firefox(firefox_profile=profile)
+                driver = webdriver.Firefox(firefox_options=options,firefox_profile=profile,executable_path=driver_path)
                 con.close()
                 con = sqlite3.connect(store_path+"auction_info_house.sqlite")
                 con2.close()
