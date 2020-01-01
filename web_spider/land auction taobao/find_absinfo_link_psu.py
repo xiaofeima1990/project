@@ -210,9 +210,10 @@ def next_page(driver,page_count,flag):
 if __name__ == '__main__':
 
     path_prefix = "C:\\Users\\gum27\\Documents\\gum27\\documentation\\"
-    file_path = "C:\\Users\\gum27\\Documents\\Dropbox\\academic\\11_work_dataset\\justice auction\\link\\house\\"
+    file_path = "C:\\Users\\gum27\\Documents\\Dropbox\\academic\\11_work_dataset\\justice auction\\link\\house\\2018\\"
     driver_path=path_prefix + "github\\Project\\web_spider\\land auction taobao\\geckodriver.exe"    
-#    con = sqlite3.connect("E:\\justice_auction.sqlite")
+    driver_path=path_prefix + "github\\Project\\web_spider\\land auction taobao\\geckodriver.exe"    
+
     
 #     this even requires gbk decoding encoding!!! to convert str to url
 #    city_name=["广州","郑州","厦门","福州","常州","南京","盐城","泰州","扬州","镇江","南通"]
@@ -228,11 +229,11 @@ if __name__ == '__main__':
     henan= ['郑州','开封','洛阳','平顶山','安阳','鹤壁','新乡','焦作','济源','濮阳','许昌','漯河','三门峡','南阳','商丘','信阳','周口','驻马店']
     guangxi = ['南宁','柳州','桂林','梧州','北海','防城港','钦州','贵港','玉林','百色','贺州','河池','来宾','崇左']
     sichuan = ['成都','自贡','攀枝花','泸州','德阳','绵阳','广元','遂宁','内江','乐山','南充','眉山','宜宾','广安','达州','雅安','巴中','资阳','阿坝','甘孜','凉山']
-    city_name = ['铜川','宝鸡','咸阳','渭南','延安','汉中','榆林','安康','商洛']
+#    city_name = ['铜川','宝鸡','咸阳','渭南','延安','汉中','榆林','安康','商洛']
     shanxi2 = ['太原','大同','阳泉','长治','晋城','朔州','晋中','运城','忻州','临汾','吕梁']
     
     heilongjiang = ['哈尔滨','齐齐哈尔','鸡西','鹤岗','双鸭山','大庆','伊春','佳木斯','七台河','牡丹江','黑河','绥化','大兴安岭']
-    
+    city_name = ['福州','广州','深圳','佛山','惠州','东莞','中山']
 #    ele=input("input city name: ")
     flag_auction_time=input("input auction time choice: 1- first time, 2- second time, 3- 1+2, : ")
     error_page=input('start page')
@@ -241,29 +242,25 @@ if __name__ == '__main__':
     print('sleep for 0 hours')
     time.sleep(1)
     print('start')
-    
-    
-    ## firefox need version 55 higher 
+
     profile=webdriver.firefox.firefox_profile.FirefoxProfile()
-    # 1 - Allow all images
-    # 2 - Block all images
-    # 3 - Block 3rd party images 
+#    # 1 - Allow all images
+#    # 2 - Block all images
+#    # 3 - Block 3rd party images 
     profile.set_preference("permissions.default.image", 2)
-    # driver=webdriver.Firefox(firefox_profile=profile)
+#    driver=webdriver.Firefox(firefox_profile=profile)    
+    
     options = FirefoxOptions()
     options.add_argument("--headless")
     driver = webdriver.Firefox(firefox_options=options,firefox_profile=profile,executable_path=driver_path)
-
-    
-    # PhantomJS is depresiated but I am still going to use it 
-    driver = webdriver.PhantomJS() # depresiated 
     
     for ele in city_name:
         print("-----------------------------------")
         print("city "+ele+ " begins")
         print("-----------------------------------")
         error_flag = 0
-        year_list=['2014','2015','2016','2017']
+        year_list=['2015','2016','2017','2018','2019']
+#        year_list = ['2018','2019']
         #    for ele in city_name:
         elee=ele.encode("gbk")
         elee=urllib.parse.quote(elee)
