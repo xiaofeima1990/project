@@ -372,7 +372,7 @@ if __name__ == '__main__':
                 con2.close()
                 con2 = sqlite3.connect(store_path+"auction_bidding_house.sqlite")
                 
-            if (index==total_len-1) and index % 25 !=0:
+            if (index==total_len-1) and index % 50 !=0:
                 df_INFO1.to_sql(city+"_"+auction_time_flag, con, if_exists="append")
                 df_INFO2.to_sql(city+"_"+auction_time_flag, con2, if_exists="append")
                 df_INFO2=pd.DataFrame(columns=col_bid2)
