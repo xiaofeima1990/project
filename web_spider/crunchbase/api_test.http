@@ -1,4 +1,9 @@
+
+
+# This script is used api demo test
+# it can save effort to help find the data I need
 # http test for api 
+#
 # separated by ### 
 @user_key=2bddce7174abaf499d47ed2a4baf4581
 
@@ -26,4 +31,87 @@ curl -X GET \
 	"page":1,
     "sort_order":"created_at DESC"
       }'
+
+# ------------------------------------------------------------------------
+# data I need
+# headqurater location
+# funding round
+# acquisition
+# organization info
+# industry category
+
+
+# headqurater location
 ###
+curl -X GET \
+  'https://api.crunchbase.com/v3.1/locations' \
+  -H 'X-Cb-User-Key:{{user_key}}'
+  -d '{
+	"page":1,
+    "sort_order":"created_at DESC"
+      }'
+
+
+
+# Now find the funding round info
+###
+curl -X GET \
+  'https://api.crunchbase.com/v3.1/funding-rounds?' \
+  -H 'X-Cb-User-Key:{{user_key}}'
+  -d '{
+	  "page":1,
+    "sort_order":"created_at DESC",
+    "updated_since":2001
+      }'
+# search for specified uuid
+@uuid=9cc7c5642c3a4965a86dc6bd759b5092 
+### 
+curl --request GET \
+  --url 'https://api.crunchbase.com/v3.1/funding-rounds/{{uuid}}'
+  -H 'X-Cb-User-Key:{{user_key}}'
+
+# acquisition
+###
+curl --request GET \
+  --url 'https://api.crunchbase.com/v3.1/acquisitions?'
+  -H 'X-Cb-User-Key:{{user_key}}'
+  -d '{
+	  "page":1,
+    "sort_order":"created_at DESC",
+    "updated_since":2001
+      }'
+
+
+## search for specified acquisition 
+# @uuid=2bfeb22f618e457b828cb128a184f27f 
+###
+curl --request GET \
+  --url 'https://api.crunchbase.com/v3.1/acquisitions/{{uuid}}'
+  -H 'X-Cb-User-Key:{{user_key}}'
+
+
+# organization info, this is core, it inlcude all the organziation
+# in database, comapny, school, investor
+###
+curl --request GET \
+  --url 'https://api.crunchbase.com/v3.1/organizations?'
+  -H 'X-Cb-User-Key:{{user_key}}'
+  -d '{
+	  "page":1,
+    "sort_order":"created_at DESC",
+    "updated_since":2001,
+    "categories"=software,
+    "organization_types"=company
+      }'
+## relationship 
+## check webpage
+
+
+# @relation=categories
+# @uuid=93b1271b94d54184f5bb67c2e8abb1a7 
+###
+curl --request GET \
+  --url 'https://api.crunchbase.com/v3.1/organizations/{{uuid}}/{{relation}}'
+  -H 'X-Cb-User-Key:{{user_key}}'
+
+
