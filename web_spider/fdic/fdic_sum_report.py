@@ -64,6 +64,10 @@ def open_page(driver,url):
     
     return driver
 
+def open_table(driver,year,msa_location)
+
+
+
 
 if __name__ == '__main__':
     
