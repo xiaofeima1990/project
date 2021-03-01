@@ -43,6 +43,12 @@ import pandas as pd
 
 page_load_flag = ".tdHeaderSOD"
 
+COL_mkt_share = ["Date",	"Year",	"MSA_name",	"Institution_Rank"	"Institution_Name",	"CERT",	
+                    "State(Hqtrd)",	"Bank_Class",	"State/Federal_Charter",	"Total_Assets",
+                    "Offices",	"Depoits($000)",	"Market_Share",	"Squared_Market_Share"]
+COL_HHI = ["Date",	"Year",	"MSA_name",	"Num_Institutions",	"Total_Assets",	
+           "Num_Offices",	"Depoits($000)","HHI"]
+
 
 def choose_selections(driver, element_id, select_year):
     driver.find_element(By.ID, element_id).click()
@@ -65,7 +71,20 @@ def open_page(driver,url):
     return driver
 
 
+def create_dataframe():
+    df_mkt_share = pd.DataFrame(columns= COL_mkt_share)
+    df_HHI = pd.DataFrame(columns= COL_HHI)
+    return (df_mkt_share, df_HHI)
+
+
+
+
 if __name__ == '__main__':
+    
+    
+    (df_mkt_share, df_HHI) = create_dataframe()
+    Year = "2015"
+    Date = "06-30-"+Year
     
     base_url = "https://www7.fdic.gov/sod/sodMarketBank.asp?barItem=2"
     driver_path="..//geckodriver.exe"
@@ -97,8 +116,60 @@ if __name__ == '__main__':
     ### 1. geo area
     geo_selection = driver.find_element_by_css_selector("#divtdTabProForma tr:nth-child(2) > td > label")
     geo_selection.click()
-    ### 2. select year 
+    ### 2. select year MSA part 
     year_selection = Select(driver.find_element_by_id('PFMSADepositDate'))
-    year_selection.select_by_value("2001")
+    year_selection.select_by_value(Year)
+    
+    ### 3. msa area
+    msa_selection = Select(driver.find_element(By.NAME, "PFMSASelected"))
+    msa_selection.deselect_all()
+    msa_selection.select_by_index(4)
+    
+    
+    ### 4. generate the report 
+    driver.find_element_by_id("SubmitButton").click() 
+    
+    
+    '''
+    Table part
+    
+    '''
+    
+    ## check the total assets part 
+    asset_selection = Select(driver.find_element_by_name('sAssetsAsOf'))
+    asset_selection.select_by_value("June 30, "+Year)
+    
+    
+    table = driver.find_element_by_css_selector('.table')
+    
+    table_raw_data = table.find_elements_by_tag_name("TR")
+    
+    ### table info
+    table_msa_info = table_raw_data[3].text
+    ## header part  not important 
+    # header_list = table_raw_data[4].find_elements_by_tag_name("TH")
+    row_data_common = [Date,Year,table_msa_info]
+    ## content part market share
+    n_row = len(table_raw_data)
+    for i in range(5,n_row-2):
+        id_i = i-5
+        row_data = [Date,Year,table_msa_info]
+        content_list = table_raw_data[i].find_elements_by_tag_name("TD")
+        temp_row_data = [ele.text for ele in content_list]
+        temp_row_data = temp_row_data[2:]
+        row_data.extend(temp_row_data)
+        df_mkt_share.loc[id_i] = row_data
+        id_i = id_i + 1
+        
+        
+    idx_i = 0 
+    content_list = table_raw_data[-2].find_elements_by_tag_name("TD")
+    temp_row_data = [ele.text for ele in content_list]
+    Num_Institutions = re.findall("\d+",temp_row_data[0])
+    temp_row_data.pop(-2)
+    temp_row_data.pop(0)
+    row_data = [Date,Year,table_msa_info] + Num_Institutions+ temp_row_data
+    df_HHI.loc[idx_i] = row_data
+    idx_i = 1
     
     
