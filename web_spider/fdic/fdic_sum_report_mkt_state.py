@@ -91,7 +91,7 @@ def initial_driver(driver_path):
 def open_table(driver,year,sate_index):
     ### 1. open the link 
     driver=open_page(driver,base_url)
-    
+    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, 'tdTabDepositMarketShare'))) 
     
     ### 2. navigate to the market share part 
     pro_forma=driver.find_element_by_id("tdTabDepositMarketShare")
@@ -114,14 +114,14 @@ def open_table(driver,year,sate_index):
     time.sleep(0.5)    
     ### 4. generate the report 
     driver.find_element_by_id("SubmitButton").click() 
-    time.sleep(5) 
+    # WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//table[3]'))) 
+    time.sleep(5)
     return driver , state_name
 
 
 def save_table(driver,Year,Date,state_name):
     ## creat the new empty dataframe
     df_mkt_share = create_dataframe()
-
     ## navigate to the table 
     table = driver.find_element_by_xpath("//table[3]")
     table_raw_data = table.find_elements_by_tag_name("TR")
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     df_mkt_share = create_dataframe()
     file_path = "D:\\github\\project\\web_spider\\fdic\\"
     file_name1 = "sum_market_share2_state"
-    flag = 1
+    flag = 0
     if flag == 1:
         df_mkt_share.to_csv(file_path+file_name1+'.csv', sep='\t', encoding='utf-8',mode='a',index=False)
         
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     '''
     
     ## set up Year 
-    Year_list = list(range(2000, 2011))
+    Year_list = list(range(2011, 2021))
     Year_list = [str(x) for x in Year_list]
     Date_list = ["06-30-" + x for x in Year_list ]
     

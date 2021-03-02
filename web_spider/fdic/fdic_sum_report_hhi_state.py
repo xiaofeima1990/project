@@ -36,7 +36,7 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException,TimeoutException
+from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException,TimeoutException,ElementClickInterceptedException
 import selenium.common.exceptions as S_exceptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 import pandas as pd
@@ -116,7 +116,7 @@ def open_table(driver,year,state_index):
     time.sleep(0.5)    
     ### 4. generate the report 
     driver.find_element_by_id("SubmitButton").click() 
-    
+    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.table'))) 
     return (driver,state_name) 
 
 
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     '''
     
     ## set up Year 
-    Year_list = list(range(2000, 2011))
+    Year_list = list(range(2011, 2021))
     Year_list = [str(x) for x in Year_list]
     Date_list = ["06-30-" + x for x in Year_list ]
     
@@ -213,17 +213,28 @@ if __name__ == '__main__':
         Date = Date_list[year_i]
         ### over msa total 392 
         print("working on year "+ year)
-        for msa_index in range(0,59):            
-            ## open the table 
-            driver,state_name = open_table(driver,year,msa_index)    
-            ## save the data
-            (df_mkt_share_t, df_HHI_t) = save_table(driver,year,Date,state_name)
-            
-            # save to the dataframe
-            df_mkt_share=df_mkt_share.append(df_mkt_share_t,ignore_index=True)
-            
-            df_HHI=df_HHI.append(df_HHI_t,ignore_index=True)
+        for msa_index in range(0,59): 
+            try:
+                ## open the table 
+                driver,state_name = open_table(driver,year,msa_index)    
+                ## save the data
+                (df_mkt_share_t, df_HHI_t) = save_table(driver,year,Date,state_name)
+                # save to the dataframe
+                df_mkt_share=df_mkt_share.append(df_mkt_share_t,ignore_index=True)
+                df_HHI=df_HHI.append(df_HHI_t,ignore_index=True)
        
+            except ElementClickInterceptedException as e:
+                print(e)
+                driver.find_element_by_id("decline").click()
+                ## open the table 
+                driver,state_name = open_table(driver,year,msa_index)    
+                ## save the data
+                (df_mkt_share_t, df_HHI_t) = save_table(driver,year,Date,state_name)
+                ## save to the dataframe
+                df_mkt_share=df_mkt_share.append(df_mkt_share_t,ignore_index=True)
+                df_HHI=df_HHI.append(df_HHI_t,ignore_index=True)
+                
+                
             if msa_index % 50 == 0:
                 time.sleep(5)
         
