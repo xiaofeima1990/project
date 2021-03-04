@@ -122,11 +122,11 @@ def open_table(driver,year,sate_index):
 def save_table(driver,Year,Date,state_name):
     ## creat the new empty dataframe
     df_mkt_share = create_dataframe()
-    ## navigate to the table 
-    table = driver.find_element_by_xpath("//table[3]")
-    table_raw_data = table.find_elements_by_tag_name("TR")
+    ## navigate to the table
+    try: 
+        table = driver.find_element_by_xpath("//table[3]")
+        table_raw_data = table.find_elements_by_tag_name("TR")
     
-    if table != '':
         ### table info        
         ## content part market share
         n_row = len(table_raw_data)
@@ -139,7 +139,8 @@ def save_table(driver,Year,Date,state_name):
             df_mkt_share.loc[id_i] = row_data
             id_i = id_i + 1
     
-    else:
+    except NoSuchElementException as ex:
+        print(ex)
         df_mkt_share.loc[0] =  [Date,Year,state_name,"0"] + ["-" for x in range(0,10)]
 
     
