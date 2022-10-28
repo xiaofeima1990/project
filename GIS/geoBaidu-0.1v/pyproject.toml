@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0", 'geopy>=1.00',"wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "geoBaidu"
+version = "0.0.1"
+authors = [
+  { name="xiaofeima", email="mgxglen@gmail.com" },
+]
+description = "An extension for using Baidu geo api from geopy"
+readme = "README.md"
+requires-python = ">=3.4"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/xiaofeima/project/gis/"
+# "Bug Tracker" = "https://github.com/pypa/sampleproject/issues"

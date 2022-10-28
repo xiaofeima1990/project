@@ -27,8 +27,10 @@ from selenium.common.exceptions import NoSuchElementException, NoAlertPresentExc
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.support.ui import WebDriverWait
 import selenium.common.exceptions as S_exceptions
+from selenium.webdriver.firefox.options import Options
 import pandas as pd
 import sqlite3
+from selenium.webdriver.chrome.service import Service
 
 
 
@@ -91,11 +93,11 @@ def open_page(driver,url):
     try:
         driver.set_page_load_timeout(30)
         driver.get(url)
-        element_present = EC.presence_of_element_located((By.CLASS_NAME, 'first.current'))
+        element_present = EC.element_to_be_clickable((By.CLASS_NAME, 'first.current'))
         WebDriverWait(driver, 30).until(element_present)
         time.sleep(5)
     except TimeoutException as ex:
-#        check=driver.find_element_by_css_selector(page_load_flag)
+#        check=driver.find_element(by = By.CSS_SELECTOR, value = page_load_flag)
 #        if not check :
 #            print("problem with the page, restart it")
 #            driver.quit()
@@ -105,7 +107,7 @@ def open_page(driver,url):
 
 
 
-def get_info(driver,link_url,status,auction_time_flag):
+def get_info(driver,link_url,status,auction_time_flag,store_path):
     '''
     df_info1 : auction info ingeneral
     df_info2 : bidding table
@@ -114,13 +116,14 @@ def get_info(driver,link_url,status,auction_time_flag):
     df_info1=pd.DataFrame(columns=col_name)
     df_info2=pd.DataFrame(columns=col_bid)
     driver=open_page(driver,link_url)
+    time.sleep(5)
     # df1 for basic infomation
     
     ## get id infomation
     id_info=re.findall(r'\d+',link_url)[0]
     
     # column 1
-    candi_info=driver.find_element_by_css_selector(Price_info).text
+    candi_info=driver.find_element(by = By.CSS_SELECTOR, value = Price_info).text
     for name,ele in PRICE_INFO_dict.items():
         try:
             candi_ele=re.findall(ele,candi_info)[0]
@@ -135,7 +138,7 @@ def get_info(driver,link_url,status,auction_time_flag):
         
     try:
         for name,ele in AUCTION_INFO1.items():
-            candi_info=driver.find_element_by_css_selector(ele).text
+            candi_info=driver.find_element(by = By.CSS_SELECTOR,value = ele).text
             candi_info=candi_info.replace(",","")
             
             if candi_info=='':            
@@ -148,9 +151,9 @@ def get_info(driver,link_url,status,auction_time_flag):
     
     
     
-    df_info1.loc[0,'finish_time']=driver.find_element_by_class_name(finish_time).text
+    df_info1.loc[0,'finish_time']=driver.find_element(by = By.CLASS_NAME , value = finish_time).text
     
-    tmp_pri=driver.find_element_by_css_selector(priority_info).text.split(":")
+    tmp_pri=driver.find_element(by = By.CSS_SELECTOR, value = priority_info).text.split(":")
     if "无" in tmp_pri[1]: 
         df_info1.loc[0,'priority_people']=0
     else:
@@ -158,28 +161,28 @@ def get_info(driver,link_url,status,auction_time_flag):
     
     # column 2
     
-    driver.find_element_by_css_selector(location_nav1).click()
+    driver.find_element(by = By.CSS_SELECTOR, value = location_nav1).click()
     
     element_present = EC.presence_of_element_located((By.CSS_SELECTOR, announce))
     WebDriverWait(driver, 30).until(element_present)
     time.sleep(2)
     
-    notice_detail=driver.find_element_by_css_selector(announce).text
+    notice_detail=driver.find_element(by = By.CSS_SELECTOR, value = announce).text
     df_info1.loc[0,'announce']=notice_detail
     
     # detail info
     try:
-        driver.find_element_by_css_selector(location_nav2).click()
+        driver.find_element(by = By.CSS_SELECTOR, value = location_nav2).click()
         element_present = EC.presence_of_element_located((By.ID, location))
         WebDriverWait(driver, 30).until(element_present)
-        df_info1.loc[0,['lat','lgt']]=driver.find_element_by_id(location).get_attribute("value").split(",")
+        df_info1.loc[0,['lat','lgt']]=driver.find_element(by = By.ID, value = location).get_attribute("value").split(",")
     except:
         pass
         
     # court information
-    df_info1.loc[0,'incharge_court']=driver.find_element_by_class_name("unit-txt.unit-name.item-announcement").text
+    df_info1.loc[0,'incharge_court']=driver.find_element(by = By.CLASS_NAME, value = "unit-txt.unit-name.item-announcement").text
     
-    check_text=driver.find_element_by_css_selector(location_nav).text.split("\n")
+    check_text=driver.find_element(by = By.CSS_SELECTOR, value = location_nav).text.split("\n")
     n_len=len(check_text)
     ii=0
     flag_ii=4
@@ -195,7 +198,7 @@ def get_info(driver,link_url,status,auction_time_flag):
         ii=ii+1
     
     
-    
+
     
 
 #        df_info1.loc[0,'incharge_court']=driver.find_element_by_class_name(incharge_court).text.split("：")[1]
@@ -204,7 +207,7 @@ def get_info(driver,link_url,status,auction_time_flag):
     # info2 bidder activity
         
         location_nav3='#J_DetailTabMenu > li:nth-child('+str(flag_ii)+') > a'
-        driver.find_element_by_css_selector(location_nav3).click()
+        driver.find_element(by= By.CSS_SELECTOR, value = location_nav3).click()
         element_present = EC.presence_of_element_located((By.CSS_SELECTOR, bidding_table))
         WebDriverWait(driver, 30).until(element_present)
         time.sleep(2)
@@ -221,7 +224,7 @@ def get_info(driver,link_url,status,auction_time_flag):
         while flag==1:
             df_temp=pd.DataFrame(columns=col_bid)
             try:
-                table_content=driver.find_element_by_css_selector(bidding_table).text
+                table_content=driver.find_element(by = By.CSS_SELECTOR, value= bidding_table).text
                 if "出价记录" in table_content:
                     break
             
@@ -234,23 +237,26 @@ def get_info(driver,link_url,status,auction_time_flag):
                 
                 
             df_info2=df_info2.append(df_temp,ignore_index=True)
-            driver.find_element_by_css_selector(bidding_table).click()
+
+            
+            # driver.find_element(by = By.CSS_SELECTOR, value = bidding_table).click()
 
             # find the priority bidder
             if pri_flag==True and do_search == True:
                 ff_pri=False
-                pri_icon = driver.find_elements_by_class_name('icon-user.icon-priority-1')
+                pri_icon = driver.find_elements(by = By.CLASS_NAME, value = 'icon-user.icon-priority-1')
                 if len(pri_icon)==0:
-                    pri_icon = driver.find_elements_by_class_name('nickname.priority')
+                    pri_icon = driver.find_elements(by = By.CLASS_NAME, value = 'nickname.priority')
                     if len(pri_icon)>0:
                         ff_pri=True
                         
                 else:
                     ff_pri=True
-                    
+                
+
                 if ff_pri:
-                    parent_el = pri_icon[0].find_element_by_xpath("..")
-                    parent_el=parent_el.find_element_by_xpath("..")
+                    parent_el = pri_icon[0].find_element(by = By.XPATH, value = "..")
+                    parent_el=parent_el.find_element(by = By.XPATH, value = "..")
                     pri_ID=parent_el.text
                     df_pri.loc[0,'pri_ID']=pri_ID
                     print('priority bidder! in {} : bidder ID is {}'.format(id_info,pri_ID))
@@ -258,10 +264,14 @@ def get_info(driver,link_url,status,auction_time_flag):
                     df_pri.to_sql(auction_time_flag, con1, if_exists="append")
                     con1.close()
                     do_search=False
-                    
+            
+
             try:
-                driver.find_element_by_css_selector(bidding_next).click()
-                time.sleep(0.5)
+                driver.execute_script("arguments[0].scrollIntoView();", driver.find_element(by = By.CSS_SELECTOR, value = bidding_next))
+                element_present = EC.element_to_be_clickable((By.CSS_SELECTOR, bidding_next))
+                WebDriverWait(driver, 30).until(element_present)                
+                driver.find_element(by = By.CSS_SELECTOR, value = bidding_next).click()
+                time.sleep(1)
                 driver.execute_script("window.stop();")
             except:
                 flag=0
@@ -270,19 +280,21 @@ def get_info(driver,link_url,status,auction_time_flag):
         df_info1.loc[0,'num_bidder'] =len( df_info2['bidder_id'].unique()) 
 
     location_nav4='#J_DetailTabMenu > li:nth-child('+str(flag_ii2)+') > a'            
-    check_flag=driver.find_element_by_css_selector(location_nav4).text  
+    check_flag=driver.find_element(by = By.CSS_SELECTOR, value = location_nav4).text  
           
     if "确认书" in check_flag:
     # get court name 
-        driver.find_element_by_css_selector(location_nav4).click()
+        element_present = EC.element_to_be_clickable((By.CSS_SELECTOR, location_nav4))
+        WebDriverWait(driver, 10).until(element_present)
+        driver.find_element(by = By.CSS_SELECTOR, value = location_nav4).click()
         element_present = EC.presence_of_element_located((By.CSS_SELECTOR, result))
         WebDriverWait(driver, 30).until(element_present)
         time.sleep(2)
         try:
-            res=driver.find_element_by_css_selector(result).text
+            res=driver.find_element(by= By.CSS_SELECTOR, value = result).text
             df_info1.loc[0,'win_bidder']=re.findall(r'用户姓名(?P<name>.*)通过',res)[0]
         #        df_info1.loc[0,'win_bidder_id']=re.findall(r'通过竞买号(?P<name>.*)于2',res)[0]
-            temp=driver.find_element_by_css_selector(property_name).text
+            temp=driver.find_element(by= By.CSS_SELECTOR, value = property_name).text
             df_info1.loc[0,'property_name']=re.findall(r'标的物名称：(?P<name>.*)',temp)[0]
         except:
             pass
@@ -302,15 +314,17 @@ def get_info(driver,link_url,status,auction_time_flag):
 
 if __name__ == '__main__':
 
-
+    current_path=os.path.dirname(os.path.abspath('__file__'))
     
-    driver_path="E:\\github\\Project\\web_spider\\land auction taobao\\geckodriver.exe"
-
+    driver_path= current_path + "\\geckodriver.exe"
+    driver_folder = current_path + "\\UserData\\"
+    
+    start_url = "https://sf-item.taobao.com/sf_item/628826927692.htm?track_id=af27704c-51a2-4e76-a008-cdc3c8d78cdc"
 
     city=input("input your city ")
-    link_path="E:/auction/link/"
+    link_path="D:/auction/link/"
 
-    store_path="E:/auction/"
+    store_path="D:/auction/"
     con = sqlite3.connect(store_path+"auction_info_house.sqlite")
     con2 = sqlite3.connect(store_path+"auction_bidding_house.sqlite")
     df_INFO1=pd.DataFrame(columns=col_name)
@@ -320,16 +334,21 @@ if __name__ == '__main__':
     
     df_link=pd.read_csv(link_path+city+"-"+auction_time_flag+"-sf.csv",sep="\t", encoding='utf-8')
 
-    profile=webdriver.firefox.firefox_profile.FirefoxProfile()
+    # profile=webdriver.firefox.firefox_profile.FirefoxProfile()
 #    # 1 - Allow all images
 #    # 2 - Block all images
 #    # 3 - Block 3rd party images 
-    profile.set_preference("permissions.default.image", 2)
+    # profile.set_preference("permissions.default.image", 2)
 #    driver=webdriver.Firefox(firefox_profile=profile)
 
-    options = FirefoxOptions()
-    options.add_argument("--headless")
-    driver = webdriver.Firefox(firefox_options=options,firefox_profile=profile,executable_path=driver_path)
+    options = Options()
+    # options.headless = True
+    options.set_preference("permissions.default.image", 2)
+    # options.add_argument("--user-data-dir= " + driver_folder)
+    ser = Service(driver_path)
+    driver = webdriver.Firefox(options=options,service=ser)
+    driver = open_page(driver,start_url)
+    x = input("pasue for login")
 
     total_len=len(df_link)
     try:
@@ -338,20 +357,20 @@ if __name__ == '__main__':
             status   = row["status"]
             # all I care about is the successful auction
             if status == "done":
-                (df_info1,df_info2,id_info)=get_info(driver,base_url,status,auction_time_flag)
+                (df_info1,df_info2,id_info)=get_info(driver,base_url,status,auction_time_flag,store_path)
             else:
                 continue
     
-            time.sleep(1)    
+            time.sleep(10)    
             driver.execute_script('window.localStorage.clear();')
         
             df_INFO1=df_INFO1.append(df_info1,ignore_index=True)
             df_INFO2=df_INFO2.append(df_info2,ignore_index=True)
-            time.sleep(5)  
+            time.sleep(25)  
     ## how to save for the data especially for the auction data 
     # http://www.datacarpentry.org/python-ecology-lesson/08-working-with-sql/
             
-            if (index+1)% 50 ==0:
+            if (index+1)% 25 ==0:
                     # output 
                     
                 df_INFO1.to_sql(city+"_"+auction_time_flag, con, if_exists="append")

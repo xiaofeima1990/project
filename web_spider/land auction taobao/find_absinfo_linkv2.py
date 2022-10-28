@@ -4,6 +4,8 @@
 Created on Thu Jun 14 08:31:22 2018
 
 @author: xiaofeima
+
+probablem taobao's anti spider mechism is too strong
 """
 
 
@@ -30,6 +32,8 @@ from selenium.webdriver.firefox.options import Options
 import pandas as pd
 import sqlite3
 import urllib
+from selenium.webdriver.chrome.service import Service
+
 '''
 key parameters 
 '''
@@ -56,7 +60,7 @@ def open_page(driver,url):
         driver.set_page_load_timeout(40)
         driver.get(url)
     except TimeoutException as ex:
-        check=driver.find_element_by_css_selector(page_load_flag)
+        check=driver.find_element(by = By.CSS_SELECTOR, value = page_load_flag)
         if not check :
             print("problem with the page, restart it")
             driver.quit()
@@ -70,7 +74,7 @@ col_name_abs=['ID','url','num_bids','status','win_bid','eval_price','n_watch','n
 def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
     # get whole link page number 
     try:
-        summary_link=int(driver.find_element_by_class_name(page_sum_class_name).text)
+        summary_link=int(driver.find_element(by=By.CLASS_NAME, value = page_sum_class_name).text)
     
         df_link=pd.DataFrame(columns=col_name_abs)
         
@@ -99,7 +103,7 @@ def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
                 flag_select = 0
             else:
                 time.sleep(1)
-                content_list=driver.find_elements_by_xpath(list_link_path)
+                content_list=driver.find_elements(by=By.XPATH,value = list_link_path)
     
     
                 n=len(content_list)
@@ -109,37 +113,37 @@ def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
                     id_info=content_list[i].get_attribute('id').split("-")[-1]
                     id_total=content_list[i].get_attribute('id')
                     if 'done' in status:
-                        bid_tips=content_list[i].find_elements_by_class_name('pai-xmpp-bid-count')[1].text
+                        bid_tips=content_list[i].find_elements(by = By.CLASS_NAME,value = 'pai-xmpp-bid-count')[1].text
                     else:
                         bid_tips=0;
                         
             #            id_link=content_list[i].get_attribute('id')
             
                     try:
-                        eval_price=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[4]/span[2]/em[2]").text
+                        eval_price=content_list[i].find_element(by = By.XPATH, value =  "//li[@id='"+id_total+"']/a/div[2]/p[4]/span[2]/em[2]").text
                         eval_price=re.findall(r'\d*',eval_price)[0]
                     except :
                         date_flag=1
                         eval_price="NaN"
             
             
-                    href=content_list[i].find_element_by_tag_name('a').get_attribute('href')
-                    title=content_list[i].find_element_by_css_selector("p.title").text
+                    href=content_list[i].find_element(by=By.TAG_NAME, value= 'a').get_attribute('href')
+                    title=content_list[i].find_element(by = By.CSS_SELECTOR, value =  "p.title").text
                     try:
-                        win_bid=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[3]/span[2]/em[2]").text
+                        win_bid=content_list[i].find_element(by = By.XPATH, value = "//li[@id='"+id_total+"']/a/div[2]/p[3]/span[2]/em[2]").text
                         win_bid=re.findall(r'\d*',win_bid)[0]
-                        n_watch=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[3]/p/em").text
-                        n_resigter=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[3]/p[2]/em").text
+                        n_watch=content_list[i].find_element(by = By.XPATH , value = "//li[@id='"+id_total+"']/a/div[3]/p/em").text
+                        n_resigter=content_list[i].find_element(by = By.XPATH, value = "//li[@id='"+id_total+"']/a/div[3]/p[2]/em").text
                     except:
                         continue
                     
                     try:
                         
-                        date_all=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[6]/span[2]").text
+                        date_all=content_list[i].find_element(by = By.XPATH, value = "//li[@id='"+id_total+"']/a/div[2]/p[6]/span[2]").text
                         (date1,time1)=date_all.split(" ")
                     except Exception as e:
                         if 'not enough values to unpack' in str(e):
-                            date_all=content_list[i].find_element_by_xpath("//li[@id='"+id_total+"']/a/div[2]/p[7]/span[2]").text
+                            date_all=content_list[i].find_element(by = By.XPATH, value = "//li[@id='"+id_total+"']/a/div[2]/p[7]/span[2]").text
                             (date1,time1)=date_all.split(" ")
 
                 
@@ -149,9 +153,9 @@ def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
                 df_link=df_link.append(df_temp,ignore_index=True)
                 
                 
-                if (page_count)% 10 ==0:
+                if (page_count)% 5 ==0:
                     # output 
-                    
+                    time.sleep(20)
                     df_link.to_csv(file_path+file_name+'.csv', sep='\t', encoding='utf-8',index=False,mode='a', header=False)
                     df_link=pd.DataFrame(columns=col_name_abs)
                 if (page_count==summary_link) and summary_link % 5 !=0:
@@ -161,7 +165,7 @@ def get_abs_info(driver,start_page,file_path,file_name,Year,flag_time):
                 if page_count==summary_link:
                     page_count=page_count+1;
                 else:
-                    
+                    time.sleep(5)
                     driver=next_page(driver,page_count,flag_select)
                     page_count=page_count+1
                     driver.execute_script('window.localStorage.clear();')
@@ -181,7 +185,7 @@ def next_page(driver,page_count,flag):
     try:
         if flag == 0:
         
-            check=driver.find_element_by_css_selector(next_page_css)
+            check=driver.find_element(by= By.CSS_SELECTOR, value = next_page_css)
             check.click()
         
         else:
@@ -195,9 +199,7 @@ def next_page(driver,page_count,flag):
         driver.implicitly_wait(3)
         driver.execute_script("window.stop();")
         
-        
-        
-        
+
     except TimeoutException as e:
         time.sleep(2)
         driver.execute_script("window.stop();")
@@ -208,9 +210,12 @@ def next_page(driver,page_count,flag):
                     
 
 if __name__ == '__main__':
+    
+    current_path=os.path.dirname(os.path.abspath('__file__'))
 
     file_path="D:\\Dropbox\\academic\\11_work_dataset\\justice auction\\link\\house\\"
     driver_path= current_path+"\\geckodriver.exe"    
+    driver_folder = current_path + "\\UserData\\"
 #    con = sqlite3.connect("E:\\justice_auction.sqlite")
     
 #     this even requires gbk decoding encoding!!! to convert str to url
@@ -228,10 +233,11 @@ if __name__ == '__main__':
     sichuan = ['成都','自贡','攀枝花','泸州','德阳','绵阳','广元','遂宁','内江','乐山','南充','眉山','宜宾','广安','达州','雅安','巴中','资阳','阿坝','甘孜','凉山']
     shaanxi = ['铜川','宝鸡','咸阳','渭南','延安','汉中','榆林','安康','商洛']
     shanxi2 = ['太原','大同','阳泉','长治','晋城','朔州','晋中','运城','忻州','临汾','吕梁']
-    
+    jiangsu = ['无锡','南京','苏州','徐州','常州','南通','连云港','淮安','盐城','扬州','镇江','泰州','宿迁'] # 
     heilongjiang = ['哈尔滨','齐齐哈尔','鸡西','鹤岗','双鸭山','大庆','伊春','佳木斯','七台河','牡丹江','黑河','绥化','大兴安岭']
+    zhejiang = ['杭州','宁波','温州','嘉兴','湖州','绍兴','金华','衢州','舟山','台州','丽水']
     
-    city_name = ['南京','苏州']
+    city_name = ['上海']
     
 #    ele=input("input city name: ")
     flag_auction_time=input("input auction time choice: 1- first time, 2- second time, 3- 1+2, : ")
@@ -244,7 +250,7 @@ if __name__ == '__main__':
     
     
     ## firefox need version 55 higher 
-    profile=webdriver.firefox.firefox_profile.FirefoxProfile()
+    # profile=webdriver.firefox.firefox_profile.FirefoxProfile()
     # 1 - Allow all images
     # 2 - Block all images
     # 3 - Block 3rd party images 
@@ -252,7 +258,13 @@ if __name__ == '__main__':
     # driver=webdriver.Firefox(firefox_profile=profile)
     options = Options()
     # options.headless = True
-    driver = webdriver.Firefox(options=options,firefox_profile=profile,executable_path=driver_path)
+    # options.set_preference("permissions.default.image", 2)
+    # options.add_argument("--user-data-dir= " + driver_folder)
+    ser = Service(driver_path)
+    driver = webdriver.Firefox(options=options,service=ser)
+    start_url = "https://sf-item.taobao.com/sf_item/592858218205.htm"
+    driver=open_page(driver,start_url)
+    x = input("pause" )
 
     '''
     need to deal with the login problem
@@ -298,6 +310,7 @@ if __name__ == '__main__':
             '''
             manually login
             '''
+
             if error_flag == 1:
                 if y != error_year:
                     continue
@@ -320,13 +333,15 @@ if __name__ == '__main__':
         print("-----------------------------------")
         print("city "+ele + " is done ")
         print("-----------------------------------")
-        driver.quit()
-        time.sleep(10)
-        options = FirefoxOptions()
-        options.add_argument("--headless")
-        profile=webdriver.firefox.firefox_profile.FirefoxProfile()
-        profile.set_preference("permissions.default.image", 2)
-        driver = webdriver.Firefox(firefox_options=options,firefox_profile=profile,executable_path=driver_path)
+        time.sleep(60)
+        # driver.quit()
+        
+        # options = Options()
+        # # options.add_argument("--headless")
+        
+        # profile=webdriver.firefox.firefox_profile.FirefoxProfile()
+        # profile.set_preference("permissions.default.image", 2)
+        # driver = webdriver.Firefox(options=options,firefox_profile=profile,executable_path=driver_path)
     
-    driver.quit()
+    # driver.quit()
         
