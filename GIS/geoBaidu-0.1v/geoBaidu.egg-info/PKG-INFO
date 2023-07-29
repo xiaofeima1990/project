@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: geoBaidu
+Version: 0.0.1
+Summary: An extension for using Baidu geo api from geopy
+Author-email: xiaofeima <mgxglen@gmail.com>
+Project-URL: Homepage, https://github.com/xiaofeima/project/gis/
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.4
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+
+# geoBaidu 
+
+This is an extension for using Baidu geo api from geopy. 
