@@ -3,6 +3,8 @@
 output/*
 # ignore log test files
 */*.log
+# ignore zip 
+*/*.zip
 
 # ignore driver 
 */*/chromedriver
