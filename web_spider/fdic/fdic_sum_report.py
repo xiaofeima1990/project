@@ -36,7 +36,7 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException,TimeoutException
+from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException,TimeoutException,ElementClickInterceptedException
 import selenium.common.exceptions as S_exceptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 import pandas as pd
@@ -45,7 +45,7 @@ import pandas as pd
 
 
 
-page_load_flag = ".tdHeaderSOD"
+page_load_flag = "#tdTabProForma"
 
 COL_mkt_share = ["Date",	"Year",	"MSA_name",	"Institution_Rank",	"Institution_Name",	"CERT",	
                     "State(Hqtrd)",	"Bank_Class",	"State/Federal_Charter",	"Total_Assets",
@@ -81,7 +81,7 @@ def initial_driver(driver_path):
 #    # 3 - Block 3rd party images 
     profile.set_preference("permissions.default.image", 2)
     options = FirefoxOptions()
-    # options.add_argument("--headless")
+    options.add_argument("--headless")
     driver = webdriver.Firefox(firefox_options=options,firefox_profile=profile,executable_path=driver_path)        
 
     return driver
@@ -90,7 +90,7 @@ def initial_driver(driver_path):
 def open_table(driver,year,msa_index):
     ### 1. open the link 
     driver=open_page(driver,base_url)
-    
+    time.sleep(5)
     ### 2. navigate to the market share part 
     pro_forma=driver.find_element_by_css_selector("#tdTabProForma")
     pro_forma.click()
@@ -109,19 +109,23 @@ def open_table(driver,year,msa_index):
     msa_selection.select_by_index(msa_index)
     if len(msa_selection.all_selected_options) == 0 :
         msa_selection.select_by_index(msa_index)
-    time.sleep(0.5)    
+        
+    state_name = msa_selection.all_selected_options[0].text    
+    time.sleep(5)
+    
     ### 4. generate the report 
     driver.find_element_by_id("SubmitButton").click() 
     
-    return driver 
+    return driver,state_name 
 
 
-def save_table(driver,Year,Date):
+def save_table(driver,Year,Date,state_name):
     ## creat the new empty dataframe
     (df_mkt_share, df_HHI) = create_dataframe()
     ## check the total assets part 
     asset_selection = Select(driver.find_element_by_name('sAssetsAsOf'))
-    asset_selection.select_by_value("December 31, " + Year)
+    # start in 2001 we set the june 30
+    asset_selection.select_by_value("June 30, " + Year)
     
     ## navigate to the table 
     table = driver.find_element_by_css_selector('.table')
@@ -157,8 +161,8 @@ def save_table(driver,Year,Date):
         df_HHI.loc[idx_i] = row_data   
     
     else:
-        df_mkt_share.loc[0] =  [Date,Year,table_msa_info,"0"] + ["-" for x in range(0,10)]
-        df_HHI.loc[0]   = [Date,Year,table_msa_info,"0"] + ["-" for x in range(0,4)]
+        df_mkt_share.loc[0] =  [Date,Year,state_name,"0"] + ["-" for x in range(0,10)]
+        df_HHI.loc[0]   = [Date,Year,state_name,"0"] + ["-" for x in range(0,4)]
     
     return (df_mkt_share, df_HHI)
 
@@ -178,7 +182,7 @@ if __name__ == '__main__':
     file_path = "D:\\github\\project\\web_spider\\fdic\\"
     file_name1 = "sum_market_share_MSA"
     file_name2 = "sum_HHI_MSA"
-    flag = 1
+    flag = 0
     if flag == 1:
         df_mkt_share.to_csv(file_path+file_name1+'.csv', sep='\t', encoding='utf-8',mode='a',index=False)
         df_HHI.to_csv(file_path+file_name2+'.csv', sep='\t', encoding='utf-8',mode='a',index=False)
@@ -191,7 +195,7 @@ if __name__ == '__main__':
     '''
     
     ## set up Year 
-    Year_list = list(range(2000, 2011))
+    Year_list = list(range(2001, 2011))
     Year_list = [str(x) for x in Year_list]
     Date_list = ["06-30-" + x for x in Year_list ]
     
@@ -208,20 +212,35 @@ if __name__ == '__main__':
         Date = Date_list[year_i]
         ### over msa total 392 
         print("working on year "+ year)
-        for msa_index in range(0,392):            
-            ## open the table 
-            driver = open_table(driver,year,msa_index)    
-            ## save the data
-            (df_mkt_share_t, df_HHI_t) = save_table(driver,year,Date)
-            
-            # save to the dataframe
-            df_mkt_share=df_mkt_share.append(df_mkt_share_t,ignore_index=True)
-            
-            df_HHI=df_HHI.append(df_HHI_t,ignore_index=True)
-       
+        for msa_index in range(0,392):
+            try:            
+                ## open the table 
+                (driver,state_name) = open_table(driver,year,msa_index)    
+                ## save the data
+                (df_mkt_share_t, df_HHI_t) = save_table(driver,year,Date,state_name)
+                # save to the dataframe
+                df_mkt_share=df_mkt_share.append(df_mkt_share_t,ignore_index=True)
+                df_HHI=df_HHI.append(df_HHI_t,ignore_index=True)
+           
+            except ElementClickInterceptedException as e:
+                
+                print(e)
+                driver.find_element_by_id("decline").click()
+                ## open the table 
+                (driver,state_name) = open_table(driver,year,msa_index)    
+                ## save the data
+                (df_mkt_share_t, df_HHI_t) = save_table(driver,year,Date,state_name)
+                # save to the dataframe
+                df_mkt_share=df_mkt_share.append(df_mkt_share_t,ignore_index=True)
+                df_HHI=df_HHI.append(df_HHI_t,ignore_index=True)
+
+
             if msa_index % 50 == 0:
-                time.sleep(5)
+                time.sleep(5)                
+                
+                
         
-    df_mkt_share.to_csv(file_path+file_name1+'.csv', sep='\t', encoding='utf-8',index=False,mode='a', header=False)
-    df_HHI.to_csv(file_path+file_name2+'.csv', sep='\t', encoding='utf-8',index=False,mode='a', header=False)
-    (df_mkt_share, df_HHI) = create_dataframe()
+        df_mkt_share.to_csv(file_path+file_name1+'.csv', sep='|', encoding='utf-8',index=False,mode='a', header=False)
+        df_HHI.to_csv(file_path+file_name2+'.csv', sep='|', encoding='utf-8',index=False,mode='a', header=False)
+        (df_mkt_share, df_HHI) = create_dataframe()
+        
