@@ -135,5 +135,5 @@ if next_page <= int(total_page_num):
     next_page_html = base_url + "&Page="+ str(next_page)
 else:
     print("finish")
-
+    raw_df.to_csv(path+"gpainet_abstract.csv",sep = "||")
 
