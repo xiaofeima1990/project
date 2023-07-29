@@ -49,19 +49,16 @@ document.querySelector("[data-value = 'yjs']").click()
 raw.html.render(retries = 4, script = JS_script1,sleep = 3)
 raw.html.render(retries = 4, script = JS_script2,sleep = 3)
 
-
-stage_i = 1
 auction_stage = {
     '1':"一拍",
     '2':"二拍",
     '3':"变卖",
 }
 
-JS_script3 = '''
-document.querySelector("#pmjd").querySelector("[data-value = '{}']").click()
-'''.format(stage_i)
+print(raw.html.find("#bdwCount",first= True).element.text)
+total_pages = int(raw.html.find("#pagebar > a.pagebtn.pagebtn-name")[-1].attrs['data-next'])
+print(total_pages)
 
-raw.html.render(retries = 4, script = JS_script3,sleep = 3)
 
 #list_li_1BDAEBF4DEED00976F4F7330821C1A78 > div.sfpm_cont > a
 dict_info_selector = {
@@ -88,55 +85,70 @@ DICT_info_extract = {
     "item_ID":"",
     "index_item":"",
 }
+current_page = 1
+count = 0
+for stage_i in [1,2,3]:
+    JS_script3 = '''
+    document.querySelector("#pmjd").querySelector("[data-value = '{}']").click()
+    '''.format(stage_i)
+
+    raw.html.render(retries = 4, script = JS_script3,sleep = 3)
+
+    # locate the key positions 
+    table_html = raw.html.find('#sfpmList > li ')
+    N_items = len(table_html)
+
+    stand_cols = ["title","win_price","eval_price","weiguan","num_bids","num_bidders"]
+    raw_df = pd.DataFrame()
+
+    # extract 
+    for i in range(0,N_items):
+        ele_raw = table_html[i]
+        dict_info_extract = DICT_info_extract.copy()
+        for col_ele in stand_cols:
+            dict_info_extract[col_ele]  = ele_raw.find(dict_info_selector[col_ele],first=True).text
+
+        dict_info_extract['win_price']  = re.findall('[0-9.]*[0-9]+',dict_info_extract['win_price'])[0]
+        dict_info_extract['eval_price'] = re.findall('[0-9.]*[0-9]+',dict_info_extract['eval_price'])[0]
+        dict_info_extract['weiguan'] = re.findall("[0-9.]*[0-9]+",dict_info_extract['weiguan'])[0]
+        dict_info_extract['num_bidders'] = re.findall("[0-9.]*[0-9]+",dict_info_extract['num_bidders'])[0]
+
+        dict_info_extract['item_ID'] = ele_raw.attrs['data-itemno']
+
+        dict_info_extract['auction_stage'] = auction_stage[stage_i]
+
+        dict_info_extract['index_item'] = count
 
 
-# locate the key positions 
-table_html = raw.html.find('#sfpmList > li ')
-N_items = len(table_html)
-print(N_items)
+        temp_df = pd.DataFrame(dict_info_extract,index=[count])
+        raw_df = pd.concat([raw_df,temp_df])
+        count = count +1
 
-print(raw.html.find("#bdwCount",first= True).element.text)
-total_pages = int(raw.html.find("#pagebar > a.pagebtn.pagebtn-name")[-1].attrs['data-next'])
-print(total_pages)
+    if current_page == 1:
+        raw_df.to_csv(path+"cbex_abstract.csv",sep = "|",mode='w',encoding="utf-16",index=False)
+        raw_df = pd.DataFrame()
 
-stand_cols = ["title","win_price","eval_price","weiguan","num_bids","num_bidders"]
-raw_df = pd.DataFrame()
+    if (current_page) % 20 == 0:
+        print("save temp df at page {}".format(next_page))
+        raw_df.to_csv(path+"cbex_abstract.csv",sep = "|",mode='a',encoding="utf-16",index=False,header=False)
+        raw_df = pd.DataFrame()
 
-# extract 
-for i in range(0,N_items):
-    ele_raw = table_html[i]
-    dict_info_extract = DICT_info_extract.copy()
-    for col_ele in stand_cols:
-        dict_info_extract[col_ele]  = ele_raw.find(dict_info_selector[col_ele],first=True).text
+    if (current_page) % 10 == 0:
+        time.sleep(10)
 
-    dict_info_extract['win_price']  = re.findall('[0-9.]*[0-9]+',dict_info_extract['win_price'])[0]
-    dict_info_extract['eval_price'] = re.findall('[0-9.]*[0-9]+',dict_info_extract['eval_price'])[0]
-    dict_info_extract['weiguan'] = re.findall("[0-9.]*[0-9]+",dict_info_extract['weiguan'])[0]
-    dict_info_extract['num_bidders'] = re.findall("[0-9.]*[0-9]+",dict_info_extract['num_bidders'])[0]
+    # find the next page info 
+    # thsi is for the next page
+    JS_script4 = """
+    document.getElementsByClassName("pagebtn pagebtn-name")[2].click()
+    """
+    raw.html.render(retries = 4, script = JS_script4,sleep = 3)
+    time.sleep(5)
 
-    dict_info_extract['item_ID'] = ele_raw.attrs['data-itemno']
-
-    dict_info_extract['auction_stage'] = auction_stage[stage_i]
-
-    dict_info_extract['index_item'] = i
-
-
-    temp_df = pd.DataFrame(dict_info_extract,index=[i])
-    raw_df = pd.concat([raw_df,temp_df])
-
-
-# find the next page info 
-# thsi is for the next page
-JS_script4 = """
-document.getElementsByClassName("pagebtn pagebtn-name")[2].click()
-"""
-raw.html.render(retries = 4, script = JS_script4,sleep = 3)
-
-# find the ending page 
-current_page_selector = "#pagebar > a.pagebtn.pagebtn-count.pagecount-active"
-current_page = int(raw.html.find(current_page_selector,first = True).element.text)
-
-#pagebar > a.pagebtn.pagebtn-name
-if current_page >= total_pages:
-    print("end")
-    raw_df.to_csv(path+"cbex_abstract.csv",sep = "||")
+    # find the ending page 
+    current_page_selector = "#pagebar > a.pagebtn.pagebtn-count.pagecount-active"
+    current_page = int(raw.html.find(current_page_selector,first = True).element.text)
+    
+    #pagebar > a.pagebtn.pagebtn-name
+    if current_page >= total_pages:
+        print("end for stage {}".format(stage_i))
+        raw_df.to_csv(path+"cbex_abstract.csv",sep = "||",encoding="utf-16",index=False,header=False)
