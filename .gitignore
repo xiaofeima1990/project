@@ -1,0 +1,11 @@
+# ignore exe 
+*/*.exe
+output/*
+# ignore log test files
+*/*.log
+
+# ignore driver 
+*/*/chromedriver
+*/*/geckodriver
+# exclude src folder files 
+# !src/mortality.mat

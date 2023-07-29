@@ -114,4 +114,19 @@ curl --request GET \
   --url 'https://api.crunchbase.com/v3.1/organizations/{{uuid}}/{{relation}}'
   -H 'X-Cb-User-Key:{{user_key}}'
 
+# the history data
+###
+curl https://rest.coinapi.io/v1/ohlcv/BITSTAMP_SPOT_BTC_USD/history?period_id=1MIN&time_start=2016-01-01T00:00:00 \
+  --request GET
+  --header "X-CoinAPI-Key:AFF04F9C-D823-41BB-A978-CBC5D77D7DF8"
 
+###
+  curl https://rest.coinapi.io/v1/ohlcv/periods \
+  --request GET
+  --header "X-CoinAPI-Key:AFF04F9C-D823-41BB-A978-CBC5D77D7DF8"
+
+# symbol
+###
+  curl https://rest.coinapi.io/v1/symbols \
+  --request GET
+  --header "X-CoinAPI-Key:AFF04F9C-D823-41BB-A978-CBC5D77D7DF8"

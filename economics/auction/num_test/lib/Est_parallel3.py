@@ -2,13 +2,11 @@
 """
 Created on Thur Mar 21 08:35:22 2019
 
-@author: mgxgl
+@author: mgxglen
 save the parallel running function
 
-# --------------03-26-2019-------------------#
-1 modfiy for (34) and (35) in Hong and Shum 2003
-  only consider the last two bidders sequence
-2 construct the MLE 
+# --------------09-28-2019-------------------#
+recode the structure that use reserve price to identify common value 
 
 
 """
