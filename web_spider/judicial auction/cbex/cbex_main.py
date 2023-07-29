@@ -24,7 +24,7 @@ else:
     path_prefix = "/Users/xiaofeima/"
     
 path = path_prefix + "Dropbox/work/UIBE/global_production/"
-
+output = path
 
 session = HTMLSession()
 base_url = "https://otc.cbex.com/page/sfpm/list/index.html?bdwlx=6"
@@ -96,7 +96,8 @@ N_items = len(table_html)
 print(N_items)
 
 print(raw.html.find("#bdwCount",first= True).element.text)
-
+total_pages = int(raw.html.find("#pagebar > a.pagebtn.pagebtn-name")[-1].attrs['data-next'])
+print(total_pages)
 
 stand_cols = ["title","win_price","eval_price","weiguan","num_bids","num_bidders"]
 raw_df = pd.DataFrame()
@@ -125,11 +126,17 @@ for i in range(0,N_items):
 
 
 # find the next page info 
-next_page_selector = "body > div > div:nth-child(7) > div > div.page-bar > div > a.page-next" 
-next_html = raw.html.find(table_selector)
-next_page = next_page + 1
+# thsi is for the next page
+JS_script4 = """
+document.getElementsByClassName("pagebtn pagebtn-name")[2].click()
+"""
+raw.html.render(retries = 4, script = JS_script4,sleep = 3)
 
-if next_page <= int(total_page_num):
-    next_page_html = base_url + "&Page="+ str(next_page)
-else:
-    print("finish")
+# find the ending page 
+current_page_selector = "#pagebar > a.pagebtn.pagebtn-count.pagecount-active"
+current_page = int(raw.html.find(current_page_selector,first = True).element.text)
+
+#pagebar > a.pagebtn.pagebtn-name
+if current_page >= total_pages:
+    print("end")
+    raw_df.to_csv(path+"cbex_abstract.csv",sep = "||")
