@@ -27,6 +27,7 @@ path = path_prefix + "Dropbox/academic/11_work_dataset/justice auction/rawdata2/
 
 # ------------------------------------------------------------------------------------------
 SAVE_link = "https://www.gpai.net/sf/item2.do?Web_Item_ID="
+Table_selector = "body > div > div:nth-child(7) > div > div.filt-result-list > ul > li"
 DICT_info_selector = {
     "online": "div > span.badge-arrow3",
     "deal":   "div > span.badge-icon",
@@ -97,6 +98,41 @@ def eval_price_extraction( ele_raw):
         
     return result_price
 
+def open_page(next_page,session):
+    restart_mode = 1
+    count_flag = 4
+    
+    raw = session.get(base_url+ "&Page="+ str(next_page))
+    
+    while count_flag > 0:   
+        if "to complete verification" in raw.html.text:
+            restart_mode = 1
+            
+        table_html = raw.html.find(Table_selector)
+        if len(table_html) == 0:
+            restart_mode = 1
+        else:
+            restart_mode = 0
+            return raw 
+        
+        if (restart_mode == 1):
+            print("page {} has problem!".format(next_page))
+            raw.close()
+            time.sleep(5)
+            session = HTMLSession()
+            raw = session.get(base_url+ "&Page="+ str(next_page))
+            raw.html.render(sleep = 5)
+        else:
+            return raw
+    
+        count_flag = count_flag - 1
+        
+    if restart_mode == 1:
+        print("bad connection wait and restart later")
+        exit()
+    else:
+        return raw
+
 # -------------------------------------------------------------------------------------------
 session = HTMLSession()
 base_url = "https://s.gpai.net/sf/search.do?at=376&restate=3"
@@ -136,11 +172,18 @@ count = 0
 while next_page <= int(total_page_num):
     # extract 
     print("current page: {} ".format(next_page))
+    time.sleep(3)
+    raw = open_page(next_page,session)
     # get the list of items per page 
-    table_selector = "body > div > div:nth-child(7) > div > div.filt-result-list > ul> li"
-    table_html = raw.html.find(table_selector)
+    table_selector = "[class = 'main-col-list clearfix']"
+    table_html = raw.html.find(table_selector)[0].find('li')
     N_items = len(table_html)
-
+    # if N_items == 0:
+    #     print("problems!!! no info returned! wait for refresh")
+    #     raw.close()
+    #     session = HTMLSession()
+    #     time.sleep(5)
+    #     raw = open_page(next_page)
     for i in range(0,N_items):
         dict_info_extract = DICT_info_extract
         ele_raw = table_html[i]
@@ -149,6 +192,7 @@ while next_page <= int(total_page_num):
         try:
             if len(raw_info_list) == 7:
                 # 0 
+                raw_info_list[0] = raw_info_list[0].strip()
                 (dict_info_extract['online'],dict_info_extract['deal']) = raw_info_list[0].split()
                 # 1
                 dict_info_extract['title'] = raw_info_list[1]
@@ -191,6 +235,7 @@ while next_page <= int(total_page_num):
             error_title = ele_raw.find(DICT_info_selector['title'])[0].text
             print("error item title: {} ".format(error_title))
             print("error raw info {}".format(ele_raw.text))
+            print(dict_info_extract)
                 # 7 
         item_href=ele_raw.find(DICT_info_selector['href'],first=True).attrs['href']
         dict_info_extract['item_ID'] = re.findall("Web_Item_ID=(\d+)",item_href)[0]                
@@ -212,24 +257,27 @@ while next_page <= int(total_page_num):
         raw_df.to_csv(path+"gpainet_abstract.csv",sep = "|",mode='a',encoding="utf-16",index=False,header=False)
         raw_df = pd.DataFrame()
 
-    if (next_page) % 10 == 0:
-        time.sleep(5)
+
 
     # find the next page info 
-    next_page_selector = "body > div > div:nth-child(7) > div > div.page-bar > div > a.page-next" 
-    next_html = raw.html.find(table_selector)
-    next_page = next_page + 1
-
-    if next_page <= int(total_page_num):
-        next_page_html = base_url + "&Page="+ str(next_page)
-        raw = session.get(next_page_html)
-        # print(raw.status_code, end =" ")    
-        if raw.status_code != 200:
-            print("page {} has problem!".format(next_page))
-            exit()
-        raw.html.render(sleep = 5)
-        time.sleep(3)
-    else:
+    # next_page_selector = "body > div > div:nth-child(7) > div > div.page-bar > div > a.page-next" 
+    # next_html = raw.html.find(next_page_selector)
+    
+    if (next_page) % 10 == 0:
+        time.sleep(10)
+        session = HTMLSession()
+        
+    next_page = next_page + 1    
+    if next_page > int(total_page_num):
+    #     next_page_html = base_url + "&Page="+ str(next_page)
+    #     raw = session.get(next_page_html)
+    #     # print(raw.status_code, end =" ")    
+    #     if raw.status_code != 200:
+    #         print("page {} has problem!".format(next_page))
+    #         exit()
+    #     raw.html.render(sleep = 5)
+    #     time.sleep(3)
+    # else:
         print("finish")
         raw_df.to_csv(path+"gpainet_abstract.csv",sep = "|",mode='a',encoding="utf-16",index=False,header=False)
 
