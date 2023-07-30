@@ -15,7 +15,7 @@ need a lot of javascript
 
 from requests_html import HTMLSession,AsyncHTMLSession
 import pandas as pd
-import re
+import re,time
 from sys import platform
 # path 
 if platform == "win32":
@@ -85,6 +85,7 @@ DICT_info_extract = {
     "item_ID":"",
     "index_item":"",
 }
+
 current_page = 1
 count = 0
 for stage_i in [1,2,3]:
@@ -108,16 +109,16 @@ for stage_i in [1,2,3]:
         for col_ele in stand_cols:
             dict_info_extract[col_ele]  = ele_raw.find(dict_info_selector[col_ele],first=True).text
 
-        dict_info_extract['win_price']  = re.findall('[0-9.]*[0-9]+',dict_info_extract['win_price'])[0]
-        dict_info_extract['eval_price'] = re.findall('[0-9.]*[0-9]+',dict_info_extract['eval_price'])[0]
-        dict_info_extract['weiguan'] = re.findall("[0-9.]*[0-9]+",dict_info_extract['weiguan'])[0]
+        dict_info_extract['win_price']   = re.findall('[0-9.]*[0-9]+',dict_info_extract['win_price'])[0]
+        dict_info_extract['eval_price']  = re.findall('[0-9.]*[0-9]+',dict_info_extract['eval_price'])[0]
+        dict_info_extract['weiguan']     = re.findall("[0-9.]*[0-9]+",dict_info_extract['weiguan'])[0]
         dict_info_extract['num_bidders'] = re.findall("[0-9.]*[0-9]+",dict_info_extract['num_bidders'])[0]
 
-        dict_info_extract['item_ID'] = ele_raw.attrs['data-itemno']
+        dict_info_extract['item_ID']     = ele_raw.attrs['data-itemno']
 
         dict_info_extract['auction_stage'] = auction_stage[stage_i]
 
-        dict_info_extract['index_item'] = count
+        dict_info_extract['index_item']  = count
 
 
         temp_df = pd.DataFrame(dict_info_extract,index=[count])
@@ -129,12 +130,13 @@ for stage_i in [1,2,3]:
         raw_df = pd.DataFrame()
 
     if (current_page) % 20 == 0:
-        print("save temp df at page {}".format(next_page))
+        print("save temp df at page {}".format(current_page))
         raw_df.to_csv(path+"cbex_abstract.csv",sep = "|",mode='a',encoding="utf-16",index=False,header=False)
         raw_df = pd.DataFrame()
 
     if (current_page) % 10 == 0:
         time.sleep(10)
+        print("pause for waiting current page {}".format(current_page))
 
     # find the next page info 
     # thsi is for the next page
